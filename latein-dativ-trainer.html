@@ -266,6 +266,60 @@
       return vocab.lemma + '|' + casus + '|' + numerus;
     }
 
+    // ===== Leitner Store =====
+
+    const LEITNER_KEY = 'dativ-trainer:leitner';
+    const BOX_WEIGHTS = [16, 8, 4, 2, 1];
+
+    const LeitnerStore = {
+      load() {
+        try { return JSON.parse(localStorage.getItem(LEITNER_KEY)) || {}; }
+        catch (e) { return {}; }
+      },
+      save(state) { localStorage.setItem(LEITNER_KEY, JSON.stringify(state)); },
+      getBox(state, id) { return state[id]?.box ?? 1; },
+      promote(state, id) {
+        const current = state[id]?.box ?? 1;
+        state[id] = { box: Math.min(current + 1, 5), lastSeen: Date.now() };
+      },
+      demote(state, id) {
+        state[id] = { box: 1, lastSeen: Date.now() };
+      },
+      reset() { localStorage.removeItem(LEITNER_KEY); }
+    };
+
+    function pickTasks(activeFormsList, leitnerState, n = 10) {
+      if (!activeFormsList.length) return [];
+      const weighted = activeFormsList.map(f => ({
+        form: f,
+        weight: BOX_WEIGHTS[LeitnerStore.getBox(leitnerState, formId(f.vocab, f.casus, f.numerus)) - 1]
+      }));
+      const picked = [];
+      const pool = [...weighted];
+      for (let i = 0; i < n && pool.length; i++) {
+        const totalWeight = pool.reduce((s, x) => s + x.weight, 0);
+        let r = Math.random() * totalWeight;
+        let idx = 0;
+        for (; idx < pool.length; idx++) {
+          r -= pool[idx].weight;
+          if (r <= 0) break;
+        }
+        if (idx >= pool.length) idx = pool.length - 1;
+        picked.push(pool[idx].form);
+        pool.splice(idx, 1);
+      }
+      return picked;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
