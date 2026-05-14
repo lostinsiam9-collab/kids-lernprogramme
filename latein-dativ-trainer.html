@@ -160,6 +160,30 @@
     .card-nav button.success { background: var(--olive); color: white; border-color: var(--olive); }
 
     .card-counter { font-size: 14px; color: var(--text-soft); text-align: center; }
+
+    .quiz-question {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 28px 22px; box-shadow: var(--shadow);
+      margin: 20px 0; text-align: center;
+    }
+    .quiz-prompt { font-size: 17px; color: var(--text-soft); margin-bottom: 10px; }
+    .quiz-target { font-size: 30px; margin-bottom: 4px; }
+
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .quiz-option {
+      background: var(--card-bg); border: 2px solid var(--line);
+      padding: 16px; border-radius: var(--radius-sm);
+      font-size: 19px; min-height: 60px;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .quiz-option:disabled { opacity: 0.85; cursor: default; }
+    .quiz-option.correct { background: var(--correct); color: white; border-color: var(--correct); }
+    .quiz-option.wrong   { background: var(--wrong);   color: white; border-color: var(--wrong); }
+
+    .quiz-feedback { min-height: 32px; text-align: center; font-size: 15px; margin-bottom: 8px; }
+    .quiz-feedback.correct { color: var(--correct); }
+    .quiz-feedback.wrong   { color: var(--wrong); }
+    .quiz-progress { font-size: 13px; color: var(--text-soft); text-align: center; }
   </style>
 </head>
 <body>
@@ -248,6 +272,13 @@
     <section id="screen-quiz" class="screen">
       <button class="back-btn" data-action="home">Zurück</button>
       <h2>Quick Quiz</h2>
+      <div class="quiz-progress" id="quiz-progress"></div>
+      <div class="quiz-question">
+        <div class="quiz-prompt" id="quiz-prompt"></div>
+        <div class="quiz-target" id="quiz-target"></div>
+      </div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
     </section>
 
     <section id="screen-typing" class="screen">
@@ -686,8 +717,118 @@
       }
     });
 
-    // Stubs — werden in Tasks 9–12 implementiert:
-    const ModeQuiz   = { start() { showScreen('screen-quiz');   } };
+    // ===== Mode: Quick Quiz =====
+    const PRAISE = ['Recte!', 'Optimē!', 'Egregiē!', 'Bene!', 'Probē!'];
+    function randomPraise() { return PRAISE[Math.floor(Math.random() * PRAISE.length)]; }
+
+    const ModeQuiz = {
+      state: null,
+      TASKS_PER_SESSION: 10,
+
+      start() {
+        const setup = SetupStore.load();
+        const leitner = LeitnerStore.load();
+        const tasks = pickTasks(activeForms(setup), leitner, this.TASKS_PER_SESSION);
+        this.state = { tasks, index: 0, results: [], answered: false };
+        showScreen('screen-quiz');
+        this.render();
+      },
+
+      distractors(form, n = 3) {
+        const correct = decline(form.vocab, form.casus, form.numerus);
+        const candidates = new Set();
+        for (const c of ['nom', 'gen', 'dat', 'acc', 'abl']) {
+          for (const num of ['sg', 'pl']) {
+            const d = decline(form.vocab, c, num);
+            if (d !== correct) candidates.add(d);
+          }
+        }
+        if (candidates.size < n) {
+          for (const v of VOCABULARY) {
+            if (v.declension !== form.vocab.declension || v.lemma === form.vocab.lemma) continue;
+            candidates.add(decline(v, form.casus, form.numerus));
+            if (candidates.size >= n + 3) break;
+          }
+        }
+        return shuffle([...candidates]).slice(0, n);
+      },
+
+      render() {
+        const { tasks, index } = this.state;
+        if (index >= tasks.length) return this.finish();
+        const f = tasks[index];
+        const correctForm = decline(f.vocab, f.casus, f.numerus);
+        const opts = shuffle([correctForm, ...this.distractors(f, 3)]);
+        this.state.currentOpts = opts;
+        this.state.correctAnswer = correctForm;
+
+        document.getElementById('quiz-progress').textContent = 'Frage ' + (index + 1) + ' / ' + tasks.length;
+        document.getElementById('quiz-prompt').textContent =
+          CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ' von';
+
+        const target = document.getElementById('quiz-target');
+        clear(target);
+        target.appendChild(el('span', { class: 'latin' }, f.vocab.lemma));
+        target.appendChild(el('span',
+          { style: { color: 'var(--text-soft)', fontSize: '16px', marginLeft: '8px' } },
+          '(' + f.vocab.de + ')'));
+
+        const optsBox = document.getElementById('quiz-options');
+        clear(optsBox);
+        opts.forEach(opt => {
+          const btn = el('button', {
+            class: 'quiz-option latin',
+            onclick: (e) => this.choose(opt, e.currentTarget)
+          }, opt);
+          optsBox.appendChild(btn);
+        });
+        const fb = document.getElementById('quiz-feedback');
+        fb.textContent = '';
+        fb.className = 'quiz-feedback';
+        this.state.answered = false;
+      },
+
+      choose(opt, btn) {
+        if (this.state.answered) return;
+        this.state.answered = true;
+        const correct = opt === this.state.correctAnswer;
+        const f = this.state.tasks[this.state.index];
+        btn.classList.add(correct ? 'correct' : 'wrong');
+        if (!correct) {
+          document.querySelectorAll('.quiz-option').forEach(b => {
+            if (b.textContent === this.state.correctAnswer) b.classList.add('correct');
+          });
+        }
+        document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+        const fb = document.getElementById('quiz-feedback');
+        fb.className = 'quiz-feedback ' + (correct ? 'correct' : 'wrong');
+        fb.textContent = correct ? randomPraise() : 'Richtig wäre: ' + this.state.correctAnswer;
+
+        const leitner = LeitnerStore.load();
+        if (correct) LeitnerStore.promote(leitner, formId(f.vocab, f.casus, f.numerus));
+        else         LeitnerStore.demote(leitner,  formId(f.vocab, f.casus, f.numerus));
+        LeitnerStore.save(leitner);
+        this.state.results.push({ form: f, correct });
+
+        setTimeout(() => { this.state.index++; this.render(); }, correct ? 900 : 1800);
+      },
+
+      finish() {
+        SessionSummary.show(this.state.results);
+      }
+    };
+
+    // Vorläufiger Stub für SessionSummary (wird in Task 12 ersetzt):
+    const SessionSummary = {
+      show(results) {
+        const correct = results.filter(r => r.correct).length;
+        alert('Session beendet: ' + correct + ' von ' + results.length + ' richtig.');
+        showScreen('screen-home');
+        renderHome();
+      }
+    };
+
+    // Stubs — werden in Tasks 10–12 implementiert:
     const ModeTyping = { start() { showScreen('screen-typing'); } };
     const ModePuzzle = { start() { showScreen('screen-puzzle'); } };
     const ModeMix    = { start() { alert('Mix-Modus: kommt in Task 12.'); } };
