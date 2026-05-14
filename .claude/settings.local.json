@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \":*)",
+      "mcp__Claude_Preview__preview_start",
+      "WebSearch",
+      "WebFetch(domain:balladen.net)",
+      "WebFetch(domain:de.wikisource.org)",
+      "WebFetch(domain:www.gedichte7.de)",
+      "WebFetch(domain:www.friedrich-schiller-archiv.de)",
+      "WebFetch(domain:www.deutschland-lese.de)",
+      "WebFetch(domain:online-lernen.levrai.de)",
+      "WebFetch(domain:www.projekt-gutenberg.org)",
+      "WebFetch(domain:www.sekundarschulvorbereitung.ch)",
+      "WebFetch(domain:www.deutschunddeutlich.de)",
+      "WebFetch(domain:unterrichten.zum.de)",
+      "WebFetch(domain:www.mumag.de)",
+      "WebFetch(domain:www.deutschelyrik.de)"
+    ]
+  }
+}

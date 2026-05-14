@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stilmittel-Trainer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f3eef8;
+            color: #2d2d2d;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #9b72cf, #b48ed9);
+            color: white;
+            text-align: center;
+            padding: 1.2rem 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.3rem;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: #fff;
+            border-bottom: 2px solid #d4c4e8;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.9rem 0.5rem;
+            border: none;
+            background: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7a6b8a;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-bottom: 3px solid transparent;
+            min-height: 48px;
+        }
+
+        .tab-btn:hover {
+            background: #ece4f4;
+        }
+
+        .tab-btn.active {
+            color: #9b72cf;
+            border-bottom-color: #9b72cf;
+            background: #ece4f4;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1.5rem 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Karteikarten */
+        .card-container {
+            perspective: 1000px;
+            margin: 1.5rem auto;
+            max-width: 480px;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            min-height: 280px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #fff, #f8f4fc);
+            border: 2px solid #d4c4e8;
+        }
+
+        .card-front h2 {
+            font-size: 1.8rem;
+            color: #9b72cf;
+        }
+
+        .card-front .card-hint {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #a090b0;
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #9b72cf, #b48ed9);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card-back h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .card-back .definition {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+
+        .card-back .beispiel {
+            font-style: italic;
+            font-size: 0.95rem;
+            opacity: 0.92;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 1rem;
+            text-align: center;
+        }
+
+        .card-back .beispiel-quelle {
+            font-size: 0.8rem;
+            opacity: 0.75;
+            margin-top: 0.4rem;
+            font-style: normal;
+        }
+
+        .card-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .card-nav button {
+            background: #9b72cf;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-nav button:hover {
+            background: #7d54b0;
+            transform: scale(1.08);
+        }
+
+        .card-nav .card-counter {
+            font-size: 1rem;
+            color: #7a6b8a;
+            font-weight: 600;
+        }
+
+        /* Quiz */
+        .quiz-area {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .quiz-zitat {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            text-align: center;
+        }
+
+        .quiz-zitat .zitat-text {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            font-style: italic;
+            color: #3a3a3a;
+        }
+
+        .quiz-zitat .zitat-text .highlight {
+            background: #e2d4f0;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #6b4d8a;
+        }
+
+        .quiz-quelle {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #9080a0;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-option {
+            padding: 0.9rem 1rem;
+            border: 2px solid #e0d0ba;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 48px;
+            color: #2d2d2d;
+        }
+
+        .quiz-option:hover:not(:disabled) {
+            border-color: #9b72cf;
+            background: #ece4f4;
+        }
+
+        .quiz-option.correct {
+            border-color: #27ae60;
+            background: #d4efdf;
+            color: #1a7a42;
+            font-weight: 700;
+        }
+
+        .quiz-option.wrong {
+            border-color: #e74c3c;
+            background: #fadbd8;
+            color: #b03a2e;
+        }
+
+        .quiz-option:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .quiz-option.correct:disabled,
+        .quiz-option.wrong:disabled {
+            opacity: 1;
+        }
+
+        .quiz-feedback {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-top: 1rem;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .quiz-feedback.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .quiz-feedback .feedback-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quiz-feedback .feedback-title.correct {
+            color: #27ae60;
+        }
+
+        .quiz-feedback .feedback-title.wrong {
+            color: #e74c3c;
+        }
+
+        .quiz-feedback .feedback-text {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .quiz-next {
+            display: none;
+            margin: 1.2rem auto 0;
+            padding: 0.8rem 2rem;
+            background: #9b72cf;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 48px;
+            transition: background 0.2s;
+        }
+
+        .quiz-next.show {
+            display: block;
+        }
+
+        .quiz-next:hover {
+            background: #7d54b0;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .dashboard-summary {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+
+        .dashboard-summary .summary-score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #9b72cf;
+        }
+
+        .dashboard-summary .summary-label {
+            font-size: 0.9rem;
+            color: #7a6b8a;
+            margin-top: 0.3rem;
+        }
+
+        .dashboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .dashboard-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 0.9rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+
+        .ampel {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .ampel.rot { background: #e74c3c; }
+        .ampel.gelb { background: #f39c12; }
+        .ampel.gruen { background: #27ae60; }
+
+        .dashboard-item .item-name {
+            font-weight: 600;
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .dashboard-item .item-stats {
+            font-size: 0.85rem;
+            color: #7a6b8a;
+            white-space: nowrap;
+        }
+
+        .dashboard-reset {
+            display: block;
+            margin: 1.5rem auto 0;
+            padding: 0.7rem 1.5rem;
+            background: transparent;
+            border: 2px solid #d0c0a8;
+            border-radius: 10px;
+            color: #7a6b8a;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 48px;
+            transition: all 0.2s;
+        }
+
+        .dashboard-reset:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.3rem; }
+            .tab-btn { font-size: 0.9rem; padding: 0.8rem 0.3rem; }
+            .card-front h2 { font-size: 1.5rem; }
+            .card { min-height: 250px; }
+            .quiz-options { grid-template-columns: 1fr; }
+            .tab-content { padding: 1.2rem 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stilmittel-Trainer</h1>
+        <p>Lerne rhetorische Mittel anhand von Balladen</p>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="karteikarten">Karteikarten</button>
+        <button class="tab-btn" data-tab="quiz">Quiz</button>
+        <button class="tab-btn" data-tab="fortschritt">Fortschritt</button>
+    </nav>
+
+    <section id="karteikarten" class="tab-content active">
+        <div class="card-container">
+            <div class="card" id="flashcard">
+                <div class="card-face card-front">
+                    <h2 id="card-name"></h2>
+                    <span class="card-hint">Klicke zum Umdrehen</span>
+                </div>
+                <div class="card-face card-back">
+                    <h3 id="card-back-name"></h3>
+                    <div class="definition" id="card-definition"></div>
+                    <div class="beispiel">
+                        <div id="card-beispiel"></div>
+                        <div class="beispiel-quelle" id="card-quelle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-nav">
+            <button id="card-prev" aria-label="Vorherige Karte">&#8592;</button>
+            <span class="card-counter" id="card-counter"></span>
+            <button id="card-next" aria-label="Nächste Karte">&#8594;</button>
+        </div>
+    </section>
+
+    <section id="quiz" class="tab-content">
+        <div class="quiz-area">
+            <div class="quiz-zitat">
+                <div class="zitat-text" id="quiz-zitat-text"></div>
+            </div>
+            <div class="quiz-quelle" id="quiz-quelle"></div>
+            <div class="quiz-options" id="quiz-options"></div>
+            <div class="quiz-feedback" id="quiz-feedback">
+                <div class="feedback-title" id="feedback-title"></div>
+                <div class="feedback-text" id="feedback-text"></div>
+            </div>
+            <button class="quiz-next" id="quiz-next">Nächste Frage</button>
+        </div>
+    </section>
+
+    <section id="fortschritt" class="tab-content">
+        <div class="dashboard">
+            <div class="dashboard-summary">
+                <div class="summary-score" id="summary-score">0 / 0</div>
+                <div class="summary-label">richtige Antworten</div>
+            </div>
+            <div class="dashboard-list" id="dashboard-list"></div>
+            <button class="dashboard-reset" id="dashboard-reset">Sitzung zurücksetzen</button>
+        </div>
+    </section>
+
+    <script>
+        // === DATENMODELL (verifiziert gegen Originaltexte) ===
+        const stilmittel = [
+            {
+                name: "Alliteration",
+                definition: "Wiederholung des Anfangsbuchstabens benachbarter Wörter.",
+                beispielKarte: "Milch macht müde.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Zu Dionys, dem Tyrannen, schlich Damon, den Dolch im Gewande",
+                        hervorhebung: "Damon, den Dolch",
+                        ballade: "Die Bürgschaft",
+                        autor: "Schiller",
+                        erklaerung: "'Damon', 'den', 'Dolch' — drei aufeinanderfolgende Wörter beginnen mit 'D'. Das ist eine Alliteration."
+                    },
+                    {
+                        zitat: "Seine Wort und Werke merkt ich und den Brauch",
+                        hervorhebung: "Wort und Werke",
+                        ballade: "Der Zauberlehrling",
+                        autor: "Goethe",
+                        erklaerung: "'Wort' und 'Werke' beginnen beide mit 'W' — eine Alliteration, die den Klang des Verses verstärkt."
+                    },
+                    {
+                        zitat: "Alle Herzen sind froh, alle Herzen sind frei",
+                        hervorhebung: "froh, alle Herzen sind frei",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "'Froh' und 'frei' beginnen beide mit 'F' — eine Alliteration, die die unbeschwerte Stimmung an Bord betont."
+                    }
+                ]
+            },
+            {
+                name: "Anapher",
+                definition: "Wiederholung eines oder mehrerer Wörter an Satz- oder Versanfängen.",
+                beispielKarte: "Das Wasser plätschert, das Wasser strömt.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Mein Vater, mein Vater, und hörest du nicht ... Mein Vater, mein Vater, und siehst du nicht dort ... Mein Vater, mein Vater, jetzt fasst er mich an!",
+                        hervorhebung: "Mein Vater, mein Vater",
+                        ballade: "Erlkönig",
+                        autor: "Goethe",
+                        erklaerung: "'Mein Vater, mein Vater' steht am Anfang von drei verschiedenen Strophen — eine dreifache Anapher, die die Angst des Kindes steigert."
+                    },
+                    {
+                        zitat: "Und noch zwanzig Minuten bis Buffalo ... Und noch fünfzehn Minuten bis Buffalo ... Und noch zehn Minuten bis Buffalo",
+                        hervorhebung: "Und noch",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "'Und noch ... Minuten bis Buffalo' wird als Countdown am Versanfang wiederholt — eine Anapher, die die Spannung steigert."
+                    },
+                    {
+                        zitat: "Und die Sonne versendet glühenden Brand ... Und die Sonne blickt durch der Zweige Grün ... Und die Sonne geht unter",
+                        hervorhebung: "Und die Sonne",
+                        ballade: "Die Bürgschaft",
+                        autor: "Schiller",
+                        erklaerung: "'Und die Sonne' steht am Anfang von drei Strophen — eine Anapher, die den Lauf der Zeit markiert und die Dringlichkeit zeigt."
+                    }
+                ]
+            },
+            {
+                name: "Ellipse",
+                definition: "Ausgelassene Wörter oder Satzteile, die man sich dazudenken muss.",
+                beispielKarte: "Vorsicht, heiß!",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Das Schiff geborsten. Das Feuer verschwelt. Gerettet alle. Nur einer fehlt!",
+                        hervorhebung: "Das Schiff geborsten.",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "'Das Schiff geborsten' — das Hilfsverb 'ist' fehlt. Vier Sätze hintereinander ohne finites Verb! Die Auslassungen erzeugen atemlose Dramatik."
+                    },
+                    {
+                        zitat: "In die Ecke, Besen! Besen! Seid's gewesen!",
+                        hervorhebung: "In die Ecke, Besen!",
+                        ballade: "Der Zauberlehrling",
+                        autor: "Goethe",
+                        erklaerung: "'In die Ecke, Besen!' — hier fehlt das Verb ('geh', 'stell dich'). Durch die Auslassung wirkt der Befehl hektisch und aufgeregt."
+                    },
+                    {
+                        zitat: "Den Dank, Dame, begehr ich nicht!",
+                        hervorhebung: "Den Dank, Dame",
+                        ballade: "Der Handschuh",
+                        autor: "Schiller",
+                        erklaerung: "'Den Dank, Dame' — hier fehlt 'Euren' vor 'Dank'. Die knappe, elliptische Formulierung unterstreicht die schroffe Zurückweisung des Ritters."
+                    }
+                ]
+            },
+            {
+                name: "Hyperbel",
+                definition: "Übertreibung zur Verstärkung einer Aussage.",
+                beispielKarte: "Ich habe es dir schon 1000 Mal gesagt.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Ach! und hundert Flüsse stürzen auf mich ein!",
+                        hervorhebung: "hundert Flüsse",
+                        ballade: "Der Zauberlehrling",
+                        autor: "Goethe",
+                        erklaerung: "'Hundert Flüsse' — es sind natürlich keine hundert Flüsse, nur ein übergelaufener Eimer. Die Übertreibung zeigt die Panik des Lehrlings."
+                    },
+                    {
+                        zitat: "Da gießt unendlicher Regen herab",
+                        hervorhebung: "unendlicher Regen",
+                        ballade: "Die Bürgschaft",
+                        autor: "Schiller",
+                        erklaerung: "'Unendlicher Regen' — Regen kann nicht wirklich unendlich sein. Die Übertreibung betont, wie aussichtslos Damons Lage erscheint."
+                    },
+                    {
+                        zitat: "Zehntausend folgen oder mehr, und kein Aug im Zuge, das tränenleer",
+                        hervorhebung: "Zehntausend",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "'Zehntausend' und 'kein Auge tränenleer' — doppelte Übertreibung: Die Zahl und die Behauptung, dass wirklich jeder weint, sind Hyperbeln."
+                    }
+                ]
+            },
+            {
+                name: "Personifikation",
+                definition: "Zuweisung menschlicher Eigenschaften an unmenschliche Dinge.",
+                beispielKarte: "Die Sonne lacht.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Ein verruchter Besen, der nicht hören will!",
+                        hervorhebung: "der nicht hören will",
+                        ballade: "Der Zauberlehrling",
+                        autor: "Goethe",
+                        erklaerung: "Dem Besen wird ein eigener Wille und die Fähigkeit zu hören zugeschrieben — menschliche Eigenschaften für einen Gegenstand. Das ist Personifikation."
+                    },
+                    {
+                        zitat: "Und die Sonne blickt durch der Zweige Grün und malt auf den glänzenden Matten der Bäume gigantische Schatten",
+                        hervorhebung: "die Sonne blickt",
+                        ballade: "Die Bürgschaft",
+                        autor: "Schiller",
+                        erklaerung: "Die Sonne 'blickt' und 'malt' — sie wird wie ein Mensch dargestellt, der absichtlich handelt. Das ist Personifikation."
+                    },
+                    {
+                        zitat: "Da speit das doppelt geöffnete Haus zwei Leoparden auf einmal aus",
+                        hervorhebung: "speit das",
+                        ballade: "Der Handschuh",
+                        autor: "Schiller",
+                        erklaerung: "Das 'Haus' (der Käfig) 'speit' die Tiere aus wie ein lebendes Wesen — eine Personifikation, die die Bedrohlichkeit steigert."
+                    }
+                ]
+            },
+            {
+                name: "Vergleich",
+                definition: "Verknüpfung zweier Bereiche mit 'wie' oder 'als ob'.",
+                beispielKarte: "Er ist stark wie ein Bär.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Gischt schäumt um den Bug wie Flocken von Schnee",
+                        hervorhebung: "wie Flocken von Schnee",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "Das Vergleichswort 'wie' verbindet den weißen Gischt mit dem Bild von Schneeflocken — ein klassischer Vergleich."
+                    },
+                    {
+                        zitat: "Da klingt's aus dem Schiffsraum her wie Schrei",
+                        hervorhebung: "wie Schrei",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "Das 'wie' vergleicht das Geräusch mit einem Schrei — ein Vergleich, der die plötzliche Bedrohung hörbar macht."
+                    },
+                    {
+                        zitat: "Ganz nahe, wie rieselndes Rauschen",
+                        hervorhebung: "wie rieselndes Rauschen",
+                        ballade: "Die Bürgschaft",
+                        autor: "Schiller",
+                        erklaerung: "'Wie rieselndes Rauschen' — das Geräusch wird mit einem sanften Rieseln verglichen. Das 'wie' zeigt den Vergleich."
+                    }
+                ]
+            },
+            {
+                name: "Metapher",
+                definition: "Bildlicher Ausdruck — ein Wort wird in einem anderen Bedeutungszusammenhang verwendet.",
+                beispielKarte: "Am Fuß des Berges.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Er hat uns gerettet, er trägt die Kron",
+                        hervorhebung: "er trägt die Kron",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "'Die Kron tragen' — John Maynard war kein König. 'Krone' steht hier bildlich für höchste Ehre und Anerkennung. Das ist eine Metapher."
+                    },
+                    {
+                        zitat: "Und die Treue, sie ist doch kein leerer Wahn",
+                        hervorhebung: "kein leerer Wahn",
+                        ballade: "Die Bürgschaft",
+                        autor: "Schiller",
+                        erklaerung: "'Leerer Wahn' ist ein bildlicher Ausdruck — Treue kann nicht wörtlich 'leer' sein. Die Metapher betont, dass Treue real und wertvoll ist."
+                    },
+                    {
+                        zitat: "O, du Ausgeburt der Hölle! Soll das ganze Haus ersaufen?",
+                        hervorhebung: "Ausgeburt der Hölle",
+                        ballade: "Der Zauberlehrling",
+                        autor: "Goethe",
+                        erklaerung: "'Ausgeburt der Hölle' — der Besen stammt natürlich nicht wirklich aus der Hölle. Der bildliche Ausdruck überträgt die Vorstellung von etwas Teuflischem auf den Besen. Das ist eine Metapher."
+                    }
+                ]
+            },
+            {
+                name: "Wiederholung",
+                definition: "Mehrmalige Verwendung desselben Wortes oder Satzteils zur Betonung.",
+                beispielKarte: "Es war ein schöner Tag, ein schöner Tag zum Feiern.",
+                beispielQuelle: "Alltagsbeispiel",
+                quizFragen: [
+                    {
+                        zitat: "Stehe! stehe! Denn wir haben deiner Gaben vollgemessen!",
+                        hervorhebung: "Stehe! stehe!",
+                        ballade: "Der Zauberlehrling",
+                        autor: "Goethe",
+                        erklaerung: "'Stehe! stehe!' — das gleiche Wort wird direkt hintereinander wiederholt. Das betont die Dringlichkeit des Befehls."
+                    },
+                    {
+                        zitat: "John Maynard! Wer ist John Maynard? John Maynard war unser Steuermann.",
+                        hervorhebung: "John Maynard",
+                        ballade: "John Maynard",
+                        autor: "Fontane",
+                        erklaerung: "'John Maynard' wird dreimal wiederholt — das betont die zentrale Bedeutung der Figur und macht den Namen unvergesslich."
+                    },
+                    {
+                        zitat: "Sei ruhig, bleibe ruhig, mein Kind; in dürren Blättern säuselt der Wind.",
+                        hervorhebung: "ruhig",
+                        ballade: "Erlkönig",
+                        autor: "Goethe",
+                        erklaerung: "'Ruhig' wird zweimal in einem Vers wiederholt — der Vater versucht verzweifelt, das Kind zu beruhigen. Die Wiederholung zeigt seine eigene Unsicherheit."
+                    }
+                ]
+            }
+        ];
+
+        // === LEITNER STATE ===
+        const leitnerState = {};
+        function initLeitner() {
+            stilmittel.forEach(function(s) {
+                leitnerState[s.name] = { box: 1, richtig: 0, falsch: 0 };
+            });
+        }
+        initLeitner();
+
+        // === TAB NAVIGATION ===
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const tab = btn.dataset.tab;
+                tabBtns.forEach(function(b) { b.classList.remove('active'); });
+                tabContents.forEach(function(c) { c.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(tab).classList.add('active');
+
+                if (tab === 'fortschritt') updateDashboard();
+                if (tab === 'quiz' && !quizActive) loadQuizQuestion();
+            });
+        });
+
+        // === KARTEIKARTEN ===
+        let currentCard = 0;
+        const flashcard = document.getElementById('flashcard');
+
+        function renderCard() {
+            const s = stilmittel[currentCard];
+            flashcard.classList.remove('flipped');
+            document.getElementById('card-name').textContent = s.name;
+            document.getElementById('card-back-name').textContent = s.name;
+            document.getElementById('card-definition').textContent = s.definition;
+            document.getElementById('card-beispiel').textContent = '\u201E' + s.beispielKarte + '\u201C';
+            document.getElementById('card-quelle').textContent = s.beispielQuelle;
+            document.getElementById('card-counter').textContent = (currentCard + 1) + ' / ' + stilmittel.length;
+        }
+
+        flashcard.addEventListener('click', function() {
+            flashcard.classList.toggle('flipped');
+        });
+
+        document.getElementById('card-prev').addEventListener('click', function() {
+            currentCard = (currentCard - 1 + stilmittel.length) % stilmittel.length;
+            renderCard();
+        });
+
+        document.getElementById('card-next').addEventListener('click', function() {
+            currentCard = (currentCard + 1) % stilmittel.length;
+            renderCard();
+        });
+
+        renderCard();
+
+        // === QUIZ ===
+        let quizActive = false;
+
+        function pickNextQuestion() {
+            var weights = stilmittel.map(function(s) {
+                var box = leitnerState[s.name].box;
+                if (box === 1) return 4;
+                if (box === 2) return 2;
+                return 1;
+            });
+            var totalWeight = weights.reduce(function(a, b) { return a + b; }, 0);
+            var rand = Math.random() * totalWeight;
+            var chosenIndex = 0;
+            for (var i = 0; i < weights.length; i++) {
+                rand -= weights[i];
+                if (rand <= 0) { chosenIndex = i; break; }
+            }
+            var chosen = stilmittel[chosenIndex];
+            var fragen = chosen.quizFragen;
+            var frage = fragen[Math.floor(Math.random() * fragen.length)];
+            return { stilmittelIndex: chosenIndex, frage: frage };
+        }
+
+        function generateOptions(correctName) {
+            var options = [correctName];
+            var others = stilmittel.map(function(s) { return s.name; }).filter(function(n) { return n !== correctName; });
+            while (options.length < 4) {
+                var idx = Math.floor(Math.random() * others.length);
+                options.push(others.splice(idx, 1)[0]);
+            }
+            for (var i = options.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = options[i];
+                options[i] = options[j];
+                options[j] = temp;
+            }
+            return options;
+        }
+
+        function renderZitatWithHighlight(container, zitat, hervorhebung) {
+            container.textContent = '';
+            var idx = zitat.indexOf(hervorhebung);
+            if (idx === -1) {
+                container.textContent = zitat;
+                return;
+            }
+            var before = zitat.substring(0, idx);
+            var after = zitat.substring(idx + hervorhebung.length);
+
+            if (before) container.appendChild(document.createTextNode(before));
+
+            var span = document.createElement('span');
+            span.className = 'highlight';
+            span.textContent = hervorhebung;
+            container.appendChild(span);
+
+            if (after) container.appendChild(document.createTextNode(after));
+        }
+
+        function loadQuizQuestion() {
+            quizActive = true;
+            var result = pickNextQuestion();
+            var chosen = stilmittel[result.stilmittelIndex];
+            var frage = result.frage;
+
+            renderZitatWithHighlight(
+                document.getElementById('quiz-zitat-text'),
+                frage.zitat,
+                frage.hervorhebung
+            );
+
+            document.getElementById('quiz-quelle').textContent =
+                '\u2014 ' + frage.ballade + ', ' + frage.autor;
+
+            var optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.textContent = '';
+            var options = generateOptions(chosen.name);
+
+            options.forEach(function(opt) {
+                var btn = document.createElement('button');
+                btn.className = 'quiz-option';
+                btn.textContent = opt;
+                btn.addEventListener('click', function() {
+                    handleAnswer(btn, opt, chosen.name, frage.erklaerung);
+                });
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback').classList.remove('show');
+            document.getElementById('quiz-next').classList.remove('show');
+        }
+
+        function handleAnswer(btn, selected, correct, erklaerung) {
+            var allBtns = document.querySelectorAll('.quiz-option');
+            allBtns.forEach(function(b) { b.disabled = true; });
+
+            var isCorrect = selected === correct;
+            var state = leitnerState[correct];
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                state.richtig++;
+                state.box = Math.min(state.box + 1, 3);
+            } else {
+                btn.classList.add('wrong');
+                state.falsch++;
+                state.box = 1;
+                allBtns.forEach(function(b) {
+                    if (b.textContent === correct) b.classList.add('correct');
+                });
+            }
+
+            var feedbackTitle = document.getElementById('feedback-title');
+            feedbackTitle.textContent = isCorrect ? 'Richtig!' : 'Leider falsch!';
+            feedbackTitle.className = 'feedback-title ' + (isCorrect ? 'correct' : 'wrong');
+
+            var feedbackText = document.getElementById('feedback-text');
+            feedbackText.textContent = (isCorrect ? '' : 'Die richtige Antwort ist: ' + correct + '. ') + erklaerung;
+
+            document.getElementById('quiz-feedback').classList.add('show');
+            document.getElementById('quiz-next').classList.add('show');
+        }
+
+        document.getElementById('quiz-next').addEventListener('click', function() {
+            loadQuizQuestion();
+        });
+
+        // === DASHBOARD ===
+        function updateDashboard() {
+            var totalRichtig = 0;
+            var totalFalsch = 0;
+            var list = document.getElementById('dashboard-list');
+            list.textContent = '';
+
+            stilmittel.forEach(function(s) {
+                var state = leitnerState[s.name];
+                totalRichtig += state.richtig;
+                totalFalsch += state.falsch;
+
+                var item = document.createElement('div');
+                item.className = 'dashboard-item';
+
+                var ampelClass = 'rot';
+                if (state.box === 2) ampelClass = 'gelb';
+                if (state.box === 3) ampelClass = 'gruen';
+
+                var ampel = document.createElement('div');
+                ampel.className = 'ampel ' + ampelClass;
+                item.appendChild(ampel);
+
+                var nameSpan = document.createElement('span');
+                nameSpan.className = 'item-name';
+                nameSpan.textContent = s.name;
+                item.appendChild(nameSpan);
+
+                var statsSpan = document.createElement('span');
+                statsSpan.className = 'item-stats';
+                statsSpan.textContent = state.richtig + ' richtig / ' + state.falsch + ' falsch';
+                item.appendChild(statsSpan);
+
+                list.appendChild(item);
+            });
+
+            var total = totalRichtig + totalFalsch;
+            var pct = total > 0 ? Math.round((totalRichtig / total) * 100) : 0;
+            document.getElementById('summary-score').textContent =
+                totalRichtig + ' / ' + total + (total > 0 ? ' (' + pct + '%)' : '');
+        }
+
+        document.getElementById('dashboard-reset').addEventListener('click', function() {
+            if (confirm('Sitzung wirklich zurücksetzen? Alle Punkte gehen verloren.')) {
+                initLeitner();
+                updateDashboard();
+                quizActive = false;
+            }
+        });
+
+        updateDashboard();
+    </script>
+</body>
+</html>

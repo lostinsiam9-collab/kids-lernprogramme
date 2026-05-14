@@ -1,0 +1,3509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Day — English Time Trainer</title>
+    <style>
+        :root {
+            --bg-pink: #FFE4EC;
+            --pink: #FF9BC1;
+            --lilac: #C9A2D9;
+            --mint: #A8E6CF;
+            --yellow: #FFF3B0;
+            --text: #4A3728;
+            --gold: #FFD700;
+            --correct: #81C784;
+            --wrong: #FFB74D;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background-color: var(--bg-pink);
+            background-image:
+                repeating-radial-gradient(circle at 20% 30%, rgba(255,155,193,0.15) 0px, rgba(255,155,193,0.15) 8px, transparent 8px, transparent 40px),
+                repeating-radial-gradient(circle at 70% 60%, rgba(201,162,217,0.12) 0px, rgba(201,162,217,0.12) 6px, transparent 6px, transparent 50px),
+                repeating-radial-gradient(circle at 50% 80%, rgba(168,230,207,0.10) 0px, rgba(168,230,207,0.10) 5px, transparent 5px, transparent 45px),
+                repeating-radial-gradient(circle at 85% 15%, rgba(255,155,193,0.10) 0px, rgba(255,155,193,0.10) 10px, transparent 10px, transparent 55px);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        /* ── Header ── */
+        header {
+            background: linear-gradient(135deg, var(--pink), var(--lilac));
+            color: white;
+            text-align: center;
+            padding: 1.4rem 1rem;
+            box-shadow: 0 3px 12px rgba(255,155,193,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before,
+        header::after {
+            content: '\2723';
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.3;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        header::before { left: 1rem; }
+        header::after { right: 1rem; }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-top: 0.3rem;
+        }
+
+        /* ── Screens ── */
+        .screen {
+            display: none;
+            padding: 1.5rem 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Home Screen ── */
+        .home-greeting {
+            text-align: center;
+            margin: 1.5rem 0 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .home-greeting span {
+            color: var(--pink);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+        }
+
+        .menu-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            border: none;
+            border-radius: 50%;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn:hover,
+        .menu-btn:focus {
+            transform: scale(1.06);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            outline: none;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.97);
+        }
+
+        .menu-btn::after {
+            content: '\2723';
+            position: absolute;
+            font-size: 1.2rem;
+            opacity: 0.2;
+            bottom: 8px;
+            right: 12px;
+        }
+
+        .menu-btn.btn-clock  { background: linear-gradient(135deg, #FFD1E3, var(--pink)); }
+        .menu-btn.btn-myday  { background: linear-gradient(135deg, #E0C6F0, var(--lilac)); }
+        .menu-btn.btn-quiz   { background: linear-gradient(135deg, #C2F0DC, var(--mint)); }
+        .menu-btn.btn-mix    { background: linear-gradient(135deg, #FFF8D6, var(--yellow)); }
+
+        .menu-btn svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        .menu-btn .btn-label {
+            font-size: 0.85rem;
+            line-height: 1.2;
+            text-align: center;
+            max-width: 100px;
+        }
+
+        /* ── Progress Bar ── */
+        .progress-section {
+            text-align: center;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .progress-section p {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #7a6050;
+        }
+
+        .progress-bar-outer {
+            background: rgba(255,255,255,0.6);
+            border-radius: 20px;
+            height: 18px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, var(--pink), var(--lilac), var(--mint));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .stars-display {
+            text-align: center;
+            margin-top: 0.8rem;
+            font-size: 1.3rem;
+        }
+
+        .stars-display .star {
+            color: var(--gold);
+            margin: 0 2px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        .stars-display .star.empty {
+            opacity: 0.25;
+        }
+
+        /* ── Sub-Screen Styling ── */
+        .screen-title {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 1rem 0 1.5rem;
+            position: relative;
+        }
+
+        .screen-title::after {
+            content: '\2723 \2723 \2723';
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.3;
+            margin-top: 0.3rem;
+            letter-spacing: 6px;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9a8a7a;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        /* ── Back Button ── */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: white;
+            border: 2px solid var(--pink);
+            color: var(--pink);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+
+        .back-btn:hover,
+        .back-btn:focus {
+            background: var(--pink);
+            color: white;
+            outline: none;
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ── Decorative Footer Flowers ── */
+        .flower-deco {
+            text-align: center;
+            padding: 2rem 0 1rem;
+            font-size: 1.5rem;
+            opacity: 0.2;
+            letter-spacing: 12px;
+        }
+
+        /* ── Responsive ── */
+        /* (consolidated at end of stylesheet) */
+
+        /* ── Clock Module ── */
+        .clock-display {
+            text-align: center;
+            margin: 0 auto 1.2rem;
+        }
+
+        .clock-input {
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto 0.8rem;
+            padding: 0.7rem 1rem;
+            min-height: 48px;
+            font-family: inherit;
+            font-size: 18px;
+            border: 2px solid var(--pink);
+            border-radius: 30px;
+            outline: none;
+            color: var(--text);
+            background: white;
+            transition: border-color 0.2s ease;
+        }
+
+        .clock-input:focus {
+            border-color: var(--lilac);
+            box-shadow: 0 0 0 3px rgba(201,162,217,0.25);
+        }
+
+        .clock-check-btn {
+            display: block;
+            margin: 0 auto 1rem;
+            min-height: 48px;
+            padding: 0.6rem 2.2rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--pink), var(--lilac));
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 3px 10px rgba(255,155,193,0.3);
+        }
+
+        .clock-check-btn:hover,
+        .clock-check-btn:focus {
+            transform: scale(1.04);
+            box-shadow: 0 5px 16px rgba(255,155,193,0.4);
+            outline: none;
+        }
+
+        .clock-check-btn:active {
+            transform: scale(0.97);
+        }
+
+        .clock-feedback {
+            max-width: 360px;
+            margin: 0 auto 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            display: none;
+        }
+
+        .clock-feedback.correct {
+            display: block;
+            background: rgba(129,199,132,0.2);
+            border: 2px solid var(--correct);
+            color: #2e7d32;
+        }
+
+        .clock-feedback.wrong {
+            display: block;
+            background: rgba(255,183,77,0.2);
+            border: 2px solid var(--wrong);
+            color: #e65100;
+        }
+
+        .clock-progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7a6050;
+            margin-bottom: 1rem;
+        }
+
+        .clock-next-btn {
+            display: none;
+            margin: 0.8rem auto 0;
+            min-height: 48px;
+            padding: 0.6rem 2.2rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--mint), #66bb6a);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 3px 10px rgba(168,230,207,0.3);
+        }
+
+        .clock-next-btn:hover,
+        .clock-next-btn:focus {
+            transform: scale(1.04);
+            box-shadow: 0 5px 16px rgba(168,230,207,0.4);
+            outline: none;
+        }
+
+        .clock-next-btn:active {
+            transform: scale(0.97);
+        }
+        /* ── My Day Module ── */
+        .myday-sentence {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            line-height: 2.2;
+        }
+
+        .myday-select {
+            display: inline-block;
+            min-height: 44px;
+            font-family: inherit;
+            font-size: 18px;
+            padding: 0.4rem 0.8rem;
+            border: 2px solid var(--pink);
+            border-radius: 22px;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FF9BC1' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 2rem;
+        }
+
+        .myday-select:focus {
+            border-color: var(--lilac);
+            box-shadow: 0 0 0 3px rgba(201,162,217,0.25);
+        }
+
+        .myday-select.correct {
+            border-color: var(--correct);
+            background-color: rgba(129,199,132,0.15);
+        }
+
+        .myday-select.wrong {
+            border-color: var(--wrong);
+            background-color: rgba(255,183,77,0.15);
+        }
+
+        .myday-check-btn {
+            display: block;
+            margin: 1.5rem auto 1rem;
+            min-height: 48px;
+            padding: 0.6rem 2.4rem;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--lilac), var(--pink));
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 3px 10px rgba(201,162,217,0.3);
+        }
+
+        .myday-check-btn:hover,
+        .myday-check-btn:focus {
+            transform: scale(1.04);
+            box-shadow: 0 5px 16px rgba(201,162,217,0.4);
+            outline: none;
+        }
+
+        .myday-check-btn:active {
+            transform: scale(0.97);
+        }
+
+        .myday-correction {
+            display: block;
+            font-size: 0.85rem;
+            color: #e65100;
+            font-weight: 600;
+            margin-top: 0.1rem;
+            margin-left: 0.3rem;
+        }
+
+        .myday-gap-wrapper {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            vertical-align: middle;
+        }
+
+        .myday-result {
+            max-width: 420px;
+            margin: 1.2rem auto;
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05rem;
+            background: rgba(201,162,217,0.15);
+            border: 2px solid var(--lilac);
+        }
+
+        .myday-result .result-score {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .myday-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .myday-actions button {
+            min-height: 48px;
+            padding: 0.6rem 1.8rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .myday-actions button:hover,
+        .myday-actions button:focus {
+            transform: scale(1.04);
+            outline: none;
+        }
+
+        .myday-actions button:active {
+            transform: scale(0.97);
+        }
+
+        .myday-actions .btn-play-again {
+            color: white;
+            background: linear-gradient(135deg, var(--lilac), var(--pink));
+            box-shadow: 0 3px 10px rgba(201,162,217,0.3);
+        }
+
+        .myday-actions .btn-back-menu {
+            color: var(--text);
+            background: rgba(255,255,255,0.8);
+            border: 2px solid var(--pink);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .myday-sentences-container {
+            margin: 1rem 0;
+            background: rgba(255,255,255,0.85);
+            border-radius: 16px;
+            padding: 1.2rem 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+        /* ── Quiz Module ── */
+        .quiz-progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7a6050;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-question-area {
+            text-align: center;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 140px;
+        }
+
+        .quiz-question-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            padding: 1.5rem 1rem;
+            background: rgba(255,255,255,0.6);
+            border-radius: 20px;
+            border: 2px solid var(--lilac);
+            max-width: 360px;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 0.8rem;
+            margin: 0 auto 1rem;
+            max-width: 420px;
+        }
+
+        .quiz-options.text-options {
+            grid-template-columns: 1fr;
+        }
+
+        .quiz-options.clock-options {
+            grid-template-columns: 1fr 1fr;
+            justify-items: center;
+        }
+
+        .quiz-option-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,155,193,0.4);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            padding: 0.8rem 1.2rem;
+            min-height: 48px;
+            transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.3s ease;
+        }
+
+        .quiz-option-btn:hover:not(:disabled) {
+            transform: scale(1.03);
+            border-color: var(--pink);
+        }
+
+        .quiz-option-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .quiz-option-btn:disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+
+        .quiz-option-btn.correct {
+            background-color: rgba(129,199,132,0.35);
+            border-color: var(--correct);
+        }
+
+        .quiz-option-btn.wrong {
+            background-color: rgba(255,183,77,0.35);
+            border-color: var(--wrong);
+        }
+
+        .quiz-option-btn.reveal {
+            background-color: rgba(129,199,132,0.35);
+            border-color: var(--correct);
+            animation: quizRevealPulse 0.6s ease 2;
+        }
+
+        @keyframes quizRevealPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(129,199,132,0); }
+            50% { box-shadow: 0 0 0 8px rgba(129,199,132,0.3); }
+        }
+
+        .quiz-clock-option {
+            width: 120px;
+            height: 120px;
+            padding: 0.4rem;
+        }
+
+        .quiz-clock-option svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .quiz-feedback {
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-height: 1.8rem;
+            margin: 0.5rem auto;
+            max-width: 360px;
+        }
+
+        .quiz-feedback.correct-msg {
+            color: #2e7d32;
+        }
+
+        .quiz-feedback.wrong-msg {
+            color: #e65100;
+        }
+
+        /* ── Mix Module ── */
+        .mix-container {
+            margin: 1rem 0;
+            animation: fadeIn 0.35s ease;
+        }
+
+        .mix-progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7a6050;
+            margin-bottom: 1rem;
+        }
+
+        .mix-task-label {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--lilac);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ── Summary Screen ── */
+        .summary-trophy {
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 4rem;
+            line-height: 1;
+            animation: trophyBounce 0.6s ease;
+        }
+
+        @keyframes trophyBounce {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .summary-trophy svg {
+            width: 100px;
+            height: 100px;
+        }
+
+        .summary-score {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0.8rem 0;
+        }
+
+        .summary-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .summary-dots .dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .summary-dots .dot.correct {
+            background: var(--correct);
+            box-shadow: 0 2px 6px rgba(129,199,132,0.4);
+        }
+
+        .summary-dots .dot.wrong {
+            background: var(--wrong);
+            box-shadow: 0 2px 6px rgba(255,183,77,0.4);
+        }
+
+        .summary-promotions {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2e7d32;
+            margin: 0.8rem 0;
+            padding: 0.5rem 1rem;
+            background: rgba(129,199,132,0.15);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .summary-promotions.visible {
+            display: block;
+        }
+
+        .summary-message {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--lilac);
+            margin: 1rem 0;
+            padding: 0.8rem;
+        }
+
+        .summary-level {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            margin: 0.8rem auto;
+            max-width: 320px;
+            display: none;
+        }
+
+        .summary-level.visible {
+            display: block;
+        }
+
+        .summary-level.level-up {
+            color: #1b5e20;
+            background: rgba(129,199,132,0.2);
+            border: 2px solid var(--correct);
+        }
+
+        .summary-level.level-down {
+            color: #e65100;
+            background: rgba(255,183,77,0.2);
+            border: 2px solid var(--wrong);
+        }
+
+        .summary-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .summary-actions button {
+            min-height: 48px;
+            padding: 0.6rem 1.8rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .summary-actions button:hover,
+        .summary-actions button:focus {
+            transform: scale(1.04);
+            outline: none;
+        }
+
+        .summary-actions button:active {
+            transform: scale(0.97);
+        }
+
+        .summary-actions .btn-replay {
+            color: white;
+            background: linear-gradient(135deg, var(--lilac), var(--pink));
+            box-shadow: 0 3px 10px rgba(201,162,217,0.3);
+        }
+
+        .summary-actions .btn-menu {
+            color: var(--text);
+            background: rgba(255,255,255,0.8);
+            border: 2px solid var(--pink);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* ── Mascot ── */
+        .mascot-container {
+            text-align: center;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .mascot-container svg {
+            width: 80px;
+            height: 120px;
+        }
+
+        /* Waving arm animation */
+        .mascot-wave {
+            transform-origin: 58px 52px;
+            animation: mascotWave 1.8s ease-in-out infinite;
+        }
+
+        @keyframes mascotWave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            50% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+
+        /* Happy mascot stars */
+        .mascot-star {
+            animation: mascotStarTwinkle 1.2s ease-in-out infinite alternate;
+        }
+
+        .mascot-star:nth-child(2) { animation-delay: 0.3s; }
+        .mascot-star:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes mascotStarTwinkle {
+            0% { opacity: 0.4; transform: scale(0.7); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* ── Star Burst Animation ── */
+        .star-burst-particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.4rem;
+            color: var(--gold);
+            text-shadow: 0 0 4px rgba(255,215,0,0.5);
+            animation: starBurst 0.7s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes starBurst {
+            0% {
+                opacity: 1;
+                transform: scale(0.3) rotate(0deg);
+            }
+            60% {
+                opacity: 1;
+                transform: scale(1.3) rotate(40deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.6) rotate(80deg) translateY(-20px);
+            }
+        }
+
+        /* ── Confetti Animation ── */
+        .confetti-piece {
+            position: fixed;
+            top: -10px;
+            width: 10px;
+            height: 16px;
+            border-radius: 2px;
+            z-index: 200;
+            pointer-events: none;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+
+        /* ── Button Pulse Animation ── */
+        .menu-btn {
+            animation: btnPulse 3s ease-in-out infinite;
+        }
+
+        .menu-btn:nth-child(1) { animation-delay: 0s; }
+        .menu-btn:nth-child(2) { animation-delay: 0.75s; }
+        .menu-btn:nth-child(3) { animation-delay: 1.5s; }
+        .menu-btn:nth-child(4) { animation-delay: 2.25s; }
+
+        @keyframes btnPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .menu-btn:hover,
+        .menu-btn:focus {
+            animation: none;
+        }
+
+        /* ── Flower Deco Pseudo-Elements ── */
+        .quiz-question-text::before,
+        .quiz-question-text::after {
+            position: absolute;
+            font-size: 1rem;
+            opacity: 0.25;
+        }
+
+        .quiz-question-text {
+            position: relative;
+        }
+
+        .quiz-question-text::before {
+            content: '\2740';
+            top: 6px;
+            left: 8px;
+        }
+
+        .quiz-question-text::after {
+            content: '\2740';
+            bottom: 6px;
+            right: 8px;
+        }
+
+        .summary-score::before,
+        .summary-score::after {
+            font-size: 0.9rem;
+            opacity: 0.3;
+            vertical-align: middle;
+        }
+
+        .summary-score::before {
+            content: '\2740 ';
+        }
+
+        .summary-score::after {
+            content: ' \2740';
+        }
+
+        .myday-result::before,
+        .myday-result::after {
+            position: absolute;
+            font-size: 1rem;
+            opacity: 0.2;
+        }
+
+        .myday-result {
+            position: relative;
+        }
+
+        .myday-result::before {
+            content: '\2740';
+            top: 8px;
+            left: 10px;
+        }
+
+        .myday-result::after {
+            content: '\2740';
+            bottom: 8px;
+            right: 10px;
+        }
+
+        /* ── Level Selector ── */
+        .level-selector {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 0.6rem;
+        }
+        .level-btn {
+            display: inline-block;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            background: rgba(255,255,255,0.5);
+            border: 2px solid var(--lilac);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .level-btn:hover {
+            transform: scale(1.05);
+        }
+        .level-btn.active {
+            color: white;
+            background: linear-gradient(135deg, var(--lilac), var(--pink));
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(201,162,217,0.3);
+        }
+
+        /* ── Settings Button ── */
+        .settings-btn {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.6);
+            cursor: pointer;
+            opacity: 0.45;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .settings-btn:hover,
+        .settings-btn:focus {
+            opacity: 0.85;
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        .settings-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--text);
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(74, 55, 40, 0.35);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem 1.8rem;
+            max-width: 340px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(255,155,193,0.25);
+            border: 2px solid var(--pink);
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.6rem;
+        }
+
+        .modal-box p {
+            font-size: 0.95rem;
+            color: #7a6050;
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-actions button {
+            min-height: 44px;
+            padding: 0.5rem 1.4rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .modal-actions button:hover,
+        .modal-actions button:focus {
+            transform: scale(1.04);
+            outline: none;
+        }
+
+        .modal-actions button:active {
+            transform: scale(0.97);
+        }
+
+        .modal-actions .btn-confirm {
+            color: white;
+            background: linear-gradient(135deg, var(--wrong), #ef6c00);
+            box-shadow: 0 3px 10px rgba(255,183,77,0.3);
+        }
+
+        .modal-actions .btn-cancel {
+            color: var(--text);
+            background: rgba(255,255,255,0.9);
+            border: 2px solid var(--pink);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* ══════════════════════════════════════════
+           Touch Optimization (all screens)
+           ══════════════════════════════════════════ */
+
+        /* Remove iOS tap highlight on all interactive elements */
+        button,
+        input,
+        select,
+        .menu-btn,
+        .quiz-option-btn,
+        .back-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Ensure all buttons meet 48px minimum touch target */
+        button {
+            min-height: 48px;
+            min-width: 48px;
+        }
+
+        /* Ensure all inputs and selects meet touch target minimums */
+        input,
+        select {
+            min-height: 48px;
+            font-size: 18px;
+        }
+
+        /* Modal action buttons – bump from 44px to 48px */
+        .modal-actions button {
+            min-height: 48px;
+        }
+
+        /* My Day select – bump from 44px to 48px */
+        .myday-select {
+            min-height: 48px;
+        }
+
+        /* Settings button – bump to 48px for touch */
+        .settings-btn {
+            width: 48px;
+            height: 48px;
+        }
+
+        /* Visible focus styles for accessibility */
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid var(--lilac);
+            outline-offset: 2px;
+        }
+
+        /* Prevent confetti from causing horizontal scroll */
+        body {
+            overflow-x: hidden;
+        }
+
+        /* ══════════════════════════════════════════
+           Consolidated Responsive Breakpoints
+           ══════════════════════════════════════════ */
+
+        /* ── Mobile: max-width 480px ── */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.3rem;
+            }
+
+            header p {
+                font-size: 0.85rem;
+            }
+
+            .screen {
+                padding: 1rem 0.75rem;
+            }
+
+            .home-greeting {
+                font-size: 1.1rem;
+                margin: 1rem 0 0.8rem;
+            }
+
+            .menu-grid {
+                gap: 0.8rem;
+                margin: 1rem 0;
+            }
+
+            .menu-btn {
+                width: 120px;
+                height: 120px;
+            }
+
+            .menu-btn svg {
+                width: 36px;
+                height: 36px;
+            }
+
+            .menu-btn .btn-label {
+                font-size: 0.78rem;
+            }
+
+            .clock-display svg {
+                max-width: 180px;
+                height: auto;
+            }
+
+            .quiz-options.clock-options {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .quiz-clock-option {
+                width: 100px;
+                height: 100px;
+            }
+
+            .quiz-question-text {
+                font-size: 1.2rem;
+                padding: 1rem 0.8rem;
+            }
+
+            .screen-title {
+                font-size: 1.2rem;
+            }
+
+            .summary-score {
+                font-size: 1.3rem;
+            }
+
+            .summary-trophy {
+                font-size: 3rem;
+            }
+
+            .summary-trophy svg {
+                width: 80px;
+                height: 80px;
+            }
+
+            .modal-box {
+                padding: 1.5rem 1.2rem;
+                width: 92%;
+            }
+        }
+
+        /* ── Tablet: 481px – 768px ── */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .menu-grid {
+                gap: 1.2rem;
+            }
+
+            .menu-btn {
+                width: 140px;
+                height: 140px;
+            }
+
+            .clock-display svg {
+                max-width: 200px;
+                height: auto;
+            }
+        }
+
+        /* ── Desktop: 769px+ ── */
+        @media (min-width: 769px) {
+            .screen {
+                max-width: 640px;
+                padding: 2rem 1.5rem;
+            }
+
+            .menu-grid {
+                gap: 1.5rem;
+            }
+
+            .menu-btn {
+                width: 155px;
+                height: 155px;
+            }
+
+            .clock-display svg {
+                max-width: 240px;
+                height: auto;
+            }
+
+            .quiz-options {
+                max-width: 480px;
+            }
+
+            .quiz-clock-option {
+                width: 130px;
+                height: 130px;
+            }
+
+            .modal-box {
+                max-width: 380px;
+            }
+        }
+
+        /* ── Full-viewport modal on mobile ── */
+        @media (max-width: 480px) {
+            .modal-overlay {
+                align-items: flex-end;
+                padding: 0;
+            }
+
+            .modal-box {
+                border-radius: 24px 24px 0 0;
+                width: 100%;
+                max-width: 100%;
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>My Day — English Time Trainer</h1>
+        <p>Learn to tell the time &amp; talk about your day!</p>
+    </header>
+
+    <!-- ════════ HOME ════════ -->
+    <div id="screen-home" class="screen active">
+        <p class="home-greeting">Hello! <span>What do you want to practice?</span></p>
+
+        <div class="menu-grid">
+            <!-- Clock -->
+            <button class="menu-btn btn-clock" onclick="showScreen('clock'); startClockSession()">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="28" stroke="#4A3728" stroke-width="3" fill="rgba(255,255,255,0.5)"/>
+                    <circle cx="32" cy="32" r="2.5" fill="#4A3728"/>
+                    <line x1="32" y1="32" x2="32" y2="14" stroke="#4A3728" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="32" y1="32" x2="46" y2="32" stroke="#4A3728" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="32" cy="8" r="1.5" fill="#4A3728"/>
+                    <circle cx="56" cy="32" r="1.5" fill="#4A3728"/>
+                    <circle cx="32" cy="56" r="1.5" fill="#4A3728"/>
+                    <circle cx="8" cy="32" r="1.5" fill="#4A3728"/>
+                </svg>
+                <span class="btn-label">What time is it?</span>
+            </button>
+
+            <!-- My Day -->
+            <button class="menu-btn btn-myday" onclick="startMyDaySession()">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="12" y="8" width="40" height="50" rx="4" stroke="#4A3728" stroke-width="3" fill="rgba(255,255,255,0.5)"/>
+                    <line x1="20" y1="22" x2="44" y2="22" stroke="#4A3728" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="20" y1="30" x2="40" y2="30" stroke="#4A3728" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="20" y1="38" x2="36" y2="38" stroke="#4A3728" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M42 44 L46 52 L50 40" stroke="#4A3728" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="btn-label">My Day</span>
+            </button>
+
+            <!-- Quiz -->
+            <button class="menu-btn btn-quiz" onclick="startQuizSession()">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="32,4 39,24 60,24 43,38 50,58 32,46 14,58 21,38 4,24 25,24" stroke="#4A3728" stroke-width="2.5" fill="rgba(255,215,0,0.3)"/>
+                </svg>
+                <span class="btn-label">Time Quiz</span>
+            </button>
+
+            <!-- Mix -->
+            <button class="menu-btn btn-mix" onclick="startMixSession()">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 44 Q16 28 24 44 Q32 60 40 44 Q48 28 56 44" stroke="#FF9BC1" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <path d="M8 36 Q16 20 24 36 Q32 52 40 36 Q48 20 56 36" stroke="#C9A2D9" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <path d="M8 28 Q16 12 24 28 Q32 44 40 28 Q48 12 56 28" stroke="#A8E6CF" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <path d="M8 20 Q16 4 24 20 Q32 36 40 20 Q48 4 56 20" stroke="#FFD700" stroke-width="3" stroke-linecap="round" fill="none"/>
+                </svg>
+                <span class="btn-label">Mix it up!</span>
+            </button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section">
+            <p id="progress-text">Your progress</p>
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner" id="progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="stars-display" id="stars-display">
+                <span class="star empty">&#9733;</span>
+                <span class="star empty">&#9733;</span>
+                <span class="star empty">&#9733;</span>
+                <span class="star empty">&#9733;</span>
+                <span class="star empty">&#9733;</span>
+            </div>
+            <div class="level-selector" id="level-selector">
+                <button class="level-btn active" data-level="1" onclick="setLevel(1)">Level 1: Full hours</button>
+                <button class="level-btn" data-level="2" onclick="setLevel(2)">Level 2: Half hours</button>
+                <button class="level-btn" data-level="3" onclick="setLevel(3)">Level 3: Quarter hours</button>
+            </div>
+        </div>
+
+        <!-- Settings gear (position: relative so it stays in home screen flow) -->
+        <div style="text-align: right; margin-top: 0.5rem;">
+            <button class="settings-btn" id="settings-btn" onclick="showResetModal()" aria-label="Settings" style="position: relative; bottom: auto; right: auto; display: inline-flex;">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.04.31-.06.63-.06.94 0 .31.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
+            </button>
+        </div>
+
+        <!-- Mascot (waving) -->
+        <div class="mascot-container" id="home-mascot">
+            <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg">
+                <!-- Hair back -->
+                <ellipse cx="40" cy="28" rx="22" ry="20" fill="#5C3A1E"/>
+                <!-- Face -->
+                <circle cx="40" cy="32" r="18" fill="#FDDCB5"/>
+                <!-- Hair bangs -->
+                <path d="M22 28 Q28 14 40 16 Q52 14 58 28" fill="#5C3A1E"/>
+                <!-- Pigtail left -->
+                <ellipse cx="16" cy="34" rx="6" ry="10" fill="#5C3A1E" transform="rotate(-10 16 34)"/>
+                <circle cx="16" cy="45" r="5" fill="#5C3A1E"/>
+                <!-- Pigtail right -->
+                <ellipse cx="64" cy="34" rx="6" ry="10" fill="#5C3A1E" transform="rotate(10 64 34)"/>
+                <circle cx="64" cy="45" r="5" fill="#5C3A1E"/>
+                <!-- Hair ties -->
+                <circle cx="20" cy="28" r="3" fill="#FF9BC1"/>
+                <circle cx="60" cy="28" r="3" fill="#FF9BC1"/>
+                <!-- Eyes -->
+                <ellipse cx="33" cy="32" rx="3" ry="3.5" fill="#3E2723"/>
+                <ellipse cx="47" cy="32" rx="3" ry="3.5" fill="#3E2723"/>
+                <circle cx="34.5" cy="31" r="1.2" fill="white"/>
+                <circle cx="48.5" cy="31" r="1.2" fill="white"/>
+                <!-- Smile -->
+                <path d="M34 39 Q40 45 46 39" stroke="#D4845A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <!-- Blush -->
+                <ellipse cx="28" cy="37" rx="4" ry="2.5" fill="#FFB7C5" opacity="0.5"/>
+                <ellipse cx="52" cy="37" rx="4" ry="2.5" fill="#FFB7C5" opacity="0.5"/>
+                <!-- Body / Dress -->
+                <path d="M30 50 L26 85 Q40 90 54 85 L50 50 Z" fill="#FF9BC1"/>
+                <path d="M30 50 Q40 54 50 50" fill="#E8829E" stroke="none"/>
+                <!-- Left arm -->
+                <line x1="30" y1="55" x2="18" y2="72" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>
+                <!-- Right arm (waving) -->
+                <g class="mascot-wave">
+                    <line x1="50" y1="55" x2="62" y2="42" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="63" cy="40" r="3" fill="#FDDCB5"/>
+                </g>
+                <!-- Legs -->
+                <line x1="35" y1="85" x2="33" y2="105" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>
+                <line x1="45" y1="85" x2="47" y2="105" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>
+                <!-- Shoes -->
+                <ellipse cx="32" cy="107" rx="6" ry="3" fill="#FF9BC1"/>
+                <ellipse cx="48" cy="107" rx="6" ry="3" fill="#FF9BC1"/>
+            </svg>
+        </div>
+
+        <div class="flower-deco">&#10035; &#10048; &#10035; &#10048; &#10035;</div>
+    </div>
+
+    <!-- ════════ CLOCK ════════ -->
+    <div id="screen-clock" class="screen">
+        <button class="back-btn" onclick="showScreen('home')">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back
+        </button>
+        <h2 class="screen-title">What time is it?</h2>
+        <p class="clock-progress" id="clock-progress">Question 1 of 10</p>
+        <div class="clock-display" id="clock-display"></div>
+        <input type="text" class="clock-input" id="clock-input" placeholder="It's ..." autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="clock-check-btn" id="clock-check-btn" onclick="checkClockAnswer()">Check</button>
+        <div class="clock-feedback" id="clock-feedback"></div>
+        <button class="clock-next-btn" id="clock-next-btn" onclick="nextClockQuestion()">Next</button>
+    </div>
+
+    <!-- ════════ MY DAY ════════ -->
+    <div id="screen-myday" class="screen">
+        <button class="back-btn" onclick="showScreen('home')">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back
+        </button>
+        <h2 class="screen-title">My Day</h2>
+        <div class="myday-sentences-container" id="myday-sentences"></div>
+        <button class="myday-check-btn" id="myday-check-btn" onclick="checkMyDay()">Check my day!</button>
+        <div class="myday-result" id="myday-result" style="display:none;"></div>
+        <div class="myday-actions" id="myday-actions" style="display:none;">
+            <button class="btn-play-again" onclick="startMyDaySession()">Play again</button>
+            <button class="btn-back-menu" onclick="showScreen('home')">Back to menu</button>
+        </div>
+    </div>
+
+    <!-- ════════ QUIZ ════════ -->
+    <div id="screen-quiz" class="screen">
+        <button class="back-btn" onclick="showScreen('home')">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back
+        </button>
+        <h2 class="screen-title">Time Quiz</h2>
+        <p class="quiz-progress" id="quiz-progress">Question 1 of 10</p>
+        <div class="quiz-question-area" id="quiz-question-area"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="quiz-feedback" id="quiz-feedback"></div>
+    </div>
+
+    <!-- ════════ MIX ════════ -->
+    <div id="screen-mix" class="screen">
+        <button class="back-btn" onclick="showScreen('home')">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back
+        </button>
+        <h2 class="screen-title">Mix it up!</h2>
+        <p class="mix-progress" id="mix-progress">Task 1 of 10</p>
+        <div class="mix-task-label" id="mix-task-label"></div>
+        <div class="mix-container" id="mix-container"></div>
+    </div>
+
+    <!-- ════════ SUMMARY ════════ -->
+    <div id="screen-summary" class="screen">
+        <div class="summary-trophy" id="summary-trophy"></div>
+        <h2 class="screen-title" id="summary-title">Well done!</h2>
+        <div class="summary-score" id="summary-score"></div>
+        <div class="summary-dots" id="summary-dots"></div>
+        <div class="summary-promotions" id="summary-promotions"></div>
+        <div class="summary-message" id="summary-message"></div>
+        <div class="summary-level" id="summary-level"></div>
+        <div class="summary-actions" id="summary-actions"></div>
+    </div>
+
+    <script>
+        // ── Navigation ──
+        const screens = ['home', 'clock', 'myday', 'quiz', 'mix', 'summary'];
+
+        function showScreen(name) {
+            // Clear any pending auto-advance timers when navigating away
+            if (typeof quizSession !== 'undefined' && quizSession && quizSession.autoAdvanceTimer) {
+                clearTimeout(quizSession.autoAdvanceTimer);
+                quizSession.autoAdvanceTimer = null;
+            }
+            if (typeof mixSession !== 'undefined' && mixSession && mixSession.autoAdvanceTimer) {
+                clearTimeout(mixSession.autoAdvanceTimer);
+                mixSession.autoAdvanceTimer = null;
+            }
+            screens.forEach(function(s) {
+                var el = document.getElementById('screen-' + s);
+                if (el) el.classList.remove('active');
+            });
+            var target = document.getElementById('screen-' + name);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+            if (name === 'home') {
+                updateHomeProgress();
+            }
+        }
+
+        // ── Progress helpers (stubs for later modules) ──
+        function updateProgress(percent) {
+            var bar = document.getElementById('progress-bar');
+            if (bar) bar.style.width = Math.min(100, Math.max(0, percent)) + '%';
+        }
+
+        function updateStars(count) {
+            var display = document.getElementById('stars-display');
+            if (!display) return;
+            var total = 5;
+            // Clear existing stars and rebuild with DOM methods
+            while (display.firstChild) {
+                display.removeChild(display.firstChild);
+            }
+            for (var i = 0; i < total; i++) {
+                var span = document.createElement('span');
+                span.className = i < count ? 'star' : 'star empty';
+                span.textContent = '\u2605';
+                display.appendChild(span);
+            }
+        }
+
+        // ── Home Progress Update ──
+        function updateHomeProgress() {
+            var state = LEITNER.load();
+            var mastery = LEITNER.getMastery(state);
+            var level = state.level || 1;
+
+            // Update progress bar
+            updateProgress(mastery);
+
+            // Update stars (1 star per 20% mastery)
+            updateStars(Math.floor(mastery / 20));
+
+            // Count mastered cards (box 3+)
+            var keys = Object.keys(state.cards);
+            var masteredCount = 0;
+            for (var i = 0; i < keys.length; i++) {
+                if (state.cards[keys[i]].box >= 3) {
+                    masteredCount++;
+                }
+            }
+
+            // Update progress text
+            var progressText = document.getElementById('progress-text');
+            if (progressText) {
+                if (masteredCount === 0) {
+                    progressText.textContent = 'Your progress';
+                } else {
+                    progressText.textContent = 'Du hast schon ' + masteredCount + ' Aufgaben gemeistert!';
+                }
+            }
+
+            // Update level selector
+            var levelBtns = document.querySelectorAll('#level-selector .level-btn');
+            for (var b = 0; b < levelBtns.length; b++) {
+                if (parseInt(levelBtns[b].getAttribute('data-level')) === level) {
+                    levelBtns[b].classList.add('active');
+                } else {
+                    levelBtns[b].classList.remove('active');
+                }
+            }
+        }
+
+        // ── Level Selector ──
+        function setLevel(newLevel) {
+            var state = LEITNER.load();
+            state.level = newLevel;
+            LEITNER.save(state);
+            updateHomeProgress();
+        }
+
+        // ── Reset Modal ──
+        function showResetModal() {
+            var modal = document.getElementById('reset-modal');
+            if (modal) modal.classList.add('visible');
+        }
+
+        function hideResetModal() {
+            var modal = document.getElementById('reset-modal');
+            if (modal) modal.classList.remove('visible');
+        }
+
+        function confirmReset() {
+            localStorage.removeItem('myDayTrainer');
+            hideResetModal();
+            updateHomeProgress();
+        }
+
+        // Update progress on initial page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHomeProgress();
+        });
+
+        // ── SVG Clock Component ──
+        function createClockSVG(hours, minutes, size) {
+            if (size === undefined) size = 200;
+            var cx = 100;
+            var cy = 100;
+            var r = 90;
+
+            // Angle calculations (0° = right, -90° = up)
+            var hourAngle = ((hours % 12) + minutes / 60) * 30 - 90;
+            var minuteAngle = minutes * 6 - 90;
+
+            // Convert degrees to radians
+            var hourRad = hourAngle * Math.PI / 180;
+            var minuteRad = minuteAngle * Math.PI / 180;
+
+            // Hand endpoints
+            var hourLen = 50;
+            var minuteLen = 70;
+            var hx = cx + hourLen * Math.cos(hourRad);
+            var hy = cy + hourLen * Math.sin(hourRad);
+            var mx = cx + minuteLen * Math.cos(minuteRad);
+            var my = cy + minuteLen * Math.sin(minuteRad);
+
+            // Build flower marker at a given position
+            function flower(fx, fy, petalR, centerR) {
+                var colors = ['#FFB7D5', '#C9A2D9', '#A8E6CF', '#FFF3B0'];
+                var petalColor = colors[Math.floor(Math.random() * colors.length)];
+                // Use a fixed seed based on position so flowers are consistent
+                var ci = Math.round(fx + fy) % colors.length;
+                petalColor = colors[ci];
+                var s = '';
+                // 5 petals around center
+                for (var p = 0; p < 5; p++) {
+                    var angle = (p * 72 - 90) * Math.PI / 180;
+                    var px = fx + petalR * 1.3 * Math.cos(angle);
+                    var py = fy + petalR * 1.3 * Math.sin(angle);
+                    s += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + petalR + '" fill="' + petalColor + '" opacity="0.7"/>';
+                }
+                // Center of flower
+                s += '<circle cx="' + fx + '" cy="' + fy + '" r="' + centerR + '" fill="#FFD700"/>';
+                return s;
+            }
+
+            // Positions for hour markers (12 positions)
+            var markerRadius = 78;
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="' + size + '" height="' + size + '">';
+
+            // Clock face
+            svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="white" stroke="#FF9BC1" stroke-width="4"/>';
+
+            // Hour markers
+            for (var i = 0; i < 12; i++) {
+                var a = (i * 30 - 90) * Math.PI / 180;
+                var markerX = cx + markerRadius * Math.cos(a);
+                var markerY = cy + markerRadius * Math.sin(a);
+
+                if (i % 3 === 0) {
+                    // Flower markers at 12 (i=0), 3 (i=3), 6 (i=6), 9 (i=9)
+                    svg += flower(markerX, markerY, 5, 3.5);
+                } else {
+                    // Simple tick marks for other hours
+                    var innerR = 72;
+                    var outerR = 82;
+                    var x1 = cx + innerR * Math.cos(a);
+                    var y1 = cy + innerR * Math.sin(a);
+                    var x2 = cx + outerR * Math.cos(a);
+                    var y2 = cy + outerR * Math.sin(a);
+                    svg += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#C9A2D9" stroke-width="2" stroke-linecap="round"/>';
+                }
+            }
+
+            // Hour hand (lila, shorter, thicker)
+            svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + hx.toFixed(1) + '" y2="' + hy.toFixed(1) + '" stroke="#C9A2D9" stroke-width="5" stroke-linecap="round"/>';
+
+            // Minute hand (rosa, longer, thinner)
+            svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + mx.toFixed(1) + '" y2="' + my.toFixed(1) + '" stroke="#FF9BC1" stroke-width="3" stroke-linecap="round"/>';
+
+            // Center dot
+            svg += '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="#C9A2D9"/>';
+            svg += '<circle cx="' + cx + '" cy="' + cy + '" r="2.5" fill="white"/>';
+
+            svg += '</svg>';
+            return svg;
+        }
+
+        // ── Utility Functions ──
+
+        function shuffle(arr) {
+            var a = arr.slice();
+            for (var i = a.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var tmp = a[i];
+                a[i] = a[j];
+                a[j] = tmp;
+            }
+            return a;
+        }
+
+        // ── Number Word Conversion (1–12) ──
+
+        function numberWord(n) {
+            var words = ['', 'one', 'two', 'three', 'four', 'five', 'six',
+                         'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+            return words[n];
+        }
+
+        // ── Time Tasks Pool ──
+
+        function generateTimeTasks(level) {
+            var tasks = [];
+            for (var h = 1; h <= 12; h++) {
+                tasks.push({ hours: h, minutes: 0 });
+                if (level >= 2) {
+                    tasks.push({ hours: h, minutes: 30 });
+                }
+                if (level >= 3) {
+                    tasks.push({ hours: h, minutes: 15 });
+                    tasks.push({ hours: h, minutes: 45 });
+                }
+            }
+            return tasks;
+        }
+
+        // ── Time-to-English Conversion ──
+
+        function timeToEnglish(hours, minutes) {
+            if (minutes === 0) return "It's " + numberWord(hours) + " o'clock";
+            if (minutes === 15) return "It's a quarter past " + numberWord(hours);
+            if (minutes === 30) return "It's half past " + numberWord(hours);
+            if (minutes === 45) return "It's a quarter to " + numberWord((hours % 12) + 1);
+            return '';
+        }
+
+        // ── Activities Word Bank ──
+
+        var activities = [
+            { en: 'have breakfast', timeOfDay: 'morning' },
+            { en: 'go to school', timeOfDay: 'morning' },
+            { en: 'have lunch', timeOfDay: 'afternoon' },
+            { en: 'do my homework', timeOfDay: 'afternoon' },
+            { en: 'watch TV', timeOfDay: 'evening' },
+            { en: 'read a book', timeOfDay: 'evening' },
+            { en: 'go to bed', timeOfDay: 'evening' },
+            { en: 'go home', timeOfDay: 'afternoon' },
+            { en: 'play outside', timeOfDay: 'afternoon' },
+            { en: 'brush my teeth', timeOfDay: 'morning' },
+            { en: 'have dinner', timeOfDay: 'evening' },
+            { en: 'get dressed', timeOfDay: 'morning' }
+        ];
+
+        // ── Weekdays ──
+
+        var weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // ── Daily Routine Templates ──
+
+        var dayTemplates = [
+            {
+                name: 'school-day',
+                sentences: [
+                    { text: 'Today is {weekday}.', gaps: ['weekday'] },
+                    { text: 'At {time} in the morning I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'morning', timeRange: [6, 9] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'morning', timeRange: [7, 9] } },
+                    { text: 'At {time} in the afternoon I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [12, 15] } },
+                    { text: 'At {time} in the evening I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'evening', timeRange: [17, 20] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'evening', timeRange: [20, 22] } }
+                ]
+            },
+            {
+                name: 'weekend-morning',
+                sentences: [
+                    { text: 'It is {weekday} today.', gaps: ['weekday'] },
+                    { text: 'I wake up at {time}.', gaps: ['time'], constraints: { timeOfDay: 'morning', timeRange: [8, 10] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'morning', timeRange: [8, 10] } },
+                    { text: 'Then at {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [12, 14] } },
+                    { text: 'In the afternoon at {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [14, 17] } }
+                ]
+            },
+            {
+                name: 'afternoon-focus',
+                sentences: [
+                    { text: 'Today is {weekday}.', gaps: ['weekday'] },
+                    { text: 'I {activity} at {time} in the morning.', gaps: ['activity', 'time'], constraints: { timeOfDay: 'morning', timeRange: [7, 9] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [12, 13] } },
+                    { text: 'After lunch I {activity} at {time}.', gaps: ['activity', 'time'], constraints: { timeOfDay: 'afternoon', timeRange: [13, 16] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [15, 17] } },
+                    { text: 'In the evening at {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'evening', timeRange: [18, 20] } }
+                ]
+            },
+            {
+                name: 'evening-routine',
+                sentences: [
+                    { text: '{weekday} is my favourite day!', gaps: ['weekday'] },
+                    { text: 'In the morning at {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'morning', timeRange: [7, 9] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [12, 15] } },
+                    { text: 'At {time} in the evening I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'evening', timeRange: [17, 19] } },
+                    { text: 'Then I {activity} at {time}.', gaps: ['activity', 'time'], constraints: { timeOfDay: 'evening', timeRange: [19, 21] } },
+                    { text: 'I {activity} at {time}. Good night!', gaps: ['activity', 'time'], constraints: { timeOfDay: 'evening', timeRange: [20, 22] } }
+                ]
+            },
+            {
+                name: 'short-day',
+                sentences: [
+                    { text: 'Today is {weekday}.', gaps: ['weekday'] },
+                    { text: 'I {activity} at {time}.', gaps: ['activity', 'time'], constraints: { timeOfDay: 'morning', timeRange: [7, 9] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'afternoon', timeRange: [12, 15] } },
+                    { text: 'At {time} I {activity}.', gaps: ['time', 'activity'], constraints: { timeOfDay: 'evening', timeRange: [18, 21] } }
+                ]
+            }
+        ];
+
+        // ── Leitner Spaced-Repetition System ──
+
+        var LEITNER = {
+            load: function() {
+                var raw = localStorage.getItem('myDayTrainer');
+                if (raw) {
+                    try { return JSON.parse(raw); }
+                    catch (e) { /* corrupted data, start fresh */ }
+                }
+                return {
+                    cards: {},
+                    level: 1,
+                    streak: 0,
+                    sessionCount: 0,
+                    stats: { correct: 0, wrong: 0 }
+                };
+            },
+
+            save: function(state) {
+                localStorage.setItem('myDayTrainer', JSON.stringify(state));
+            },
+
+            promote: function(state, taskId) {
+                var card = state.cards[taskId] || { box: 1 };
+                card.box = Math.min(card.box + 1, 5);
+                card.lastSeen = Date.now();
+                state.cards[taskId] = card;
+                state.stats.correct++;
+            },
+
+            demote: function(state, taskId) {
+                var card = state.cards[taskId] || { box: 1 };
+                card.box = 1;
+                card.lastSeen = Date.now();
+                state.cards[taskId] = card;
+                state.stats.wrong++;
+            },
+
+            pickTasks: function(state, pool, count) {
+                if (count === undefined) count = 10;
+                // Weighted selection: lower boxes get higher weight
+                // box 1 = 16, box 2 = 8, box 3 = 4, box 4 = 2, box 5 = 1
+                var boxWeights = [0, 16, 8, 4, 2, 1];
+
+                // Build weighted entries from pool
+                var weighted = [];
+                var totalWeight = 0;
+                for (var i = 0; i < pool.length; i++) {
+                    var item = pool[i];
+                    var taskId = item.id || (item.hours + ':' + item.minutes);
+                    var card = state.cards[taskId];
+                    var box = card ? card.box : 1;
+
+                    // Spaced repetition: skip items in higher boxes unless enough
+                    // sessions have passed (box N reviewed every N sessions)
+                    if (card && card.lastSeen && box > 1) {
+                        var sessionsSinceSeen = state.sessionCount - (card.sessionWhenSeen || 0);
+                        if (sessionsSinceSeen < box && pool.length > count) {
+                            continue; // skip this item, enough others available
+                        }
+                    }
+
+                    var w = boxWeights[box];
+                    weighted.push({ item: item, weight: w, taskId: taskId });
+                    totalWeight += w;
+                }
+
+                // If we filtered too aggressively, include all
+                if (weighted.length < count) {
+                    weighted = [];
+                    totalWeight = 0;
+                    for (var j = 0; j < pool.length; j++) {
+                        var it = pool[j];
+                        var tid = it.id || (it.hours + ':' + it.minutes);
+                        var cd = state.cards[tid];
+                        var bx = cd ? cd.box : 1;
+                        var wt = boxWeights[bx];
+                        weighted.push({ item: it, weight: wt, taskId: tid });
+                        totalWeight += wt;
+                    }
+                }
+
+                // Weighted random sampling without replacement
+                var selected = [];
+                var remaining = weighted.slice();
+                var pick = Math.min(count, remaining.length);
+
+                for (var k = 0; k < pick; k++) {
+                    var rw = Math.random() * totalWeight;
+                    var cumulative = 0;
+                    var chosenIdx = 0;
+
+                    for (var m = 0; m < remaining.length; m++) {
+                        cumulative += remaining[m].weight;
+                        if (rw <= cumulative) {
+                            chosenIdx = m;
+                            break;
+                        }
+                    }
+
+                    selected.push(remaining[chosenIdx].item);
+                    totalWeight -= remaining[chosenIdx].weight;
+                    remaining.splice(chosenIdx, 1);
+                }
+
+                return shuffle(selected);
+            },
+
+            // Record that a session used a task (for spaced repetition timing)
+            markSeen: function(state, taskId) {
+                var card = state.cards[taskId] || { box: 1 };
+                card.sessionWhenSeen = state.sessionCount;
+                card.lastSeen = Date.now();
+                state.cards[taskId] = card;
+            },
+
+            // Get current mastery level based on card distribution
+            getMastery: function(state) {
+                var keys = Object.keys(state.cards);
+                if (keys.length === 0) return 0;
+                var sum = 0;
+                for (var i = 0; i < keys.length; i++) {
+                    sum += state.cards[keys[i]].box;
+                }
+                // Mastery from 0 to 100, where all cards in box 5 = 100
+                return Math.round((sum / (keys.length * 5)) * 100);
+            }
+        };
+        // ── Clock Module ──
+
+        var clockSession = {
+            tasks: [],
+            currentIndex: 0,
+            attempts: 0,
+            maxAttempts: 2,
+            results: [],
+            leitnerState: null
+        };
+
+        var encouragements = ['Well done!', 'Great job!', 'Fantastic!', 'Super!', "You're a star!"];
+
+        function normalizeTimeAnswer(input) {
+            var answer = input.trim().toLowerCase();
+            answer = answer.replace(/^it'?s\s+/i, '');
+            // Collapse multiple spaces to single space
+            answer = answer.replace(/\s+/g, ' ');
+            // Normalize o'clock variations: "oclock", "o clock", "o' clock"
+            answer = answer.replace(/o'?\s*clock/g, "o'clock");
+            // Normalize "quarter" without article to "a quarter"
+            if (/\bquarter\b/.test(answer) && !/\ba quarter\b/.test(answer)) {
+                answer = answer.replace(/\bquarter\b/, 'a quarter');
+            }
+            // Map digit-based hour answers to words
+            var digitMap = {
+                '1': 'one', '2': 'two', '3': 'three', '4': 'four',
+                '5': 'five', '6': 'six', '7': 'seven', '8': 'eight',
+                '9': 'nine', '10': 'ten', '11': 'eleven', '12': 'twelve'
+            };
+            // Replace standalone digits with words
+            answer = answer.replace(/\b(\d{1,2})\b/g, function(match) {
+                return digitMap[match] || match;
+            });
+            return answer;
+        }
+
+        function checkTimeAnswer(input, hours, minutes) {
+            var normalized = normalizeTimeAnswer(input);
+            var correct = timeToEnglish(hours, minutes).toLowerCase().replace(/^it'?s\s+/, '');
+            return normalized === correct;
+        }
+
+        function startClockSession() {
+            clockSession.leitnerState = LEITNER.load();
+            var level = clockSession.leitnerState.level || 1;
+            var pool = generateTimeTasks(level);
+            clockSession.tasks = LEITNER.pickTasks(clockSession.leitnerState, pool, 10);
+            clockSession.currentIndex = 0;
+            clockSession.attempts = 0;
+            clockSession.results = [];
+            clockSession.leitnerState.sessionCount = (clockSession.leitnerState.sessionCount || 0) + 1;
+            showClockQuestion();
+        }
+
+        function showClockQuestion() {
+            var task = clockSession.tasks[clockSession.currentIndex];
+            clockSession.attempts = 0;
+
+            // Update progress text
+            var progressEl = document.getElementById('clock-progress');
+            progressEl.textContent = 'Question ' + (clockSession.currentIndex + 1) + ' of ' + clockSession.tasks.length;
+
+            // Render clock SVG
+            var displayEl = document.getElementById('clock-display');
+            displayEl.innerHTML = createClockSVG(task.hours, task.minutes, 220);
+
+            // Reset input
+            var inputEl = document.getElementById('clock-input');
+            inputEl.value = '';
+            inputEl.disabled = false;
+            inputEl.style.borderColor = '';
+            inputEl.focus();
+
+            // Reset feedback
+            var feedbackEl = document.getElementById('clock-feedback');
+            feedbackEl.className = 'clock-feedback';
+            feedbackEl.textContent = '';
+
+            // Reset buttons
+            document.getElementById('clock-check-btn').style.display = 'block';
+            document.getElementById('clock-next-btn').style.display = 'none';
+        }
+
+        function generateClockHint(hours, minutes) {
+            var nearHour = hours;
+            if (minutes === 45) {
+                nearHour = (hours % 12) + 1;
+                return 'Look at the short hand — it\'s near the ' + nearHour + '!';
+            }
+            return 'Look at the short hand — it\'s near the ' + nearHour + '!';
+        }
+
+        function checkClockAnswer() {
+            var task = clockSession.tasks[clockSession.currentIndex];
+            var inputEl = document.getElementById('clock-input');
+            var feedbackEl = document.getElementById('clock-feedback');
+            var answer = inputEl.value;
+
+            if (!answer.trim()) {
+                inputEl.focus();
+                return;
+            }
+
+            clockSession.attempts++;
+
+            if (checkTimeAnswer(answer, task.hours, task.minutes)) {
+                // Correct
+                var taskId = task.hours + ':' + task.minutes;
+                LEITNER.promote(clockSession.leitnerState, taskId);
+                LEITNER.markSeen(clockSession.leitnerState, taskId);
+                LEITNER.save(clockSession.leitnerState);
+                clockSession.results.push({ task: task, correct: true });
+
+                feedbackEl.className = 'clock-feedback correct';
+                feedbackEl.textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+                inputEl.disabled = true;
+                inputEl.style.borderColor = 'var(--correct)';
+                document.getElementById('clock-check-btn').style.display = 'none';
+                document.getElementById('clock-next-btn').style.display = 'block';
+                showStarBurst(feedbackEl);
+            } else if (clockSession.attempts >= clockSession.maxAttempts) {
+                // Out of attempts — show correct answer
+                var taskId = task.hours + ':' + task.minutes;
+                LEITNER.demote(clockSession.leitnerState, taskId);
+                LEITNER.markSeen(clockSession.leitnerState, taskId);
+                LEITNER.save(clockSession.leitnerState);
+                clockSession.results.push({ task: task, correct: false });
+
+                var correctAnswer = timeToEnglish(task.hours, task.minutes);
+                feedbackEl.className = 'clock-feedback wrong';
+                feedbackEl.textContent = 'The answer is: ' + correctAnswer;
+                inputEl.disabled = true;
+                document.getElementById('clock-check-btn').style.display = 'none';
+                document.getElementById('clock-next-btn').style.display = 'block';
+            } else {
+                // Wrong — first attempt, show hint
+                feedbackEl.className = 'clock-feedback wrong';
+                feedbackEl.textContent = generateClockHint(task.hours, task.minutes) + ' Try again!';
+                inputEl.focus();
+                inputEl.select();
+            }
+        }
+
+        function nextClockQuestion() {
+            clockSession.currentIndex++;
+            if (clockSession.currentIndex >= clockSession.tasks.length) {
+                var results = [];
+                for (var i = 0; i < clockSession.results.length; i++) {
+                    var r = clockSession.results[i];
+                    results.push({ correct: r.correct, taskId: r.task.hours + ':' + r.task.minutes });
+                }
+                showSummary(results, 'clock');
+                return;
+            }
+            showClockQuestion();
+        }
+
+        // ── My Day Module ──
+
+        var myDaySession = {
+            template: null,
+            correctAnswers: [], // array of arrays (one per sentence, one per gap)
+            leitnerState: null
+        };
+
+        function generateTimeOptionsForRange(level, timeRange) {
+            var options = [];
+            var minH = timeRange[0];
+            var maxH = timeRange[1];
+            for (var h = minH; h <= maxH; h++) {
+                var displayH = h <= 12 ? h : h - 12;
+                if (displayH === 0) displayH = 12;
+                options.push({ hours: displayH, minutes: 0, label: timeToEnglish(displayH, 0).replace(/^It's /, '') });
+                if (level >= 2) {
+                    options.push({ hours: displayH, minutes: 30, label: timeToEnglish(displayH, 30).replace(/^It's /, '') });
+                }
+                if (level >= 3) {
+                    options.push({ hours: displayH, minutes: 15, label: timeToEnglish(displayH, 15).replace(/^It's /, '') });
+                    options.push({ hours: displayH, minutes: 45, label: timeToEnglish(displayH, 45).replace(/^It's /, '') });
+                }
+            }
+            return options;
+        }
+
+        function getActivitiesForTimeOfDay(tod) {
+            var matching = [];
+            var others = [];
+            for (var i = 0; i < activities.length; i++) {
+                if (activities[i].timeOfDay === tod) {
+                    matching.push(activities[i].en);
+                } else {
+                    others.push(activities[i].en);
+                }
+            }
+            return { matching: matching, others: others };
+        }
+
+        function startMyDaySession() {
+            myDaySession.leitnerState = LEITNER.load();
+            myDaySession.leitnerState.sessionCount++;
+            var level = myDaySession.leitnerState.level || 1;
+
+            // Pick a random template
+            var tplIndex = Math.floor(Math.random() * dayTemplates.length);
+            var template = dayTemplates[tplIndex];
+            myDaySession.template = template;
+            myDaySession.correctAnswers = [];
+
+            var container = document.getElementById('myday-sentences');
+            // Clear container using DOM methods
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+
+            // Track used activities to avoid repeats
+            var usedActivities = [];
+
+            for (var si = 0; si < template.sentences.length; si++) {
+                var sentence = template.sentences[si];
+                var sentenceCorrectAnswers = [];
+                var textParts = sentence.text.split(/(\{[^}]+\})/);
+
+                var sentenceDiv = document.createElement('div');
+                sentenceDiv.className = 'myday-sentence';
+                sentenceDiv.setAttribute('data-sentence-index', si);
+
+                var gapIndex = 0;
+
+                for (var pi = 0; pi < textParts.length; pi++) {
+                    var part = textParts[pi];
+
+                    if (part === '{weekday}') {
+                        // Weekday gap
+                        var correctWeekday = weekdays[Math.floor(Math.random() * weekdays.length)];
+                        sentenceCorrectAnswers.push(correctWeekday);
+
+                        var wrapper = document.createElement('span');
+                        wrapper.className = 'myday-gap-wrapper';
+                        var sel = document.createElement('select');
+                        sel.className = 'myday-select';
+                        sel.setAttribute('data-sentence', si);
+                        sel.setAttribute('data-gap', gapIndex);
+                        sel.setAttribute('data-type', 'weekday');
+
+                        var placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'choose...';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        sel.appendChild(placeholder);
+
+                        var shuffledDays = shuffle(weekdays);
+                        for (var d = 0; d < shuffledDays.length; d++) {
+                            var opt = document.createElement('option');
+                            opt.value = shuffledDays[d];
+                            opt.textContent = shuffledDays[d];
+                            sel.appendChild(opt);
+                        }
+                        wrapper.appendChild(sel);
+                        sentenceDiv.appendChild(wrapper);
+                        gapIndex++;
+
+                    } else if (part === '{time}') {
+                        // Time gap
+                        var constraints = sentence.constraints || {};
+                        var timeRange = constraints.timeRange || [1, 12];
+                        var timeOptions = generateTimeOptionsForRange(level, timeRange);
+
+                        // Pick a random correct time
+                        var correctTimeObj = timeOptions[Math.floor(Math.random() * timeOptions.length)];
+                        var correctTimeLabel = correctTimeObj.label;
+                        sentenceCorrectAnswers.push(correctTimeLabel);
+
+                        var wrapper = document.createElement('span');
+                        wrapper.className = 'myday-gap-wrapper';
+                        var sel = document.createElement('select');
+                        sel.className = 'myday-select';
+                        sel.setAttribute('data-sentence', si);
+                        sel.setAttribute('data-gap', gapIndex);
+                        sel.setAttribute('data-type', 'time');
+
+                        var placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'choose...';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        sel.appendChild(placeholder);
+
+                        var shuffledTimes = shuffle(timeOptions);
+                        for (var t = 0; t < shuffledTimes.length; t++) {
+                            var opt = document.createElement('option');
+                            opt.value = shuffledTimes[t].label;
+                            opt.textContent = shuffledTimes[t].label;
+                            sel.appendChild(opt);
+                        }
+                        wrapper.appendChild(sel);
+                        sentenceDiv.appendChild(wrapper);
+                        gapIndex++;
+
+                    } else if (part === '{activity}') {
+                        // Activity gap
+                        var constraints = sentence.constraints || {};
+                        var tod = constraints.timeOfDay || 'morning';
+                        var actData = getActivitiesForTimeOfDay(tod);
+
+                        // Filter out already used activities from matching
+                        var availableMatching = [];
+                        for (var am = 0; am < actData.matching.length; am++) {
+                            if (usedActivities.indexOf(actData.matching[am]) === -1) {
+                                availableMatching.push(actData.matching[am]);
+                            }
+                        }
+                        // If all matching are used, allow repeats
+                        if (availableMatching.length === 0) {
+                            availableMatching = actData.matching.slice();
+                        }
+
+                        var correctActivity = availableMatching[Math.floor(Math.random() * availableMatching.length)];
+                        usedActivities.push(correctActivity);
+                        sentenceCorrectAnswers.push(correctActivity);
+
+                        // Build options: all matching + 2-3 distractors
+                        var actOptions = actData.matching.slice();
+                        var shuffledOthers = shuffle(actData.others);
+                        var distractorCount = Math.min(3, shuffledOthers.length);
+                        for (var di = 0; di < distractorCount; di++) {
+                            actOptions.push(shuffledOthers[di]);
+                        }
+                        actOptions = shuffle(actOptions);
+
+                        var wrapper = document.createElement('span');
+                        wrapper.className = 'myday-gap-wrapper';
+                        var sel = document.createElement('select');
+                        sel.className = 'myday-select';
+                        sel.setAttribute('data-sentence', si);
+                        sel.setAttribute('data-gap', gapIndex);
+                        sel.setAttribute('data-type', 'activity');
+
+                        var placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'choose...';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        sel.appendChild(placeholder);
+
+                        for (var ai = 0; ai < actOptions.length; ai++) {
+                            var opt = document.createElement('option');
+                            opt.value = actOptions[ai];
+                            opt.textContent = actOptions[ai];
+                            sel.appendChild(opt);
+                        }
+                        wrapper.appendChild(sel);
+                        sentenceDiv.appendChild(wrapper);
+                        gapIndex++;
+
+                    } else {
+                        // Plain text
+                        if (part.length > 0) {
+                            var span = document.createElement('span');
+                            span.textContent = part;
+                            sentenceDiv.appendChild(span);
+                        }
+                    }
+                }
+
+                myDaySession.correctAnswers.push(sentenceCorrectAnswers);
+                container.appendChild(sentenceDiv);
+            }
+
+            // Reset UI
+            document.getElementById('myday-check-btn').style.display = 'block';
+            document.getElementById('myday-result').style.display = 'none';
+            document.getElementById('myday-actions').style.display = 'none';
+
+            showScreen('myday');
+        }
+
+        function checkMyDay() {
+            var template = myDaySession.template;
+            var totalCorrect = 0;
+            var totalGaps = 0;
+
+            var allSelects = document.querySelectorAll('#myday-sentences .myday-select');
+            for (var i = 0; i < allSelects.length; i++) {
+                var sel = allSelects[i];
+                var si = parseInt(sel.getAttribute('data-sentence'));
+                var gi = parseInt(sel.getAttribute('data-gap'));
+                var gapType = sel.getAttribute('data-type');
+                var userVal = sel.value;
+                var correctVal = myDaySession.correctAnswers[si][gi];
+
+                // Build taskId for Leitner
+                var taskId = template.name + '-s' + si + '-' + gapType;
+
+                totalGaps++;
+
+                // Remove old corrections
+                var wrapper = sel.parentNode;
+                var oldCorrection = wrapper.querySelector('.myday-correction');
+                if (oldCorrection) {
+                    wrapper.removeChild(oldCorrection);
+                }
+
+                // Weekday gaps: any weekday is correct (child can't guess the random answer)
+                var isCorrect = (gapType === 'weekday') ? (userVal !== '') : (userVal === correctVal);
+
+                if (isCorrect) {
+                    sel.className = 'myday-select correct';
+                    totalCorrect++;
+                    LEITNER.promote(myDaySession.leitnerState, taskId);
+                } else {
+                    sel.className = 'myday-select wrong';
+                    LEITNER.demote(myDaySession.leitnerState, taskId);
+
+                    var correction = document.createElement('span');
+                    correction.className = 'myday-correction';
+                    correction.textContent = correctVal;
+                    wrapper.appendChild(correction);
+                }
+                LEITNER.markSeen(myDaySession.leitnerState, taskId);
+                sel.disabled = true;
+            }
+
+            // Save Leitner state
+            LEITNER.save(myDaySession.leitnerState);
+
+            // Show result
+            var resultEl = document.getElementById('myday-result');
+            var scoreText = totalCorrect + ' / ' + totalGaps + ' correct';
+            var emoji = totalCorrect === totalGaps ? 'Perfect!' : (totalCorrect >= totalGaps / 2 ? 'Good job!' : 'Keep practising!');
+
+            var scoreDiv = document.createElement('div');
+            scoreDiv.className = 'result-score';
+            scoreDiv.textContent = scoreText;
+
+            var msgP = document.createElement('p');
+            msgP.textContent = emoji;
+
+            while (resultEl.firstChild) {
+                resultEl.removeChild(resultEl.firstChild);
+            }
+            resultEl.appendChild(scoreDiv);
+            resultEl.appendChild(msgP);
+            resultEl.style.display = 'block';
+
+            // Hide check button, show actions
+            document.getElementById('myday-check-btn').style.display = 'none';
+            document.getElementById('myday-actions').style.display = 'flex';
+
+            // Update progress on home screen
+            var mastery = LEITNER.getMastery(myDaySession.leitnerState);
+            updateProgress(mastery);
+            updateStars(Math.floor(mastery / 20));
+        }
+
+        // ── Quiz Module ──
+
+        var quizSession = {
+            tasks: [],
+            allTasks: [],
+            currentIndex: 0,
+            results: [],
+            leitnerState: null,
+            autoAdvanceTimer: null
+        };
+
+        var quizEncouragements = ['Well done!', 'Great job!', 'Fantastic!', 'Super!', "You're a star!", 'Amazing!', 'Brilliant!'];
+
+        function pickDistractors(task, allTasks, count) {
+            if (count === undefined) count = 3;
+            var distractors = [];
+            var used = {};
+            var taskKey = task.hours + ':' + task.minutes;
+            used[taskKey] = true;
+
+            // First try: same hour, different minutes
+            for (var i = 0; i < allTasks.length; i++) {
+                var t = allTasks[i];
+                var key = t.hours + ':' + t.minutes;
+                if (used[key]) continue;
+                if (t.hours === task.hours && t.minutes !== task.minutes) {
+                    distractors.push(t);
+                    used[key] = true;
+                    if (distractors.length >= count) return distractors;
+                }
+            }
+
+            // Fill remaining: same minutes, different hour
+            for (var i = 0; i < allTasks.length; i++) {
+                var t = allTasks[i];
+                var key = t.hours + ':' + t.minutes;
+                if (used[key]) continue;
+                if (t.minutes === task.minutes && t.hours !== task.hours) {
+                    distractors.push(t);
+                    used[key] = true;
+                    if (distractors.length >= count) return distractors;
+                }
+            }
+
+            // Fill remaining: random from pool
+            var shuffled = shuffle(allTasks);
+            for (var i = 0; i < shuffled.length; i++) {
+                var t = shuffled[i];
+                var key = t.hours + ':' + t.minutes;
+                if (used[key]) continue;
+                distractors.push(t);
+                used[key] = true;
+                if (distractors.length >= count) return distractors;
+            }
+
+            return distractors;
+        }
+
+        function generateQuizQuestion(task, allTasks) {
+            var isTypeA = Math.random() < 0.5; // Type A = clock-to-text, Type B = text-to-clock
+            var distractorTasks = pickDistractors(task, allTasks, 3);
+
+            var questionArea = document.getElementById('quiz-question-area');
+            var optionsArea = document.getElementById('quiz-options');
+
+            // Clear areas
+            while (questionArea.firstChild) questionArea.removeChild(questionArea.firstChild);
+            while (optionsArea.firstChild) optionsArea.removeChild(optionsArea.firstChild);
+
+            if (isTypeA) {
+                // Type A: Show clock, answer with text
+                questionArea.innerHTML = createClockSVG(task.hours, task.minutes, 200);
+                optionsArea.className = 'quiz-options text-options';
+
+                var correctText = timeToEnglish(task.hours, task.minutes);
+                var options = [{ text: correctText, correct: true }];
+                for (var i = 0; i < distractorTasks.length; i++) {
+                    options.push({ text: timeToEnglish(distractorTasks[i].hours, distractorTasks[i].minutes), correct: false });
+                }
+                options = shuffle(options);
+
+                for (var i = 0; i < options.length; i++) {
+                    var btn = document.createElement('button');
+                    btn.className = 'quiz-option-btn';
+                    btn.textContent = options[i].text;
+                    btn.setAttribute('data-correct', options[i].correct ? 'true' : 'false');
+                    btn.setAttribute('data-answer', options[i].text);
+                    btn.addEventListener('click', handleQuizAnswer);
+                    optionsArea.appendChild(btn);
+                }
+            } else {
+                // Type B: Show text, answer with clocks
+                var textDiv = document.createElement('div');
+                textDiv.className = 'quiz-question-text';
+                textDiv.textContent = timeToEnglish(task.hours, task.minutes);
+                questionArea.appendChild(textDiv);
+                optionsArea.className = 'quiz-options clock-options';
+
+                var options = [{ task: task, correct: true }];
+                for (var i = 0; i < distractorTasks.length; i++) {
+                    options.push({ task: distractorTasks[i], correct: false });
+                }
+                options = shuffle(options);
+
+                for (var i = 0; i < options.length; i++) {
+                    var btn = document.createElement('button');
+                    btn.className = 'quiz-option-btn quiz-clock-option';
+                    btn.innerHTML = createClockSVG(options[i].task.hours, options[i].task.minutes, 120);
+                    btn.setAttribute('data-correct', options[i].correct ? 'true' : 'false');
+                    btn.setAttribute('data-hours', options[i].task.hours);
+                    btn.setAttribute('data-minutes', options[i].task.minutes);
+                    btn.addEventListener('click', handleQuizAnswer);
+                    optionsArea.appendChild(btn);
+                }
+            }
+        }
+
+        function handleQuizAnswer(e) {
+            var clickedBtn = e.currentTarget;
+            var isCorrect = clickedBtn.getAttribute('data-correct') === 'true';
+            var task = quizSession.tasks[quizSession.currentIndex];
+            var taskId = task.hours + ':' + task.minutes;
+
+            // Disable all buttons
+            var allBtns = document.querySelectorAll('#quiz-options .quiz-option-btn');
+            for (var i = 0; i < allBtns.length; i++) {
+                allBtns[i].disabled = true;
+                allBtns[i].removeEventListener('click', handleQuizAnswer);
+            }
+
+            var feedbackEl = document.getElementById('quiz-feedback');
+
+            if (isCorrect) {
+                clickedBtn.classList.add('correct');
+                feedbackEl.className = 'quiz-feedback correct-msg';
+                feedbackEl.textContent = quizEncouragements[Math.floor(Math.random() * quizEncouragements.length)];
+                LEITNER.promote(quizSession.leitnerState, taskId);
+                quizSession.results.push({ task: task, correct: true });
+                showStarBurst(clickedBtn);
+            } else {
+                clickedBtn.classList.add('wrong');
+                feedbackEl.className = 'quiz-feedback wrong-msg';
+                feedbackEl.textContent = 'The correct answer is: ' + timeToEnglish(task.hours, task.minutes);
+                LEITNER.demote(quizSession.leitnerState, taskId);
+                quizSession.results.push({ task: task, correct: false });
+
+                // Reveal the correct button
+                for (var i = 0; i < allBtns.length; i++) {
+                    if (allBtns[i].getAttribute('data-correct') === 'true') {
+                        allBtns[i].classList.add('reveal');
+                    }
+                }
+            }
+
+            LEITNER.markSeen(quizSession.leitnerState, taskId);
+            LEITNER.save(quizSession.leitnerState);
+
+            // Auto-advance after 1.5s
+            quizSession.autoAdvanceTimer = setTimeout(function() {
+                quizSession.autoAdvanceTimer = null;
+                nextQuizQuestion();
+            }, 1500);
+        }
+
+        function nextQuizQuestion() {
+            // Clear any pending auto-advance
+            if (quizSession.autoAdvanceTimer) {
+                clearTimeout(quizSession.autoAdvanceTimer);
+                quizSession.autoAdvanceTimer = null;
+            }
+
+            quizSession.currentIndex++;
+            if (quizSession.currentIndex >= quizSession.tasks.length) {
+                var results = [];
+                for (var i = 0; i < quizSession.results.length; i++) {
+                    var r = quizSession.results[i];
+                    results.push({ correct: r.correct, taskId: r.task.hours + ':' + r.task.minutes });
+                }
+                showSummary(results, 'quiz');
+                return;
+            }
+            showQuizQuestion();
+        }
+
+        function showQuizQuestion() {
+            var task = quizSession.tasks[quizSession.currentIndex];
+
+            // Update progress text
+            var progressEl = document.getElementById('quiz-progress');
+            progressEl.textContent = 'Question ' + (quizSession.currentIndex + 1) + ' of ' + quizSession.tasks.length;
+
+            // Clear feedback
+            var feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.className = 'quiz-feedback';
+            feedbackEl.textContent = '';
+
+            // Generate the question
+            generateQuizQuestion(task, quizSession.allTasks);
+        }
+
+        function startQuizSession() {
+            quizSession.leitnerState = LEITNER.load();
+            var level = quizSession.leitnerState.level || 1;
+            var pool = generateTimeTasks(level);
+            quizSession.allTasks = pool;
+            quizSession.tasks = LEITNER.pickTasks(quizSession.leitnerState, pool, 10);
+            quizSession.currentIndex = 0;
+            quizSession.results = [];
+            quizSession.leitnerState.sessionCount = (quizSession.leitnerState.sessionCount || 0) + 1;
+
+            // Clear any pending timer from previous session
+            if (quizSession.autoAdvanceTimer) {
+                clearTimeout(quizSession.autoAdvanceTimer);
+                quizSession.autoAdvanceTimer = null;
+            }
+
+            showScreen('quiz');
+            showQuizQuestion();
+        }
+
+        // ── Summary Screen ──
+
+        var motivationalMessages = [
+            'Great job! You\'re becoming a time expert!',
+            'Wonderful! Keep it up!',
+            'Amazing progress!',
+            'You\'re a star!',
+            'Brilliant work!',
+            'Fantastic effort!',
+            'You did so well!',
+            'Keep shining!'
+        ];
+
+        function createTrophySVG() {
+            return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M30 20 h40 v5 l-5 30 h-30 l-5-30 z" fill="#FFD700" stroke="#DAA520" stroke-width="2"/>' +
+                '<path d="M25 20 c-10 0 -15 10 -10 25 c3 8 10 10 15 8" fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="round"/>' +
+                '<path d="M75 20 c10 0 15 10 10 25 c-3 8 -10 10 -15 8" fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="round"/>' +
+                '<rect x="42" y="55" width="16" height="12" rx="2" fill="#DAA520"/>' +
+                '<rect x="35" y="67" width="30" height="6" rx="3" fill="#DAA520"/>' +
+                '<polygon points="50,28 53,37 62,37 55,42 57,51 50,46 43,51 45,42 38,37 47,37" fill="white" opacity="0.6"/>' +
+                '</svg>';
+        }
+
+        function showSummary(results, mode) {
+            var leitnerState = LEITNER.load();
+            var correctCount = 0;
+            var totalCount = results.length;
+            var promotions = 0;
+
+            for (var i = 0; i < results.length; i++) {
+                if (results[i].correct) {
+                    correctCount++;
+                }
+                // Count promotions (cards that moved up)
+                var card = leitnerState.cards[results[i].taskId];
+                if (card && card.box > 1 && results[i].correct) {
+                    promotions++;
+                }
+            }
+
+            // Check streak for level up
+            var streak = 0;
+            var maxStreak = 0;
+            for (var i = 0; i < results.length; i++) {
+                if (results[i].correct) {
+                    streak++;
+                    if (streak > maxStreak) maxStreak = streak;
+                } else {
+                    streak = 0;
+                }
+            }
+
+            var wrongCount = totalCount - correctCount;
+            var oldLevel = leitnerState.level || 1;
+            var newLevel = oldLevel;
+
+            // Level up: streak >= 8 (takes priority)
+            if (maxStreak >= 8 && oldLevel < 3) {
+                newLevel = oldLevel + 1;
+            } else if (wrongCount >= 5 && oldLevel > 1) {
+                // Level down: >= 5 wrong out of 10
+                newLevel = oldLevel - 1;
+            }
+
+            if (newLevel !== oldLevel) {
+                leitnerState.level = newLevel;
+                LEITNER.save(leitnerState);
+            }
+
+            // Update progress on home screen
+            var mastery = LEITNER.getMastery(leitnerState);
+            updateProgress(mastery);
+            updateStars(Math.floor(mastery / 20));
+
+            // Render trophy
+            var trophyEl = document.getElementById('summary-trophy');
+            trophyEl.innerHTML = createTrophySVG();
+
+            // Render score
+            var scoreEl = document.getElementById('summary-score');
+            scoreEl.textContent = 'Du hast ' + correctCount + ' von ' + totalCount + ' richtig!';
+
+            // Render dots
+            var dotsEl = document.getElementById('summary-dots');
+            while (dotsEl.firstChild) dotsEl.removeChild(dotsEl.firstChild);
+            for (var i = 0; i < results.length; i++) {
+                var dot = document.createElement('span');
+                dot.className = 'dot ' + (results[i].correct ? 'correct' : 'wrong');
+                dotsEl.appendChild(dot);
+            }
+
+            // Render promotions
+            var promoEl = document.getElementById('summary-promotions');
+            if (promotions > 0) {
+                promoEl.textContent = '\u2B06 ' + promotions + ' Aufgaben aufgestiegen!';
+                promoEl.className = 'summary-promotions visible';
+            } else {
+                promoEl.className = 'summary-promotions';
+            }
+
+            // Motivational message
+            var msgEl = document.getElementById('summary-message');
+            msgEl.textContent = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+
+            // Level change
+            var levelEl = document.getElementById('summary-level');
+            if (newLevel > oldLevel) {
+                levelEl.textContent = 'Level Up! Du bist jetzt auf Level ' + newLevel + '!';
+                levelEl.className = 'summary-level visible level-up';
+            } else if (newLevel < oldLevel) {
+                levelEl.textContent = 'Level ' + newLevel + ' \u2014 weiter \u00FCben, du schaffst das!';
+                levelEl.className = 'summary-level visible level-down';
+            } else {
+                levelEl.className = 'summary-level';
+            }
+
+            // Action buttons
+            var actionsEl = document.getElementById('summary-actions');
+            while (actionsEl.firstChild) actionsEl.removeChild(actionsEl.firstChild);
+
+            var replayBtn = document.createElement('button');
+            replayBtn.className = 'btn-replay';
+            replayBtn.textContent = 'Nochmal spielen';
+            replayBtn.addEventListener('click', function() {
+                if (mode === 'clock') { startClockSession(); showScreen('clock'); }
+                else if (mode === 'quiz') { startQuizSession(); }
+                else if (mode === 'myday') { startMyDaySession(); }
+                else if (mode === 'mix') { startMixSession(); }
+            });
+            actionsEl.appendChild(replayBtn);
+
+            var menuBtn = document.createElement('button');
+            menuBtn.className = 'btn-menu';
+            menuBtn.textContent = 'Zur\u00FCck zum Men\u00FC';
+            menuBtn.addEventListener('click', function() {
+                showScreen('home');
+            });
+            actionsEl.appendChild(menuBtn);
+
+            showScreen('summary');
+
+            // Trigger confetti celebration only for good scores (>= 50%)
+            if (correctCount >= Math.ceil(results.length / 2)) {
+                showConfetti();
+            }
+
+            // Add happy mascot to summary screen
+            var existingMascot = document.getElementById('summary-mascot');
+            if (existingMascot) existingMascot.parentNode.removeChild(existingMascot);
+            var mascotDiv = document.createElement('div');
+            mascotDiv.id = 'summary-mascot';
+            mascotDiv.className = 'mascot-container';
+            mascotDiv.innerHTML = createHappyMascotSVG();
+            var summaryScreen = document.getElementById('screen-summary');
+            var summaryActions = document.getElementById('summary-actions');
+            summaryScreen.insertBefore(mascotDiv, summaryActions);
+        }
+
+        // ── Mix Module ──
+
+        var mixSession = {
+            tasks: [],       // array of { type: 'clock'|'quiz'|'myday', data: ... }
+            currentIndex: 0,
+            results: [],
+            leitnerState: null,
+            autoAdvanceTimer: null
+        };
+
+        function startMixSession() {
+            mixSession.leitnerState = LEITNER.load();
+            var level = mixSession.leitnerState.level || 1;
+            mixSession.leitnerState.sessionCount = (mixSession.leitnerState.sessionCount || 0) + 1;
+            mixSession.currentIndex = 0;
+            mixSession.results = [];
+
+            if (mixSession.autoAdvanceTimer) {
+                clearTimeout(mixSession.autoAdvanceTimer);
+                mixSession.autoAdvanceTimer = null;
+            }
+
+            // Generate pool of time tasks
+            var pool = generateTimeTasks(level);
+            var allTimeTasks = pool;
+
+            // Pick ~4 clock tasks
+            var clockPicked = LEITNER.pickTasks(mixSession.leitnerState, pool, 4);
+            // Pick ~4 quiz tasks (different ones if possible)
+            var quizPicked = LEITNER.pickTasks(mixSession.leitnerState, pool, 4);
+
+            var tasks = [];
+            for (var i = 0; i < clockPicked.length; i++) {
+                tasks.push({ type: 'clock', data: clockPicked[i] });
+            }
+            for (var i = 0; i < quizPicked.length; i++) {
+                tasks.push({ type: 'quiz', data: quizPicked[i], allTasks: allTimeTasks });
+            }
+            // ~2 my-day tasks
+            tasks.push({ type: 'myday', data: { templateName: 'short-day' } });
+            tasks.push({ type: 'myday', data: { templateName: 'short-day' } });
+
+            mixSession.tasks = shuffle(tasks);
+
+            showScreen('mix');
+            showMixTask();
+        }
+
+        function showMixTask() {
+            if (mixSession.currentIndex >= mixSession.tasks.length) {
+                showSummary(mixSession.results, 'mix');
+                return;
+            }
+
+            var task = mixSession.tasks[mixSession.currentIndex];
+            var progressEl = document.getElementById('mix-progress');
+            progressEl.textContent = 'Task ' + (mixSession.currentIndex + 1) + ' of ' + mixSession.tasks.length;
+
+            var labelEl = document.getElementById('mix-task-label');
+            var container = document.getElementById('mix-container');
+            while (container.firstChild) container.removeChild(container.firstChild);
+
+            if (task.type === 'clock') {
+                labelEl.textContent = 'What time is it?';
+                renderMixClockTask(container, task.data);
+            } else if (task.type === 'quiz') {
+                labelEl.textContent = 'Time Quiz';
+                renderMixQuizTask(container, task.data, task.allTasks);
+            } else if (task.type === 'myday') {
+                labelEl.textContent = 'My Day';
+                renderMixMyDayTask(container);
+            }
+        }
+
+        function advanceMixTask() {
+            mixSession.currentIndex++;
+            showMixTask();
+        }
+
+        // ── Mix: Clock Task ──
+        function renderMixClockTask(container, task) {
+            var clockDiv = document.createElement('div');
+            clockDiv.className = 'clock-display';
+            clockDiv.innerHTML = createClockSVG(task.hours, task.minutes, 200);
+            container.appendChild(clockDiv);
+
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'clock-input';
+            input.placeholder = "It's ...";
+            input.autocomplete = 'off';
+            input.autocapitalize = 'off';
+            input.spellcheck = false;
+            container.appendChild(input);
+
+            var checkBtn = document.createElement('button');
+            checkBtn.className = 'clock-check-btn';
+            checkBtn.textContent = 'Check';
+            container.appendChild(checkBtn);
+
+            var feedback = document.createElement('div');
+            feedback.className = 'clock-feedback';
+            container.appendChild(feedback);
+
+            var nextBtn = document.createElement('button');
+            nextBtn.className = 'clock-next-btn';
+            nextBtn.textContent = 'Next';
+            nextBtn.style.display = 'none';
+            container.appendChild(nextBtn);
+
+            var attempts = 0;
+            var maxAttempts = 2;
+
+            checkBtn.addEventListener('click', function() {
+                var answer = input.value;
+                if (!answer.trim()) { input.focus(); return; }
+                attempts++;
+
+                var taskId = task.hours + ':' + task.minutes;
+                if (checkTimeAnswer(answer, task.hours, task.minutes)) {
+                    LEITNER.promote(mixSession.leitnerState, taskId);
+                    LEITNER.markSeen(mixSession.leitnerState, taskId);
+                    LEITNER.save(mixSession.leitnerState);
+                    mixSession.results.push({ correct: true, taskId: taskId });
+                    feedback.className = 'clock-feedback correct';
+                    feedback.textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+                    input.disabled = true;
+                    input.style.borderColor = 'var(--correct)';
+                    checkBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    showStarBurst(feedback);
+                } else if (attempts >= maxAttempts) {
+                    LEITNER.demote(mixSession.leitnerState, taskId);
+                    LEITNER.markSeen(mixSession.leitnerState, taskId);
+                    LEITNER.save(mixSession.leitnerState);
+                    mixSession.results.push({ correct: false, taskId: taskId });
+                    feedback.className = 'clock-feedback wrong';
+                    feedback.textContent = 'The answer is: ' + timeToEnglish(task.hours, task.minutes);
+                    input.disabled = true;
+                    checkBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                } else {
+                    feedback.className = 'clock-feedback wrong';
+                    feedback.textContent = generateClockHint(task.hours, task.minutes) + ' Try again!';
+                    input.focus();
+                    input.select();
+                }
+            });
+
+            nextBtn.addEventListener('click', function() {
+                advanceMixTask();
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if (nextBtn.style.display !== 'none') {
+                        advanceMixTask();
+                    } else {
+                        checkBtn.click();
+                    }
+                }
+            });
+
+            input.focus();
+        }
+
+        // ── Mix: Quiz Task ──
+        function renderMixQuizTask(container, task, allTasks) {
+            var isTypeA = Math.random() < 0.5;
+            var distractorTasks = pickDistractors(task, allTasks, 3);
+
+            var questionArea = document.createElement('div');
+            questionArea.className = 'quiz-question-area';
+            container.appendChild(questionArea);
+
+            var optionsArea = document.createElement('div');
+            container.appendChild(optionsArea);
+
+            var feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'quiz-feedback';
+            container.appendChild(feedbackDiv);
+
+            if (isTypeA) {
+                questionArea.innerHTML = createClockSVG(task.hours, task.minutes, 200);
+                optionsArea.className = 'quiz-options text-options';
+
+                var correctText = timeToEnglish(task.hours, task.minutes);
+                var options = [{ text: correctText, correct: true }];
+                for (var i = 0; i < distractorTasks.length; i++) {
+                    options.push({ text: timeToEnglish(distractorTasks[i].hours, distractorTasks[i].minutes), correct: false });
+                }
+                options = shuffle(options);
+
+                for (var i = 0; i < options.length; i++) {
+                    var btn = document.createElement('button');
+                    btn.className = 'quiz-option-btn';
+                    btn.textContent = options[i].text;
+                    btn.setAttribute('data-correct', options[i].correct ? 'true' : 'false');
+                    btn.addEventListener('click', createMixQuizHandler(task, feedbackDiv, optionsArea));
+                    optionsArea.appendChild(btn);
+                }
+            } else {
+                var textDiv = document.createElement('div');
+                textDiv.className = 'quiz-question-text';
+                textDiv.textContent = timeToEnglish(task.hours, task.minutes);
+                questionArea.appendChild(textDiv);
+                optionsArea.className = 'quiz-options clock-options';
+
+                var options = [{ task: task, correct: true }];
+                for (var i = 0; i < distractorTasks.length; i++) {
+                    options.push({ task: distractorTasks[i], correct: false });
+                }
+                options = shuffle(options);
+
+                for (var i = 0; i < options.length; i++) {
+                    var btn = document.createElement('button');
+                    btn.className = 'quiz-option-btn quiz-clock-option';
+                    btn.innerHTML = createClockSVG(options[i].task.hours, options[i].task.minutes, 120);
+                    btn.setAttribute('data-correct', options[i].correct ? 'true' : 'false');
+                    btn.addEventListener('click', createMixQuizHandler(task, feedbackDiv, optionsArea));
+                    optionsArea.appendChild(btn);
+                }
+            }
+        }
+
+        function createMixQuizHandler(task, feedbackDiv, optionsArea) {
+            return function(e) {
+                var clickedBtn = e.currentTarget;
+                var isCorrect = clickedBtn.getAttribute('data-correct') === 'true';
+                var taskId = task.hours + ':' + task.minutes;
+
+                var allBtns = optionsArea.querySelectorAll('.quiz-option-btn');
+                for (var i = 0; i < allBtns.length; i++) {
+                    allBtns[i].disabled = true;
+                }
+
+                if (isCorrect) {
+                    clickedBtn.classList.add('correct');
+                    feedbackDiv.className = 'quiz-feedback correct-msg';
+                    feedbackDiv.textContent = quizEncouragements[Math.floor(Math.random() * quizEncouragements.length)];
+                    LEITNER.promote(mixSession.leitnerState, taskId);
+                    mixSession.results.push({ correct: true, taskId: taskId });
+                    showStarBurst(clickedBtn);
+                } else {
+                    clickedBtn.classList.add('wrong');
+                    feedbackDiv.className = 'quiz-feedback wrong-msg';
+                    feedbackDiv.textContent = 'The correct answer is: ' + timeToEnglish(task.hours, task.minutes);
+                    LEITNER.demote(mixSession.leitnerState, taskId);
+                    mixSession.results.push({ correct: false, taskId: taskId });
+
+                    for (var i = 0; i < allBtns.length; i++) {
+                        if (allBtns[i].getAttribute('data-correct') === 'true') {
+                            allBtns[i].classList.add('reveal');
+                        }
+                    }
+                }
+
+                LEITNER.markSeen(mixSession.leitnerState, taskId);
+                LEITNER.save(mixSession.leitnerState);
+
+                mixSession.autoAdvanceTimer = setTimeout(function() {
+                    mixSession.autoAdvanceTimer = null;
+                    advanceMixTask();
+                }, 1500);
+            };
+        }
+
+        // ── Mix: My Day Task ──
+        function renderMixMyDayTask(container) {
+            var level = mixSession.leitnerState.level || 1;
+
+            // Find the short-day template
+            var template = null;
+            for (var t = 0; t < dayTemplates.length; t++) {
+                if (dayTemplates[t].name === 'short-day') {
+                    template = dayTemplates[t];
+                    break;
+                }
+            }
+            if (!template) template = dayTemplates[0];
+
+            var correctAnswers = [];
+            var usedActivities = [];
+
+            var sentencesDiv = document.createElement('div');
+            sentencesDiv.className = 'myday-sentences-container';
+
+            for (var si = 0; si < template.sentences.length; si++) {
+                var sentence = template.sentences[si];
+                var sentenceCorrectAnswers = [];
+                var textParts = sentence.text.split(/(\{[^}]+\})/);
+
+                var sentenceDiv = document.createElement('div');
+                sentenceDiv.className = 'myday-sentence';
+                sentenceDiv.setAttribute('data-sentence-index', si);
+
+                var gapIndex = 0;
+
+                for (var pi = 0; pi < textParts.length; pi++) {
+                    var part = textParts[pi];
+
+                    if (part === '{weekday}') {
+                        var correctWeekday = weekdays[Math.floor(Math.random() * weekdays.length)];
+                        sentenceCorrectAnswers.push(correctWeekday);
+
+                        var wrapper = document.createElement('span');
+                        wrapper.className = 'myday-gap-wrapper';
+                        var sel = document.createElement('select');
+                        sel.className = 'myday-select';
+                        sel.setAttribute('data-sentence', si);
+                        sel.setAttribute('data-gap', gapIndex);
+                        sel.setAttribute('data-type', 'weekday');
+
+                        var placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'choose...';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        sel.appendChild(placeholder);
+
+                        var shuffledDays = shuffle(weekdays);
+                        for (var d = 0; d < shuffledDays.length; d++) {
+                            var opt = document.createElement('option');
+                            opt.value = shuffledDays[d];
+                            opt.textContent = shuffledDays[d];
+                            sel.appendChild(opt);
+                        }
+                        wrapper.appendChild(sel);
+                        sentenceDiv.appendChild(wrapper);
+                        gapIndex++;
+
+                    } else if (part === '{time}') {
+                        var constraints = sentence.constraints || {};
+                        var timeRange = constraints.timeRange || [1, 12];
+                        var timeOptions = generateTimeOptionsForRange(level, timeRange);
+                        var correctTimeObj = timeOptions[Math.floor(Math.random() * timeOptions.length)];
+                        sentenceCorrectAnswers.push(correctTimeObj.label);
+
+                        var wrapper = document.createElement('span');
+                        wrapper.className = 'myday-gap-wrapper';
+                        var sel = document.createElement('select');
+                        sel.className = 'myday-select';
+                        sel.setAttribute('data-sentence', si);
+                        sel.setAttribute('data-gap', gapIndex);
+                        sel.setAttribute('data-type', 'time');
+
+                        var placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'choose...';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        sel.appendChild(placeholder);
+
+                        var shuffledTimes = shuffle(timeOptions);
+                        for (var ti = 0; ti < shuffledTimes.length; ti++) {
+                            var opt = document.createElement('option');
+                            opt.value = shuffledTimes[ti].label;
+                            opt.textContent = shuffledTimes[ti].label;
+                            sel.appendChild(opt);
+                        }
+                        wrapper.appendChild(sel);
+                        sentenceDiv.appendChild(wrapper);
+                        gapIndex++;
+
+                    } else if (part === '{activity}') {
+                        var constraints = sentence.constraints || {};
+                        var tod = constraints.timeOfDay || 'morning';
+                        var actData = getActivitiesForTimeOfDay(tod);
+
+                        var availableMatching = [];
+                        for (var am = 0; am < actData.matching.length; am++) {
+                            if (usedActivities.indexOf(actData.matching[am]) === -1) {
+                                availableMatching.push(actData.matching[am]);
+                            }
+                        }
+                        if (availableMatching.length === 0) availableMatching = actData.matching.slice();
+
+                        var correctActivity = availableMatching[Math.floor(Math.random() * availableMatching.length)];
+                        usedActivities.push(correctActivity);
+                        sentenceCorrectAnswers.push(correctActivity);
+
+                        var actOptions = actData.matching.slice();
+                        var shuffledOthers = shuffle(actData.others);
+                        var distractorCount = Math.min(3, shuffledOthers.length);
+                        for (var di = 0; di < distractorCount; di++) {
+                            actOptions.push(shuffledOthers[di]);
+                        }
+                        actOptions = shuffle(actOptions);
+
+                        var wrapper = document.createElement('span');
+                        wrapper.className = 'myday-gap-wrapper';
+                        var sel = document.createElement('select');
+                        sel.className = 'myday-select';
+                        sel.setAttribute('data-sentence', si);
+                        sel.setAttribute('data-gap', gapIndex);
+                        sel.setAttribute('data-type', 'activity');
+
+                        var placeholder = document.createElement('option');
+                        placeholder.value = '';
+                        placeholder.textContent = 'choose...';
+                        placeholder.disabled = true;
+                        placeholder.selected = true;
+                        sel.appendChild(placeholder);
+
+                        for (var ai = 0; ai < actOptions.length; ai++) {
+                            var opt = document.createElement('option');
+                            opt.value = actOptions[ai];
+                            opt.textContent = actOptions[ai];
+                            sel.appendChild(opt);
+                        }
+                        wrapper.appendChild(sel);
+                        sentenceDiv.appendChild(wrapper);
+                        gapIndex++;
+
+                    } else if (part.length > 0) {
+                        var span = document.createElement('span');
+                        span.textContent = part;
+                        sentenceDiv.appendChild(span);
+                    }
+                }
+
+                correctAnswers.push(sentenceCorrectAnswers);
+                sentencesDiv.appendChild(sentenceDiv);
+            }
+
+            container.appendChild(sentencesDiv);
+
+            // Check button
+            var checkBtn = document.createElement('button');
+            checkBtn.className = 'myday-check-btn';
+            checkBtn.textContent = 'Check my day!';
+            container.appendChild(checkBtn);
+
+            var resultDiv = document.createElement('div');
+            resultDiv.className = 'myday-result';
+            resultDiv.style.display = 'none';
+            container.appendChild(resultDiv);
+
+            var nextBtn = document.createElement('button');
+            nextBtn.className = 'clock-next-btn';
+            nextBtn.textContent = 'Next';
+            nextBtn.style.display = 'none';
+            container.appendChild(nextBtn);
+
+            checkBtn.addEventListener('click', function() {
+                var totalCorrect = 0;
+                var totalGaps = 0;
+                var allSelects = sentencesDiv.querySelectorAll('.myday-select');
+
+                for (var i = 0; i < allSelects.length; i++) {
+                    var sel = allSelects[i];
+                    var si2 = parseInt(sel.getAttribute('data-sentence'));
+                    var gi = parseInt(sel.getAttribute('data-gap'));
+                    var gapType = sel.getAttribute('data-type');
+                    var userVal = sel.value;
+                    var correctVal = correctAnswers[si2][gi];
+                    var taskId = 'mix-myday-s' + si2 + '-' + gapType;
+
+                    totalGaps++;
+
+                    var wrapper = sel.parentNode;
+                    var oldCorrection = wrapper.querySelector('.myday-correction');
+                    if (oldCorrection) wrapper.removeChild(oldCorrection);
+
+                    if (userVal === correctVal) {
+                        sel.className = 'myday-select correct';
+                        totalCorrect++;
+                        LEITNER.promote(mixSession.leitnerState, taskId);
+                    } else {
+                        sel.className = 'myday-select wrong';
+                        LEITNER.demote(mixSession.leitnerState, taskId);
+
+                        var correction = document.createElement('span');
+                        correction.className = 'myday-correction';
+                        correction.textContent = correctVal;
+                        wrapper.appendChild(correction);
+                    }
+                    LEITNER.markSeen(mixSession.leitnerState, taskId);
+                    sel.disabled = true;
+                }
+
+                LEITNER.save(mixSession.leitnerState);
+
+                // Count as one task result: correct if majority right
+                var isCorrect = totalCorrect >= Math.ceil(totalGaps / 2);
+                mixSession.results.push({ correct: isCorrect, taskId: 'mix-myday-' + mixSession.currentIndex });
+
+                var scoreDiv = document.createElement('div');
+                scoreDiv.className = 'result-score';
+                scoreDiv.textContent = totalCorrect + ' / ' + totalGaps + ' correct';
+                var msgP = document.createElement('p');
+                msgP.textContent = totalCorrect === totalGaps ? 'Perfect!' : (totalCorrect >= totalGaps / 2 ? 'Good job!' : 'Keep practising!');
+
+                while (resultDiv.firstChild) resultDiv.removeChild(resultDiv.firstChild);
+                resultDiv.appendChild(scoreDiv);
+                resultDiv.appendChild(msgP);
+                resultDiv.style.display = 'block';
+
+                checkBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+            });
+
+            nextBtn.addEventListener('click', function() {
+                advanceMixTask();
+            });
+        }
+
+        // ── Star Burst Animation ──
+        function showStarBurst(element) {
+            if (!element) return;
+            var rect = element.getBoundingClientRect();
+            var cx = rect.left + rect.width / 2;
+            var cy = rect.top + rect.height / 2;
+            var count = 6;
+
+            for (var i = 0; i < count; i++) {
+                var star = document.createElement('span');
+                star.className = 'star-burst-particle';
+                star.textContent = '\u2605';
+                var angle = (i / count) * 2 * Math.PI;
+                var dist = 20 + Math.random() * 25;
+                var x = cx + Math.cos(angle) * dist;
+                var y = cy + Math.sin(angle) * dist;
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                star.style.fontSize = (1.0 + Math.random() * 0.8) + 'rem';
+                star.style.animationDuration = (0.5 + Math.random() * 0.4) + 's';
+                document.body.appendChild(star);
+                (function(el) {
+                    el.addEventListener('animationend', function() {
+                        if (el.parentNode) el.parentNode.removeChild(el);
+                    });
+                })(star);
+            }
+        }
+
+        // ── Confetti Effect ──
+        function showConfetti() {
+            var colors = ['#FFB7D5', '#C9A2D9', '#A8E6CF', '#FFF3B0', '#FF9BC1', '#FFD700', '#B5EAD7', '#FFDAC1'];
+            var count = 25;
+
+            for (var i = 0; i < count; i++) {
+                var piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = (Math.random() * 100) + 'vw';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.width = (6 + Math.random() * 8) + 'px';
+                piece.style.height = (10 + Math.random() * 10) + 'px';
+                piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+                piece.style.animationDelay = (Math.random() * 1.2) + 's';
+                piece.style.opacity = (0.7 + Math.random() * 0.3);
+                document.body.appendChild(piece);
+                (function(el) {
+                    el.addEventListener('animationend', function() {
+                        if (el.parentNode) el.parentNode.removeChild(el);
+                    });
+                })(piece);
+            }
+        }
+
+        // ── Happy Mascot SVG (for summary) ──
+        function createHappyMascotSVG() {
+            return '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg" width="70" height="105">' +
+                '<g class="mascot-star" style="animation:mascotStarTwinkle 1.2s ease-in-out infinite alternate"><polygon points="10,8 12,14 18,14 13,18 15,24 10,20 5,24 7,18 2,14 8,14" fill="#FFD700" opacity="0.8"/></g>' +
+                '<g class="mascot-star" style="animation:mascotStarTwinkle 1.2s ease-in-out infinite alternate 0.4s"><polygon points="70,5 72,11 78,11 73,15 75,21 70,17 65,21 67,15 62,11 68,11" fill="#FFD700" opacity="0.8"/></g>' +
+                '<g class="mascot-star" style="animation:mascotStarTwinkle 1.2s ease-in-out infinite alternate 0.8s"><polygon points="5,50 7,54 11,54 8,57 9,61 5,58 1,61 2,57 -1,54 3,54" fill="#FFD700" opacity="0.6"/></g>' +
+                '<ellipse cx="40" cy="28" rx="22" ry="20" fill="#5C3A1E"/>' +
+                '<circle cx="40" cy="32" r="18" fill="#FDDCB5"/>' +
+                '<path d="M22 28 Q28 14 40 16 Q52 14 58 28" fill="#5C3A1E"/>' +
+                '<ellipse cx="16" cy="34" rx="6" ry="10" fill="#5C3A1E" transform="rotate(-10 16 34)"/>' +
+                '<circle cx="16" cy="45" r="5" fill="#5C3A1E"/>' +
+                '<ellipse cx="64" cy="34" rx="6" ry="10" fill="#5C3A1E" transform="rotate(10 64 34)"/>' +
+                '<circle cx="64" cy="45" r="5" fill="#5C3A1E"/>' +
+                '<circle cx="20" cy="28" r="3" fill="#FF9BC1"/>' +
+                '<circle cx="60" cy="28" r="3" fill="#FF9BC1"/>' +
+                '<ellipse cx="33" cy="31" rx="3.5" ry="4" fill="#3E2723"/>' +
+                '<ellipse cx="47" cy="31" rx="3.5" ry="4" fill="#3E2723"/>' +
+                '<circle cx="34.5" cy="30" r="1.4" fill="white"/>' +
+                '<circle cx="48.5" cy="30" r="1.4" fill="white"/>' +
+                '<path d="M32 39 Q40 48 48 39" stroke="#D4845A" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+                '<ellipse cx="28" cy="37" rx="4" ry="2.5" fill="#FFB7C5" opacity="0.6"/>' +
+                '<ellipse cx="52" cy="37" rx="4" ry="2.5" fill="#FFB7C5" opacity="0.6"/>' +
+                '<path d="M30 50 L26 85 Q40 90 54 85 L50 50 Z" fill="#FF9BC1"/>' +
+                '<path d="M30 50 Q40 54 50 50" fill="#E8829E"/>' +
+                '<line x1="30" y1="55" x2="16" y2="68" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>' +
+                '<line x1="50" y1="55" x2="64" y2="68" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>' +
+                '<line x1="35" y1="85" x2="33" y2="105" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>' +
+                '<line x1="45" y1="85" x2="47" y2="105" stroke="#FDDCB5" stroke-width="4" stroke-linecap="round"/>' +
+                '<ellipse cx="32" cy="107" rx="6" ry="3" fill="#FF9BC1"/>' +
+                '<ellipse cx="48" cy="107" rx="6" ry="3" fill="#FF9BC1"/>' +
+                '</svg>';
+        }
+
+        // Allow Enter key to submit answer
+        document.addEventListener('DOMContentLoaded', function() {
+            var clockInput = document.getElementById('clock-input');
+            if (clockInput) {
+                clockInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        var nextBtn = document.getElementById('clock-next-btn');
+                        if (nextBtn && nextBtn.style.display !== 'none') {
+                            nextClockQuestion();
+                        } else {
+                            checkClockAnswer();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Reset Modal (outside screens so it overlays everything) -->
+    <div class="modal-overlay" id="reset-modal">
+        <div class="modal-box">
+            <div class="modal-title">Fortschritt zurücksetzen?</div>
+            <p>Alle deine Ergebnisse werden gelöscht. Du fängst dann ganz von vorne an.</p>
+            <div class="modal-actions">
+                <button class="btn-confirm" onclick="confirmReset()">Ja, zurücksetzen</button>
+                <button class="btn-cancel" onclick="hideResetModal()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

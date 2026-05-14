@@ -1,0 +1,1998 @@
+# Latein-Dativ-Trainer — Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Single-file HTML-Lern-App für eine 13-jährige Schülerin, die die Dativ-Deklination (o-, a-, konsonantische Deklination, Sg./Pl.) mit vier Übungsmodi plus Mix-Modus übt. Leitner-basiertes Spaced-Repetition-System, persistente Setup-Einstellungen, mediterraner moderner Look, primär für iPad.
+
+**Architecture:** Eine einzige HTML-Datei mit eingebettetem CSS und Vanilla-JavaScript. Sechs Bildschirme (`#screen-home`, `#screen-cards`, `#screen-quiz`, `#screen-typing`, `#screen-puzzle`, `#screen-summary`), die durch Show/Hide gewechselt werden. Datenschicht (Vokabular, Endungstabelle), Logik-Schicht (`decline()`, Leitner), Modul-Schicht (ein Renderer pro Modus). Alle dynamischen DOM-Bauten gehen über einen `el()`-Helper, der `createElement` + `textContent` nutzt — keine `innerHTML`-Zuweisungen. Persistenz über `localStorage`. Kein Framework, keine externen Abhängigkeiten.
+
+**Tech Stack:** HTML5, CSS3 (Custom Properties, Grid/Flexbox, Pointer Events), Vanilla JavaScript (ES6+, kein Build-Schritt).
+
+**Spec:** [docs/plans/2026-05-14-latein-dativ-trainer-design.md](2026-05-14-latein-dativ-trainer-design.md)
+
+---
+
+### Task 1: HTML-Grundgerüst, Theme-CSS, iPad-Spezifika, Screen-Navigation
+
+**Files:**
+- Create: `latein-dativ-trainer.html`
+
+- [ ] **Step 1: HTML-Boilerplate mit iPad-tauglichen Meta-Tags und Theme-CSS**
+
+Datei `latein-dativ-trainer.html` anlegen mit:
+
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Latein-Dativ-Trainer</title>
+  <style>
+    :root {
+      --bg-start: #fef7ed;
+      --bg-end: #fde4cf;
+      --terracotta: #c75d36;
+      --olive: #5a8a3a;
+      --senf: #d4a017;
+      --meerblau: #2e6b8a;
+      --text: #7a3d2a;
+      --text-soft: #a07060;
+      --line: #e8c9a8;
+      --card-bg: #ffffff;
+      --correct: #5a8a3a;
+      --wrong: #c75d36;
+      --shadow: 0 2px 6px rgba(122, 61, 42, 0.12);
+      --shadow-lg: 0 6px 18px rgba(122, 61, 42, 0.18);
+      --radius: 12px;
+      --radius-sm: 6px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 17px;
+      min-height: 100vh;
+      padding: 24px 16px 80px;
+    }
+    h1, h2, h3, .latin { font-family: Georgia, 'Cormorant Garamond', serif; }
+    h1 { font-size: 32px; letter-spacing: 4px; text-transform: uppercase; margin: 0; text-align: center; }
+    h1 .sub { display: block; font-size: 13px; letter-spacing: 6px; color: var(--text-soft); margin-bottom: 4px; }
+    .latin { font-style: italic; font-size: 1.15em; }
+
+    button, input, select { font-family: inherit; font-size: 17px; }
+    button { cursor: pointer; touch-action: manipulation; min-height: 44px; }
+
+    main { max-width: 880px; margin: 0 auto; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .back-btn {
+      background: none; border: none; color: var(--text);
+      font-size: 16px; padding: 8px 12px; margin-bottom: 16px; cursor: pointer;
+    }
+    .back-btn::before { content: "← "; }
+  </style>
+</head>
+<body>
+  <main>
+    <section id="screen-home" class="screen active">
+      <h1><span class="sub">Datīvus</span>Latīna</h1>
+    </section>
+
+    <section id="screen-cards" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Karteikarten</h2>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Quick Quiz</h2>
+    </section>
+
+    <section id="screen-typing" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Endung tippen</h2>
+    </section>
+
+    <section id="screen-puzzle" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Tabellen-Puzzle</h2>
+    </section>
+
+    <section id="screen-summary" class="screen">
+      <h2 style="text-align:center;">Session beendet</h2>
+    </section>
+  </main>
+
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // Globaler Back-Button-Handler
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="home"]');
+      if (btn) showScreen('screen-home');
+    });
+  </script>
+</body>
+</html>
+```
+
+- [ ] **Step 2: Im Browser auf Mac und iPad öffnen, Navigation testen**
+
+Datei in Safari auf dem Mac öffnen. Per JavaScript-Konsole testen:
+
+```js
+showScreen('screen-quiz')
+showScreen('screen-home')
+```
+
+Erwartet: Bildschirme wechseln. Auf iPad (Safari) öffnen und sicherstellen, dass kein Pinch-Zoom ungewollt aktiviert wird und die Schrift gut lesbar ist.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: HTML-Grundgerüst und mediterranes Theme für Latein-Dativ-Trainer"
+```
+
+---
+
+### Task 2: Daten-Layer — Endungstabelle und Vokabular
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (JS-Block, vor `showScreen`)
+
+- [ ] **Step 1: Endungstabelle und Labels**
+
+Am Anfang des `<script>`-Blocks einfügen:
+
+```js
+// ===== Data Layer =====
+
+const ENDINGS = {
+  o: {
+    sg: { nom: 'us', gen: 'ī',    dat: 'ō',    acc: 'um', abl: 'ō' },
+    pl: { nom: 'ī',  gen: 'ōrum', dat: 'īs',   acc: 'ōs', abl: 'īs' }
+  },
+  a: {
+    sg: { nom: 'a',  gen: 'ae',   dat: 'ae',   acc: 'am', abl: 'ā' },
+    pl: { nom: 'ae', gen: 'ārum', dat: 'īs',   acc: 'ās', abl: 'īs' }
+  },
+  kons: {
+    sg: { nom: '',   gen: 'is',   dat: 'ī',    acc: 'em', abl: 'e' },
+    pl: { nom: 'ēs', gen: 'um',   dat: 'ibus', acc: 'ēs', abl: 'ibus' }
+  }
+};
+
+const DECLENSION_LABEL = { o: 'o-Deklination', a: 'a-Deklination', kons: 'kons. Deklination' };
+const CASE_LABEL  = { nom: 'Nom.', gen: 'Gen.', dat: 'Dat.', acc: 'Akk.', abl: 'Abl.' };
+const NUM_LABEL   = { sg: 'Sg.', pl: 'Pl.' };
+const CASE_GERMAN = {
+  nom: { sg: { m: 'der', f: 'die', n: 'das' }, pl: { m: 'die', f: 'die', n: 'die' } },
+  gen: { sg: { m: 'des', f: 'der', n: 'des' }, pl: { m: 'der', f: 'der', n: 'der' } },
+  dat: { sg: { m: 'dem', f: 'der', n: 'dem' }, pl: { m: 'den', f: 'den', n: 'den' } },
+  acc: { sg: { m: 'den', f: 'die', n: 'das' }, pl: { m: 'die', f: 'die', n: 'die' } }
+};
+```
+
+- [ ] **Step 2: Vokabular-Konstante**
+
+Direkt nach `ENDINGS` einfügen. Pro Eintrag: `{ stem, lemma, declension, gender, de, irregularNomSg? }`. Bei der kons. Deklination ist `stem` der Genitivstamm.
+
+```js
+const VOCABULARY = [
+  // ----- o-Deklination (Maskulina) -----
+  { stem: 'serv',     lemma: 'servus',     declension: 'o',    gender: 'm', de: 'Sklave' },
+  { stem: 'domin',    lemma: 'dominus',    declension: 'o',    gender: 'm', de: 'Herr' },
+  { stem: 'amīc',     lemma: 'amīcus',     declension: 'o',    gender: 'm', de: 'Freund' },
+  { stem: 'puer',     lemma: 'puer',       declension: 'o',    gender: 'm', de: 'Junge', irregularNomSg: true },
+  { stem: 'agr',      lemma: 'ager',       declension: 'o',    gender: 'm', de: 'Acker', irregularNomSg: true },
+  { stem: 'magistr',  lemma: 'magister',   declension: 'o',    gender: 'm', de: 'Lehrer', irregularNomSg: true },
+  { stem: 'fīli',     lemma: 'fīlius',     declension: 'o',    gender: 'm', de: 'Sohn' },
+  { stem: 'de',       lemma: 'deus',       declension: 'o',    gender: 'm', de: 'Gott' },
+  { stem: 'popul',    lemma: 'populus',    declension: 'o',    gender: 'm', de: 'Volk' },
+  { stem: 'equ',      lemma: 'equus',      declension: 'o',    gender: 'm', de: 'Pferd' },
+  { stem: 'vir',      lemma: 'vir',        declension: 'o',    gender: 'm', de: 'Mann', irregularNomSg: true },
+  { stem: 'libr',     lemma: 'liber',      declension: 'o',    gender: 'm', de: 'Buch', irregularNomSg: true },
+  { stem: 'discipul', lemma: 'discipulus', declension: 'o',    gender: 'm', de: 'Schüler' },
+  { stem: 'medic',    lemma: 'medicus',    declension: 'o',    gender: 'm', de: 'Arzt' },
+  { stem: 'nūnti',    lemma: 'nūntius',    declension: 'o',    gender: 'm', de: 'Bote' },
+  { stem: 'lēgāt',    lemma: 'lēgātus',    declension: 'o',    gender: 'm', de: 'Gesandter' },
+  { stem: 'gladi',    lemma: 'gladius',    declension: 'o',    gender: 'm', de: 'Schwert' },
+  { stem: 'hort',     lemma: 'hortus',     declension: 'o',    gender: 'm', de: 'Garten' },
+  { stem: 'anim',     lemma: 'animus',     declension: 'o',    gender: 'm', de: 'Geist' },
+  { stem: 'Rōmān',    lemma: 'Rōmānus',    declension: 'o',    gender: 'm', de: 'Römer' },
+
+  // ----- a-Deklination (Feminina) -----
+  { stem: 'fīli',     lemma: 'fīlia',      declension: 'a',    gender: 'f', de: 'Tochter' },
+  { stem: 'puell',    lemma: 'puella',     declension: 'a',    gender: 'f', de: 'Mädchen' },
+  { stem: 'ros',      lemma: 'rosa',       declension: 'a',    gender: 'f', de: 'Rose' },
+  { stem: 'terr',     lemma: 'terra',      declension: 'a',    gender: 'f', de: 'Erde' },
+  { stem: 'vi',       lemma: 'via',        declension: 'a',    gender: 'f', de: 'Weg' },
+  { stem: 'aqu',      lemma: 'aqua',       declension: 'a',    gender: 'f', de: 'Wasser' },
+  { stem: 'vīt',      lemma: 'vīta',       declension: 'a',    gender: 'f', de: 'Leben' },
+  { stem: 'rēgīn',    lemma: 'rēgīna',     declension: 'a',    gender: 'f', de: 'Königin' },
+  { stem: 'schol',    lemma: 'schola',     declension: 'a',    gender: 'f', de: 'Schule' },
+  { stem: 'fābul',    lemma: 'fābula',     declension: 'a',    gender: 'f', de: 'Geschichte' },
+  { stem: 'amīc',     lemma: 'amīca',      declension: 'a',    gender: 'f', de: 'Freundin' },
+  { stem: 'de',       lemma: 'dea',        declension: 'a',    gender: 'f', de: 'Göttin' },
+  { stem: 'silv',     lemma: 'silva',      declension: 'a',    gender: 'f', de: 'Wald' },
+  { stem: 'patri',    lemma: 'patria',     declension: 'a',    gender: 'f', de: 'Heimat' },
+  { stem: 'domin',    lemma: 'domina',     declension: 'a',    gender: 'f', de: 'Herrin' },
+  { stem: 'ancill',   lemma: 'ancilla',    declension: 'a',    gender: 'f', de: 'Magd' },
+  { stem: 'famili',   lemma: 'familia',    declension: 'a',    gender: 'f', de: 'Familie' },
+  { stem: 'glōri',    lemma: 'glōria',     declension: 'a',    gender: 'f', de: 'Ruhm' },
+  { stem: 'victōri',  lemma: 'victōria',   declension: 'a',    gender: 'f', de: 'Sieg' },
+  { stem: 'īr',       lemma: 'īra',        declension: 'a',    gender: 'f', de: 'Zorn' },
+
+  // ----- Konsonantische Deklination -----
+  { stem: 'patr',     lemma: 'pater',      declension: 'kons', gender: 'm', de: 'Vater', irregularNomSg: true },
+  { stem: 'mātr',     lemma: 'māter',      declension: 'kons', gender: 'f', de: 'Mutter', irregularNomSg: true },
+  { stem: 'frātr',    lemma: 'frāter',     declension: 'kons', gender: 'm', de: 'Bruder', irregularNomSg: true },
+  { stem: 'sorōr',    lemma: 'soror',      declension: 'kons', gender: 'f', de: 'Schwester', irregularNomSg: true },
+  { stem: 'rēg',      lemma: 'rēx',        declension: 'kons', gender: 'm', de: 'König', irregularNomSg: true },
+  { stem: 'homin',    lemma: 'homō',       declension: 'kons', gender: 'm', de: 'Mensch', irregularNomSg: true },
+  { stem: 'mīlit',    lemma: 'mīles',      declension: 'kons', gender: 'm', de: 'Soldat', irregularNomSg: true },
+  { stem: 'virgin',   lemma: 'virgō',      declension: 'kons', gender: 'f', de: 'junge Frau', irregularNomSg: true },
+  { stem: 'lēg',      lemma: 'lēx',        declension: 'kons', gender: 'f', de: 'Gesetz', irregularNomSg: true },
+  { stem: 'corpor',   lemma: 'corpus',     declension: 'kons', gender: 'n', de: 'Körper', irregularNomSg: true },
+  { stem: 'senātōr',  lemma: 'senātor',    declension: 'kons', gender: 'm', de: 'Senator', irregularNomSg: true },
+  { stem: 'cōnsul',   lemma: 'cōnsul',     declension: 'kons', gender: 'm', de: 'Konsul', irregularNomSg: true },
+  { stem: 'duc',      lemma: 'dux',        declension: 'kons', gender: 'm', de: 'Anführer', irregularNomSg: true },
+  { stem: 'imperātōr',lemma: 'imperātor',  declension: 'kons', gender: 'm', de: 'Feldherr', irregularNomSg: true },
+  { stem: 'urb',      lemma: 'urbs',       declension: 'kons', gender: 'f', de: 'Stadt', irregularNomSg: true },
+  { stem: 'noct',     lemma: 'nox',        declension: 'kons', gender: 'f', de: 'Nacht', irregularNomSg: true },
+  { stem: 'pāc',      lemma: 'pāx',        declension: 'kons', gender: 'f', de: 'Frieden', irregularNomSg: true },
+  { stem: 'mort',     lemma: 'mors',       declension: 'kons', gender: 'f', de: 'Tod', irregularNomSg: true },
+  { stem: 'ped',      lemma: 'pēs',        declension: 'kons', gender: 'm', de: 'Fuß', irregularNomSg: true },
+  { stem: 'capit',    lemma: 'caput',      declension: 'kons', gender: 'n', de: 'Kopf', irregularNomSg: true }
+];
+```
+
+- [ ] **Step 2b: Konsolen-Sanity-Check**
+
+Datei laden, in der Konsole:
+
+```js
+VOCABULARY.length                                          // → 60
+VOCABULARY.filter(v => v.declension === 'o').length        // → 20
+VOCABULARY.filter(v => v.declension === 'a').length        // → 20
+VOCABULARY.filter(v => v.declension === 'kons').length     // → 20
+ENDINGS.o.sg.dat                                           // → 'ō'
+ENDINGS.kons.pl.dat                                        // → 'ibus'
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Endungstabelle und 60-Substantiv-Vokabular ergänzen"
+```
+
+---
+
+### Task 3: `decline()`-Funktion plus Inline-Tests
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (JS-Block)
+
+- [ ] **Step 1: Kernfunktion `decline()` und Hilfsfunktion `germanPhrase()`**
+
+Direkt nach `VOCABULARY` einfügen:
+
+```js
+// ===== Core Logic =====
+
+function decline(vocab, casus, numerus) {
+  if (casus === 'nom' && numerus === 'sg' && vocab.irregularNomSg) {
+    return vocab.lemma;
+  }
+  const ending = ENDINGS[vocab.declension][numerus][casus];
+  return vocab.stem + ending;
+}
+
+function germanPhrase(vocab, casus, numerus) {
+  if (casus === 'abl') return '(Ablativ: ' + vocab.de + ')';
+  const article = CASE_GERMAN[casus][numerus][vocab.gender];
+  return article + ' ' + vocab.de + (numerus === 'pl' ? germanPluralSuffix(vocab.de) : '');
+}
+
+const GERMAN_PLURAL_SUFFIX = {
+  'Sklave': 'n', 'Herr': 'en', 'Freund': 'e', 'Junge': 'n', 'Acker': '',
+  'Lehrer': '', 'Sohn': 'e', 'Gott': 'er', 'Volk': 'er', 'Pferd': 'e',
+  'Mann': 'er', 'Buch': 'er', 'Schüler': '', 'Arzt': 'e', 'Bote': 'n',
+  'Gesandter': '', 'Schwert': 'er', 'Garten': '', 'Geist': 'er', 'Römer': '',
+  'Tochter': '', 'Mädchen': '', 'Rose': 'n', 'Erde': 'n', 'Weg': 'e',
+  'Wasser': '', 'Leben': '', 'Königin': 'nen', 'Schule': 'n', 'Geschichte': 'n',
+  'Freundin': 'nen', 'Göttin': 'nen', 'Wald': 'er', 'Heimat': 'en', 'Herrin': 'nen',
+  'Magd': 'e', 'Familie': 'n', 'Ruhm': '', 'Sieg': 'e', 'Zorn': '',
+  'Vater': '', 'Mutter': '', 'Bruder': '', 'Schwester': 'n',
+  'König': 'e', 'Mensch': 'en', 'Soldat': 'en', 'junge Frau': 'en',
+  'Gesetz': 'e', 'Körper': '', 'Senator': 'en', 'Konsul': 'n',
+  'Anführer': '', 'Feldherr': 'en', 'Stadt': 'e', 'Nacht': 'e',
+  'Frieden': '', 'Tod': 'e', 'Fuß': 'e', 'Kopf': 'e'
+};
+function germanPluralSuffix(de) { return GERMAN_PLURAL_SUFFIX[de] ?? ''; }
+```
+
+> Hinweis: Deutsche Pluralbildung ist unregelmäßig (Mann → Männer). Die einfache Suffix-Tabelle gibt die *bekannten* Plurale wieder, ohne Umlautwechsel im Stamm. Für die UI-Anzeige der Plural-Wendungen reicht das. Bei Bedarf später erweitern.
+
+- [ ] **Step 2: Inline-Tests am Ende des Scripts**
+
+Vor dem Script-Ende einfügen:
+
+```js
+// ===== Tests (nur bei ?test=1) =====
+if (new URLSearchParams(location.search).get('test') === '1') {
+  function assert(name, actual, expected) {
+    const ok = actual === expected;
+    console[ok ? 'log' : 'error'](
+      (ok ? '✅' : '❌') + ' ' + name + ' → ' + JSON.stringify(actual) +
+      (ok ? '' : ' (erwartet: ' + JSON.stringify(expected) + ')')
+    );
+  }
+  const servus = VOCABULARY.find(v => v.lemma === 'servus');
+  const filia  = VOCABULARY.find(v => v.lemma === 'fīlia');
+  const pater  = VOCABULARY.find(v => v.lemma === 'pater');
+  const rex    = VOCABULARY.find(v => v.lemma === 'rēx');
+
+  assert('servus Dat Sg', decline(servus, 'dat', 'sg'), 'servō');
+  assert('servus Dat Pl', decline(servus, 'dat', 'pl'), 'servīs');
+  assert('servus Nom Sg', decline(servus, 'nom', 'sg'), 'servus');
+  assert('fīlia Dat Sg',  decline(filia,  'dat', 'sg'), 'fīliae');
+  assert('fīlia Dat Pl',  decline(filia,  'dat', 'pl'), 'fīliīs');
+  assert('pater Dat Sg',  decline(pater,  'dat', 'sg'), 'patrī');
+  assert('pater Dat Pl',  decline(pater,  'dat', 'pl'), 'patribus');
+  assert('pater Nom Sg',  decline(pater,  'nom', 'sg'), 'pater');
+  assert('rēx Nom Sg',    decline(rex,    'nom', 'sg'), 'rēx');
+  assert('rēx Dat Sg',    decline(rex,    'dat', 'sg'), 'rēgī');
+  assert('rēx Dat Pl',    decline(rex,    'dat', 'pl'), 'rēgibus');
+}
+```
+
+- [ ] **Step 3: Tests ausführen**
+
+Datei mit `?test=1` öffnen: `latein-dativ-trainer.html?test=1`. Konsole prüfen — alle 11 Assertions mit ✅.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: decline() Kernfunktion plus Konsolen-Tests"
+```
+
+---
+
+### Task 4: SetupStore mit localStorage-Persistenz
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (JS)
+
+- [ ] **Step 1: SetupStore und `activeForms()`**
+
+Nach `decline()` einfügen:
+
+```js
+// ===== Setup Store =====
+
+const SETUP_KEY = 'dativ-trainer:setup';
+const SETUP_DEFAULTS = {
+  declensions: ['o', 'a', 'kons'],
+  cases: ['dat'],
+  numbers: ['sg', 'pl'],
+  includeAdjectivesPronouns: false
+};
+
+const SetupStore = {
+  load() {
+    try {
+      const raw = localStorage.getItem(SETUP_KEY);
+      if (!raw) return { ...SETUP_DEFAULTS };
+      const parsed = JSON.parse(raw);
+      return {
+        declensions: Array.isArray(parsed.declensions) && parsed.declensions.length
+          ? parsed.declensions : [...SETUP_DEFAULTS.declensions],
+        cases: Array.isArray(parsed.cases) && parsed.cases.length
+          ? parsed.cases : [...SETUP_DEFAULTS.cases],
+        numbers: Array.isArray(parsed.numbers) && parsed.numbers.length
+          ? parsed.numbers : [...SETUP_DEFAULTS.numbers],
+        includeAdjectivesPronouns: !!parsed.includeAdjectivesPronouns
+      };
+    } catch (e) {
+      return { ...SETUP_DEFAULTS };
+    }
+  },
+  save(setup) { localStorage.setItem(SETUP_KEY, JSON.stringify(setup)); },
+  reset() { localStorage.removeItem(SETUP_KEY); }
+};
+
+function activeForms(setup) {
+  const result = [];
+  for (const vocab of VOCABULARY) {
+    if (!setup.declensions.includes(vocab.declension)) continue;
+    for (const numerus of setup.numbers) {
+      for (const casus of setup.cases) {
+        result.push({ vocab, casus, numerus });
+      }
+    }
+  }
+  return result;
+}
+
+function formId(vocab, casus, numerus) {
+  return vocab.lemma + '|' + casus + '|' + numerus;
+}
+```
+
+- [ ] **Step 2: Konsolen-Sanity-Check**
+
+```js
+SetupStore.load()                       // → Default-Objekt
+activeForms(SetupStore.load()).length   // → 120 (60 Wörter × 1 Kasus × 2 Numeri)
+formId(VOCABULARY[0], 'dat', 'sg')      // → 'servus|dat|sg'
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: SetupStore mit localStorage und activeForms-Filter"
+```
+
+---
+
+### Task 5: LeitnerStore mit gewichteter Aufgaben-Auswahl
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (JS)
+
+- [ ] **Step 1: LeitnerStore und `pickTasks()`**
+
+Nach `SetupStore` einfügen:
+
+```js
+// ===== Leitner Store =====
+
+const LEITNER_KEY = 'dativ-trainer:leitner';
+const BOX_WEIGHTS = [16, 8, 4, 2, 1];
+
+const LeitnerStore = {
+  load() {
+    try { return JSON.parse(localStorage.getItem(LEITNER_KEY)) || {}; }
+    catch (e) { return {}; }
+  },
+  save(state) { localStorage.setItem(LEITNER_KEY, JSON.stringify(state)); },
+  getBox(state, id) { return state[id]?.box ?? 1; },
+  promote(state, id) {
+    const current = state[id]?.box ?? 1;
+    state[id] = { box: Math.min(current + 1, 5), lastSeen: Date.now() };
+  },
+  demote(state, id) {
+    state[id] = { box: 1, lastSeen: Date.now() };
+  },
+  reset() { localStorage.removeItem(LEITNER_KEY); }
+};
+
+function pickTasks(activeFormsList, leitnerState, n = 10) {
+  if (!activeFormsList.length) return [];
+  const weighted = activeFormsList.map(f => ({
+    form: f,
+    weight: BOX_WEIGHTS[LeitnerStore.getBox(leitnerState, formId(f.vocab, f.casus, f.numerus)) - 1]
+  }));
+  const picked = [];
+  const pool = [...weighted];
+  for (let i = 0; i < n && pool.length; i++) {
+    const totalWeight = pool.reduce((s, x) => s + x.weight, 0);
+    let r = Math.random() * totalWeight;
+    let idx = 0;
+    for (; idx < pool.length; idx++) {
+      r -= pool[idx].weight;
+      if (r <= 0) break;
+    }
+    if (idx >= pool.length) idx = pool.length - 1;
+    picked.push(pool[idx].form);
+    pool.splice(idx, 1);
+  }
+  return picked;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+```
+
+- [ ] **Step 2: Konsolen-Tests**
+
+```js
+const fresh = {};
+LeitnerStore.getBox(fresh, 'servus|dat|sg')        // → 1
+LeitnerStore.promote(fresh, 'servus|dat|sg')
+LeitnerStore.getBox(fresh, 'servus|dat|sg')        // → 2
+LeitnerStore.demote(fresh, 'servus|dat|sg')
+LeitnerStore.getBox(fresh, 'servus|dat|sg')        // → 1
+pickTasks(activeForms(SetupStore.load()), fresh, 10).length    // → 10
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: LeitnerStore mit gewichteter Aufgaben-Auswahl"
+```
+
+---
+
+### Task 6: DOM-Helper `el()` und Setup-Leiste auf dem Startscreen
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+- [ ] **Step 1: CSS für Setup-Leiste**
+
+Im `<style>`-Block ergänzen:
+
+```css
+.setup-bar {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 20px 0 24px;
+  box-shadow: var(--shadow);
+}
+.setup-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
+.setup-row:last-child { margin-bottom: 0; }
+.setup-label {
+  font-weight: 600; min-width: 120px;
+  color: var(--text-soft); font-size: 14px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.chip {
+  display: inline-flex; align-items: center;
+  padding: 8px 14px; border-radius: 20px;
+  border: 2px solid var(--line); background: white;
+  cursor: pointer; font-size: 15px; user-select: none;
+  min-height: 36px;
+}
+.chip input { display: none; }
+.chip.active { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+.chip.toggle.active { background: var(--olive); border-color: var(--olive); }
+.setup-reset {
+  background: none; border: none; color: var(--text-soft);
+  font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 8px;
+}
+```
+
+- [ ] **Step 2: Statisches HTML der Setup-Leiste in `#screen-home`**
+
+`#screen-home` direkt nach dem `<h1>` ergänzen:
+
+```html
+<div class="setup-bar" id="setup-bar">
+  <div class="setup-row">
+    <span class="setup-label">Deklination</span>
+    <label class="chip"><input type="checkbox" data-setup="declensions" value="o"> o-Dekl.</label>
+    <label class="chip"><input type="checkbox" data-setup="declensions" value="a"> a-Dekl.</label>
+    <label class="chip"><input type="checkbox" data-setup="declensions" value="kons"> kons.</label>
+  </div>
+  <div class="setup-row">
+    <span class="setup-label">Kasus</span>
+    <label class="chip"><input type="checkbox" data-setup="cases" value="nom"> Nom.</label>
+    <label class="chip"><input type="checkbox" data-setup="cases" value="gen"> Gen.</label>
+    <label class="chip"><input type="checkbox" data-setup="cases" value="dat"> Dat.</label>
+    <label class="chip"><input type="checkbox" data-setup="cases" value="acc"> Akk.</label>
+    <label class="chip"><input type="checkbox" data-setup="cases" value="abl"> Abl.</label>
+  </div>
+  <div class="setup-row">
+    <span class="setup-label">Numerus</span>
+    <label class="chip"><input type="checkbox" data-setup="numbers" value="sg"> Sg.</label>
+    <label class="chip"><input type="checkbox" data-setup="numbers" value="pl"> Pl.</label>
+  </div>
+  <div class="setup-row">
+    <span class="setup-label">Extras</span>
+    <label class="chip toggle"><input type="checkbox" data-setup="includeAdjectivesPronouns"> + Adjektive &amp; Possessivpronomina</label>
+  </div>
+  <button class="setup-reset" id="setup-reset-btn">Fortschritt zurücksetzen</button>
+</div>
+```
+
+- [ ] **Step 3: DOM-Helper `el()` und Setup-UI-Logik**
+
+Nach `pickTasks` einfügen:
+
+```js
+// ===== DOM Helper =====
+
+// Sicheres Element-Builder: nur textContent + attribute, keine HTML-Strings.
+// el('div', { class: 'foo' }, el('span', {}, 'Hallo'))
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') node.className = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v);
+    else if (k === 'dataset' && typeof v === 'object') Object.assign(node.dataset, v);
+    else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+    else node.setAttribute(k, v);
+  }
+  for (const child of children.flat()) {
+    if (child == null || child === false) continue;
+    node.appendChild(
+      typeof child === 'string' || typeof child === 'number'
+        ? document.createTextNode(String(child))
+        : child
+    );
+  }
+  return node;
+}
+
+function clear(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+// ===== Setup UI =====
+
+function renderSetupBar() {
+  const setup = SetupStore.load();
+  document.querySelectorAll('#setup-bar input[type=checkbox]').forEach(box => {
+    const key = box.dataset.setup;
+    const val = box.value;
+    const checked = key === 'includeAdjectivesPronouns'
+      ? setup.includeAdjectivesPronouns
+      : setup[key].includes(val);
+    box.checked = checked;
+    box.closest('.chip').classList.toggle('active', checked);
+  });
+}
+
+function attachSetupListeners() {
+  document.querySelectorAll('#setup-bar input[type=checkbox]').forEach(box => {
+    box.addEventListener('change', () => {
+      const setup = SetupStore.load();
+      const key = box.dataset.setup;
+      const val = box.value;
+      if (key === 'includeAdjectivesPronouns') {
+        setup.includeAdjectivesPronouns = box.checked;
+      } else {
+        const arr = setup[key];
+        if (box.checked && !arr.includes(val)) arr.push(val);
+        if (!box.checked) {
+          const idx = arr.indexOf(val);
+          if (idx >= 0) arr.splice(idx, 1);
+          if (!arr.length) { arr.push(val); box.checked = true; }
+        }
+      }
+      SetupStore.save(setup);
+      renderSetupBar();
+      renderHome();
+    });
+  });
+  document.getElementById('setup-reset-btn').addEventListener('click', () => {
+    if (confirm('Lernfortschritt und Einstellungen zurücksetzen?')) {
+      LeitnerStore.reset();
+      SetupStore.reset();
+      renderSetupBar();
+      renderHome();
+    }
+  });
+}
+
+function renderHome() {
+  // Wird in Task 7 erweitert.
+}
+
+function init() {
+  renderSetupBar();
+  attachSetupListeners();
+  renderHome();
+}
+
+init();
+```
+
+- [ ] **Step 4: Im Browser testen**
+
+Erwartet:
+- Setup-Leiste sichtbar, Default-Auswahl: alle 3 Deklinationen, nur Dat, beide Numeri, Extras aus
+- Chip-Klick toggelt visuell + persistiert (Reload → Zustand bleibt)
+- Letzte aktive Auswahl einer Reihe lässt sich nicht entfernen (snappt zurück)
+- "Fortschritt zurücksetzen" → Confirm → setzt auf Defaults
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: el()-DOM-Helper und Setup-Leiste mit Persistenz"
+```
+
+---
+
+### Task 7: Startscreen-Modi-Grid und Fortschritts-Anzeige
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+- [ ] **Step 1: CSS für Modi-Grid und Fortschritt**
+
+```css
+.modes {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; margin-bottom: 16px;
+}
+.mode-card {
+  background: var(--card-bg);
+  border-left: 4px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 18px;
+  text-align: left; cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  border-top: none; border-right: none; border-bottom: none;
+  display: block; width: 100%; color: var(--text);
+}
+@media (hover: hover) {
+  .mode-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+}
+.mode-card .icon { font-size: 28px; margin-bottom: 6px; }
+.mode-card h3 { margin: 4px 0 4px; font-size: 19px; }
+.mode-card p { margin: 0; font-size: 14px; color: var(--text-soft); }
+.mode-card.cards   { border-left-color: var(--terracotta); }
+.mode-card.quiz    { border-left-color: var(--olive); }
+.mode-card.typing  { border-left-color: var(--senf); }
+.mode-card.puzzle  { border-left-color: var(--meerblau); }
+.mode-card.mix {
+  grid-column: 1 / -1;
+  border-left-color: var(--text);
+  background: linear-gradient(135deg, #fff 0%, #fef7ed 100%);
+}
+
+.progress {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 14px 18px; box-shadow: var(--shadow);
+  font-size: 14px; color: var(--text-soft);
+}
+.progress-bar {
+  height: 10px; background: var(--line);
+  border-radius: 5px; overflow: hidden; margin: 8px 0 4px;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--terracotta), var(--olive));
+  transition: width 0.4s ease;
+}
+
+@media (max-width: 600px) {
+  .modes { grid-template-columns: 1fr; }
+}
+```
+
+- [ ] **Step 2: Statisches HTML der Modi-Karten in `#screen-home`**
+
+Nach der Setup-Leiste einfügen:
+
+```html
+<div class="modes">
+  <button class="mode-card cards"  data-mode="cards">
+    <div class="icon">📜</div>
+    <h3>Karteikarten</h3>
+    <p>Formen anschauen und lernen.</p>
+  </button>
+  <button class="mode-card quiz"   data-mode="quiz">
+    <div class="icon">⚡</div>
+    <h3>Quick Quiz</h3>
+    <p>4 Antworten, sofort wissen wie's geht.</p>
+  </button>
+  <button class="mode-card typing" data-mode="typing">
+    <div class="icon">✏️</div>
+    <h3>Endung tippen</h3>
+    <p>Selbst formulieren — nur die Endung.</p>
+  </button>
+  <button class="mode-card puzzle" data-mode="puzzle">
+    <div class="icon">🧩</div>
+    <h3>Tabellen-Puzzle</h3>
+    <p>Endungen in die richtige Zelle.</p>
+  </button>
+  <button class="mode-card mix"    data-mode="mix">
+    <div class="icon">🎯</div>
+    <h3>Mix-Modus</h3>
+    <p>Alles gemischt — wie ein Mini-Test.</p>
+  </button>
+</div>
+
+<div class="progress" id="progress-block">
+  <div id="progress-text"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+  <div style="font-size: 13px; opacity: 0.7;" id="progress-detail"></div>
+</div>
+```
+
+- [ ] **Step 3: JS — `renderHome()` und Mode-Dispatcher**
+
+Die bestehende leere `renderHome()` ersetzen und Mode-Stubs ergänzen:
+
+```js
+function renderHome() {
+  const setup = SetupStore.load();
+  const forms = activeForms(setup);
+  const leitner = LeitnerStore.load();
+  const mastered = forms.filter(f =>
+    LeitnerStore.getBox(leitner, formId(f.vocab, f.casus, f.numerus)) >= 4
+  ).length;
+  const pct = forms.length ? Math.round(100 * mastered / forms.length) : 0;
+
+  document.getElementById('progress-fill').style.width = pct + '%';
+  const txt = document.getElementById('progress-text');
+  const detail = document.getElementById('progress-detail');
+  if (forms.length === 0) {
+    txt.textContent = 'Wähle mindestens eine Deklination, einen Kasus und einen Numerus.';
+    detail.textContent = '';
+  } else {
+    txt.textContent = mastered + ' von ' + forms.length + ' Formen sitzen.';
+    detail.textContent = 'Aktiver Pool: ' + forms.length + ' Formen.';
+  }
+}
+
+function openMode(mode) {
+  const forms = activeForms(SetupStore.load());
+  if (!forms.length) {
+    alert('Bitte erst Deklination, Kasus und Numerus oben auswählen.');
+    return;
+  }
+  if (mode === 'cards')  return ModeCards.start();
+  if (mode === 'quiz')   return ModeQuiz.start();
+  if (mode === 'typing') return ModeTyping.start();
+  if (mode === 'puzzle') return ModePuzzle.start();
+  if (mode === 'mix')    return ModeMix.start();
+}
+
+// Click-Delegation für Modi-Karten
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-mode]');
+  if (btn) openMode(btn.dataset.mode);
+});
+
+// Stubs — werden in Tasks 8–12 implementiert:
+const ModeCards  = { start() { showScreen('screen-cards');  } };
+const ModeQuiz   = { start() { showScreen('screen-quiz');   } };
+const ModeTyping = { start() { showScreen('screen-typing'); } };
+const ModePuzzle = { start() { showScreen('screen-puzzle'); } };
+const ModeMix    = { start() { alert('Mix-Modus: kommt in Task 12.'); } };
+```
+
+- [ ] **Step 4: Im Browser testen**
+
+Erwartet:
+- Startscreen zeigt 4 Modi-Karten im 2×2-Grid plus breite Mix-Karte
+- Fortschritts-Balken bei 0 %, Text "0 von 120 Formen sitzen."
+- Klick auf Karte wechselt zum entsprechenden Screen (noch leer außer Header)
+- Setup-Änderung (z. B. nur o-Dekl.) reduziert "Aktiver Pool" auf 40 Formen
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Startscreen mit Modi-Grid und Fortschritts-Anzeige"
+```
+
+---
+
+### Task 8: Karteikarten-Modus
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+- [ ] **Step 1: CSS**
+
+```css
+.flashcard {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 48px 24px; box-shadow: var(--shadow-lg);
+  text-align: center; margin: 24px 0; min-height: 220px;
+  display: flex; flex-direction: column; justify-content: center;
+  cursor: pointer; user-select: none; position: relative;
+}
+.flashcard .side-front { font-size: 26px; }
+.flashcard .side-back  { display: none; }
+.flashcard.flipped .side-front { display: none; }
+.flashcard.flipped .side-back  { display: block; }
+.flashcard .latin-form { font-size: 38px; margin-bottom: 14px; }
+.flashcard .meta { font-size: 14px; color: var(--text-soft); }
+.flashcard .flip-hint {
+  position: absolute; bottom: 10px; right: 14px;
+  font-size: 12px; color: var(--text-soft);
+}
+
+.card-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.card-nav button {
+  flex: 1; background: var(--card-bg); border: 2px solid var(--line);
+  padding: 12px; border-radius: var(--radius-sm); font-size: 16px;
+}
+.card-nav button.primary { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+.card-nav button.success { background: var(--olive); color: white; border-color: var(--olive); }
+
+.card-counter { font-size: 14px; color: var(--text-soft); text-align: center; }
+```
+
+- [ ] **Step 2: Statisches HTML in `#screen-cards`**
+
+Den Karteikarten-Screen so umschreiben:
+
+```html
+<section id="screen-cards" class="screen">
+  <button class="back-btn" data-action="home">Zurück</button>
+  <h2>Karteikarten</h2>
+  <div class="card-counter" id="cards-counter"></div>
+  <div class="flashcard" id="flashcard" data-action="flip">
+    <div class="side-front" id="card-front"></div>
+    <div class="side-back" id="card-back"></div>
+    <div class="flip-hint">Tap zum Umdrehen</div>
+  </div>
+  <div class="card-nav">
+    <button data-cards="prev">◄ Zurück</button>
+    <button data-cards="again">Nochmal</button>
+    <button class="success" data-cards="gotit">Sitzt</button>
+    <button class="primary" data-cards="next">Nächste ►</button>
+  </div>
+</section>
+```
+
+- [ ] **Step 3: JS — ModeCards**
+
+Den Karteikarten-Stub durch eine vollständige Implementierung ersetzen:
+
+```js
+const ModeCards = {
+  state: null,
+
+  start() {
+    const setup = SetupStore.load();
+    const forms = shuffle(activeForms(setup));
+    if (!forms.length) return;
+    this.state = { forms, index: 0, flipped: false };
+    showScreen('screen-cards');
+    this.render();
+  },
+
+  render() {
+    const { forms, index, flipped } = this.state;
+    const f = forms[index];
+    const front = germanPhrase(f.vocab, f.casus, f.numerus);
+    const lat = decline(f.vocab, f.casus, f.numerus);
+    const tag = CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ' · ' + DECLENSION_LABEL[f.vocab.declension];
+
+    const front$ = document.getElementById('card-front');
+    clear(front$);
+    front$.appendChild(el('span', { class: 'latin' }, '"' + front + '"'));
+
+    const back$ = document.getElementById('card-back');
+    clear(back$);
+    back$.appendChild(el('div', { class: 'latin-form latin' }, lat));
+    back$.appendChild(el('div', { class: 'meta' },
+      tag + ' · ',
+      el('i', {}, f.vocab.lemma),
+      ' = ' + f.vocab.de));
+
+    document.getElementById('cards-counter').textContent =
+      'Karte ' + (index + 1) + ' / ' + forms.length;
+    document.getElementById('flashcard').classList.toggle('flipped', flipped);
+  },
+
+  flip()       { this.state.flipped = !this.state.flipped; this.render(); },
+  next()       { this.state.index = (this.state.index + 1) % this.state.forms.length;
+                 this.state.flipped = false; this.render(); },
+  prev()       { this.state.index = (this.state.index - 1 + this.state.forms.length) % this.state.forms.length;
+                 this.state.flipped = false; this.render(); },
+  markGotIt()  {
+    const leitner = LeitnerStore.load();
+    const f = this.state.forms[this.state.index];
+    LeitnerStore.promote(leitner, formId(f.vocab, f.casus, f.numerus));
+    LeitnerStore.save(leitner);
+    this.next();
+  },
+  markAgain()  {
+    const leitner = LeitnerStore.load();
+    const f = this.state.forms[this.state.index];
+    LeitnerStore.demote(leitner, formId(f.vocab, f.casus, f.numerus));
+    LeitnerStore.save(leitner);
+    this.next();
+  }
+};
+
+// Event-Delegation für Karteikarten-Buttons
+document.addEventListener('click', (e) => {
+  const flip = e.target.closest('[data-action="flip"]');
+  if (flip && ModeCards.state) ModeCards.flip();
+  const cardBtn = e.target.closest('[data-cards]');
+  if (cardBtn && ModeCards.state) {
+    const action = cardBtn.dataset.cards;
+    if (action === 'next')  ModeCards.next();
+    if (action === 'prev')  ModeCards.prev();
+    if (action === 'gotit') ModeCards.markGotIt();
+    if (action === 'again') ModeCards.markAgain();
+  }
+});
+```
+
+- [ ] **Step 4: Im Browser testen**
+
+- Karte zeigt deutsche Wendung
+- Tap → flippt zur lateinischen Form mit Hinweis-Tag
+- "Sitzt" / "Nochmal" springen zur nächsten Karte und ändern Boxen
+- Vor/Zurück blättert ohne Box-Änderung
+- Counter "Karte X / Y" stimmt
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Karteikarten-Modus mit Flip und Sitzt/Nochmal"
+```
+
+---
+
+### Task 9: Quick Quiz — Multiple Choice mit plausiblen Distraktoren
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+- [ ] **Step 1: CSS**
+
+```css
+.quiz-question {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 28px 22px; box-shadow: var(--shadow);
+  margin: 20px 0; text-align: center;
+}
+.quiz-prompt { font-size: 17px; color: var(--text-soft); margin-bottom: 10px; }
+.quiz-target { font-size: 30px; margin-bottom: 4px; }
+
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.quiz-option {
+  background: var(--card-bg); border: 2px solid var(--line);
+  padding: 16px; border-radius: var(--radius-sm);
+  font-size: 19px; min-height: 60px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.quiz-option:disabled { opacity: 0.85; cursor: default; }
+.quiz-option.correct { background: var(--correct); color: white; border-color: var(--correct); }
+.quiz-option.wrong   { background: var(--wrong);   color: white; border-color: var(--wrong); }
+
+.quiz-feedback { min-height: 32px; text-align: center; font-size: 15px; margin-bottom: 8px; }
+.quiz-feedback.correct { color: var(--correct); }
+.quiz-feedback.wrong   { color: var(--wrong); }
+.quiz-progress { font-size: 13px; color: var(--text-soft); text-align: center; }
+```
+
+- [ ] **Step 2: Statisches HTML in `#screen-quiz`**
+
+```html
+<section id="screen-quiz" class="screen">
+  <button class="back-btn" data-action="home">Zurück</button>
+  <h2>Quick Quiz</h2>
+  <div class="quiz-progress" id="quiz-progress"></div>
+  <div class="quiz-question">
+    <div class="quiz-prompt" id="quiz-prompt"></div>
+    <div class="quiz-target" id="quiz-target"></div>
+  </div>
+  <div class="quiz-options" id="quiz-options"></div>
+  <div class="quiz-feedback" id="quiz-feedback"></div>
+</section>
+```
+
+- [ ] **Step 3: JS — ModeQuiz**
+
+```js
+const PRAISE = ['Recte!', 'Optimē!', 'Egregiē!', 'Bene!', 'Probē!'];
+function randomPraise() { return PRAISE[Math.floor(Math.random() * PRAISE.length)]; }
+
+const ModeQuiz = {
+  state: null,
+  TASKS_PER_SESSION: 10,
+
+  start() {
+    const setup = SetupStore.load();
+    const leitner = LeitnerStore.load();
+    const tasks = pickTasks(activeForms(setup), leitner, this.TASKS_PER_SESSION);
+    this.state = { tasks, index: 0, results: [], answered: false };
+    showScreen('screen-quiz');
+    this.render();
+  },
+
+  distractors(form, n = 3) {
+    const correct = decline(form.vocab, form.casus, form.numerus);
+    const candidates = new Set();
+    for (const c of ['nom', 'gen', 'dat', 'acc', 'abl']) {
+      for (const num of ['sg', 'pl']) {
+        const d = decline(form.vocab, c, num);
+        if (d !== correct) candidates.add(d);
+      }
+    }
+    if (candidates.size < n) {
+      for (const v of VOCABULARY) {
+        if (v.declension !== form.vocab.declension || v.lemma === form.vocab.lemma) continue;
+        candidates.add(decline(v, form.casus, form.numerus));
+        if (candidates.size >= n + 3) break;
+      }
+    }
+    return shuffle([...candidates]).slice(0, n);
+  },
+
+  render() {
+    const { tasks, index } = this.state;
+    if (index >= tasks.length) return this.finish();
+    const f = tasks[index];
+    const correctForm = decline(f.vocab, f.casus, f.numerus);
+    const opts = shuffle([correctForm, ...this.distractors(f, 3)]);
+    this.state.currentOpts = opts;
+    this.state.correctAnswer = correctForm;
+
+    document.getElementById('quiz-progress').textContent = 'Frage ' + (index + 1) + ' / ' + tasks.length;
+    document.getElementById('quiz-prompt').textContent =
+      CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ' von';
+
+    const target = document.getElementById('quiz-target');
+    clear(target);
+    target.appendChild(el('span', { class: 'latin' }, f.vocab.lemma));
+    target.appendChild(el('span',
+      { style: { color: 'var(--text-soft)', fontSize: '16px', marginLeft: '8px' } },
+      '(' + f.vocab.de + ')'));
+
+    const optsBox = document.getElementById('quiz-options');
+    clear(optsBox);
+    opts.forEach(opt => {
+      const btn = el('button', {
+        class: 'quiz-option latin',
+        onclick: (e) => this.choose(opt, e.currentTarget)
+      }, opt);
+      optsBox.appendChild(btn);
+    });
+    const fb = document.getElementById('quiz-feedback');
+    fb.textContent = '';
+    fb.className = 'quiz-feedback';
+    this.state.answered = false;
+  },
+
+  choose(opt, btn) {
+    if (this.state.answered) return;
+    this.state.answered = true;
+    const correct = opt === this.state.correctAnswer;
+    const f = this.state.tasks[this.state.index];
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    if (!correct) {
+      document.querySelectorAll('.quiz-option').forEach(b => {
+        if (b.textContent === this.state.correctAnswer) b.classList.add('correct');
+      });
+    }
+    document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+    const fb = document.getElementById('quiz-feedback');
+    fb.className = 'quiz-feedback ' + (correct ? 'correct' : 'wrong');
+    fb.textContent = correct ? randomPraise() : 'Richtig wäre: ' + this.state.correctAnswer;
+
+    const leitner = LeitnerStore.load();
+    if (correct) LeitnerStore.promote(leitner, formId(f.vocab, f.casus, f.numerus));
+    else         LeitnerStore.demote(leitner,  formId(f.vocab, f.casus, f.numerus));
+    LeitnerStore.save(leitner);
+    this.state.results.push({ form: f, correct });
+
+    setTimeout(() => { this.state.index++; this.render(); }, correct ? 900 : 1800);
+  },
+
+  finish() {
+    SessionSummary.show(this.state.results, 'quiz');
+  }
+};
+
+// Vorläufiger Stub für SessionSummary (wird in Task 12 ersetzt):
+const SessionSummary = {
+  show(results) {
+    const correct = results.filter(r => r.correct).length;
+    alert('Session beendet: ' + correct + ' von ' + results.length + ' richtig.');
+    showScreen('screen-home');
+    renderHome();
+  }
+};
+```
+
+- [ ] **Step 4: Im Browser testen**
+
+- 10 Aufgaben durchspielen
+- Richtig → grüner Button + lateinisches Lob, ~0.9 s, nächste Frage
+- Falsch → roter Button + grüne richtige Antwort + Erklärung, ~1.8 s
+- Nach 10 Aufgaben: Alert mit Ergebnis, zurück zum Startscreen
+- Fortschritts-Anzeige aktualisiert sich
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Quick-Quiz-Modus mit plausiblen Distraktoren"
+```
+
+---
+
+### Task 10: Endung tippen — aktive Produktion mit Toleranz
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+- [ ] **Step 1: CSS**
+
+```css
+.typing-task {
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 28px 22px; box-shadow: var(--shadow);
+  margin: 20px 0; text-align: center;
+  scroll-margin-bottom: 320px;
+}
+.typing-stem { font-size: 28px; }
+.typing-input {
+  border: 2px solid var(--senf); border-radius: var(--radius-sm);
+  padding: 8px 12px; font-size: 26px; font-family: Georgia, serif;
+  width: 130px; text-align: center;
+}
+.typing-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(212,160,23,0.25); }
+.typing-input.correct { border-color: var(--correct); background: #f0f7ea; }
+.typing-input.wrong   { border-color: var(--wrong);   background: #fbeae3; }
+.typing-info { margin: 10px 0 18px; color: var(--text-soft); font-size: 14px; }
+.typing-submit {
+  background: var(--senf); color: white; border: none;
+  padding: 12px 22px; border-radius: var(--radius-sm);
+  font-size: 16px; min-width: 140px; margin-left: 8px;
+}
+.typing-hint { color: var(--text-soft); font-size: 14px; margin-top: 8px; min-height: 20px; }
+```
+
+- [ ] **Step 2: Statisches HTML in `#screen-typing`**
+
+```html
+<section id="screen-typing" class="screen">
+  <button class="back-btn" data-action="home">Zurück</button>
+  <h2>Endung tippen</h2>
+  <div class="quiz-progress" id="typing-progress"></div>
+  <div class="typing-task">
+    <div class="typing-info" id="typing-info"></div>
+    <div class="typing-stem">
+      <span class="latin" id="typing-stem"></span><span style="color: var(--text-soft)">-</span><input
+        class="typing-input"
+        id="typing-input"
+        type="text"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        inputmode="text"
+        maxlength="6">
+      <button class="typing-submit" data-action="typing-submit">Prüfen</button>
+    </div>
+    <div class="typing-hint" id="typing-hint"></div>
+  </div>
+</section>
+```
+
+- [ ] **Step 3: JS — ModeTyping**
+
+```js
+const ModeTyping = {
+  state: null,
+  TASKS_PER_SESSION: 10,
+
+  start() {
+    const setup = SetupStore.load();
+    const leitner = LeitnerStore.load();
+    const tasks = pickTasks(activeForms(setup), leitner, this.TASKS_PER_SESSION);
+    this.state = { tasks, index: 0, results: [], attempts: 0 };
+    showScreen('screen-typing');
+    this.render();
+    const input = document.getElementById('typing-input');
+    input.onkeydown = (e) => { if (e.key === 'Enter') this.submit(); };
+  },
+
+  render() {
+    const { tasks, index } = this.state;
+    if (index >= tasks.length) return this.finish();
+    const f = tasks[index];
+    document.getElementById('typing-progress').textContent =
+      'Aufgabe ' + (index + 1) + ' / ' + tasks.length;
+
+    const info = document.getElementById('typing-info');
+    clear(info);
+    info.appendChild(document.createTextNode(CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ' von '));
+    info.appendChild(el('i', { class: 'latin' }, f.vocab.lemma));
+    info.appendChild(document.createTextNode(' (' + f.vocab.de + ')'));
+
+    document.getElementById('typing-stem').textContent = f.vocab.stem;
+    const input = document.getElementById('typing-input');
+    input.value = '';
+    input.className = 'typing-input';
+    input.disabled = false;
+    document.getElementById('typing-hint').textContent = '';
+    this.state.attempts = 0;
+
+    // Auf iPad in den sichtbaren Bereich scrollen, damit Tastatur nicht verdeckt
+    document.querySelector('.typing-task').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => input.focus(), 30);
+  },
+
+  normalize(s) {
+    return s.toLowerCase()
+      .replace(/ā/g, 'a').replace(/ē/g, 'e').replace(/ī/g, 'i')
+      .replace(/ō/g, 'o').replace(/ū/g, 'u');
+  },
+
+  submit() {
+    if (!this.state) return;
+    const f = this.state.tasks[this.state.index];
+    const expected = ENDINGS[f.vocab.declension][f.numerus][f.casus];
+    const input = document.getElementById('typing-input');
+    const userRaw = input.value.trim();
+    if (!userRaw) return;
+    const ok = this.normalize(userRaw) === this.normalize(expected);
+    this.state.attempts++;
+
+    if (ok) {
+      input.classList.add('correct');
+      input.disabled = true;
+      document.getElementById('typing-hint').textContent = randomPraise();
+      const leitner = LeitnerStore.load();
+      if (this.state.attempts === 1) LeitnerStore.promote(leitner, formId(f.vocab, f.casus, f.numerus));
+      LeitnerStore.save(leitner);
+      this.state.results.push({ form: f, correct: true });
+      setTimeout(() => { this.state.index++; this.render(); }, 900);
+    } else if (this.state.attempts >= 2) {
+      input.classList.add('wrong');
+      input.disabled = true;
+      document.getElementById('typing-hint').textContent = 'Richtig wäre: -' + expected;
+      const leitner = LeitnerStore.load();
+      LeitnerStore.demote(leitner, formId(f.vocab, f.casus, f.numerus));
+      LeitnerStore.save(leitner);
+      this.state.results.push({ form: f, correct: false });
+      setTimeout(() => { this.state.index++; this.render(); }, 1800);
+    } else {
+      input.classList.add('wrong');
+      document.getElementById('typing-hint').textContent =
+        'Noch nicht richtig — versuch\'s noch einmal (' +
+        DECLENSION_LABEL[f.vocab.declension] + ' ' +
+        CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ').';
+      setTimeout(() => {
+        input.classList.remove('wrong');
+        input.value = '';
+        input.focus();
+      }, 600);
+    }
+  },
+
+  finish() {
+    SessionSummary.show(this.state.results, 'typing');
+  }
+};
+
+// Event-Delegation für Submit-Button
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-action="typing-submit"]')) ModeTyping.submit();
+});
+```
+
+- [ ] **Step 4: Im Browser testen, besonders auf iPad**
+
+- Eingabefeld erhält Fokus, Tastatur erscheint flott
+- Eingabe `o`, `O`, `ō` werden alle als korrekt akzeptiert für Dat. Sg. servus
+- Falsche Eingabe: Hinweis, Feld leert sich, Fokus zurück
+- Nach 2 Fehlern: korrekte Endung wird gezeigt, Demote in Box 1
+- Auf iPad: Autokorrektur greift NICHT (testen mit `patri` → bleibt `patri`)
+- Bildschirmtastatur verdeckt das Eingabefeld nicht (scrollIntoView wirkt)
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Endung-tippen-Modus mit Längezeichen-Toleranz"
+```
+
+---
+
+### Task 11: Tabellen-Puzzle — Tap-to-Place
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+> **Designentscheidung:** Statt HTML5-Drag-and-Drop nutzen wir **Tap-to-Place** (Tap auf Endung-Chip → Tap auf Zielzelle). Robuster auf Touch-Geräten, gleich gut bedienbar mit Maus, weniger Code.
+
+- [ ] **Step 1: CSS**
+
+```css
+.puzzle-controls {
+  display: flex; gap: 12px; align-items: center;
+  flex-wrap: wrap; margin-bottom: 14px;
+}
+.puzzle-select {
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  border: 2px solid var(--meerblau); background: white;
+}
+.puzzle-level { font-size: 13px; color: var(--text-soft); }
+
+.puzzle-table {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px;
+}
+.puzzle-grid {
+  display: grid; grid-template-columns: 90px 1fr 1fr;
+  gap: 6px; font-family: Georgia, serif;
+}
+.puzzle-grid .row-label,
+.puzzle-grid .col-label { color: var(--text-soft); font-size: 14px; padding: 6px; }
+.puzzle-grid .col-label { font-weight: bold; text-align: center; }
+.puzzle-cell {
+  border: 2px solid var(--line); border-radius: var(--radius-sm);
+  padding: 12px; text-align: center; font-size: 19px;
+  min-height: 48px; display: flex; align-items: center; justify-content: center;
+}
+.puzzle-cell.empty {
+  border: 2px dashed var(--meerblau); background: #f0f6f9;
+  color: var(--text-soft); cursor: pointer;
+}
+.puzzle-cell.empty.selected { background: #d8e6ee; }
+.puzzle-cell.placed { background: white; color: var(--text); }
+.puzzle-cell.complete { background: #ebf4e3; border-color: var(--correct); }
+
+.puzzle-pool {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  background: var(--card-bg); border-radius: var(--radius);
+  padding: 12px; box-shadow: var(--shadow); min-height: 60px;
+}
+.endung-chip {
+  background: var(--meerblau); color: white;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  font-family: Georgia, serif; font-size: 18px;
+  cursor: pointer; border: 2px solid transparent;
+  min-height: 44px;
+}
+.endung-chip.selected { border-color: var(--senf); transform: scale(1.05); }
+.endung-chip.placed { opacity: 0.35; cursor: default; }
+
+.puzzle-feedback { margin-top: 14px; min-height: 24px; text-align: center; font-size: 16px; }
+.puzzle-feedback.correct { color: var(--correct); }
+.puzzle-feedback.wrong   { color: var(--wrong); }
+```
+
+- [ ] **Step 2: Statisches HTML in `#screen-puzzle`**
+
+```html
+<section id="screen-puzzle" class="screen">
+  <button class="back-btn" data-action="home">Zurück</button>
+  <h2>Tabellen-Puzzle</h2>
+
+  <div class="puzzle-controls">
+    <select class="puzzle-select" id="puzzle-declension">
+      <option value="o">o-Deklination (servus)</option>
+      <option value="a">a-Deklination (fīlia)</option>
+      <option value="kons">konsonantische Dekl. (pater)</option>
+    </select>
+    <select class="puzzle-select" id="puzzle-level">
+      <option value="1">Stufe 1: nur Dativ leer</option>
+      <option value="2">Stufe 2: Dativ + 2 weitere</option>
+      <option value="3">Stufe 3: alle leer</option>
+    </select>
+    <span class="puzzle-level" id="puzzle-count"></span>
+  </div>
+
+  <div class="puzzle-table">
+    <div class="puzzle-grid" id="puzzle-grid"></div>
+  </div>
+
+  <div class="puzzle-pool" id="puzzle-pool"></div>
+  <div class="puzzle-feedback" id="puzzle-feedback"></div>
+</section>
+```
+
+- [ ] **Step 3: JS — ModePuzzle**
+
+```js
+const ModePuzzle = {
+  state: null,
+  DEMO_WORDS: { o: 'servus', a: 'fīlia', kons: 'pater' },
+  CASES_ORDER: ['nom', 'gen', 'dat', 'acc', 'abl'],
+
+  start() {
+    showScreen('screen-puzzle');
+    document.getElementById('puzzle-declension').onchange = () => this.rebuild();
+    document.getElementById('puzzle-level').onchange = () => this.rebuild();
+    this.rebuild();
+  },
+
+  rebuild() {
+    const dec = document.getElementById('puzzle-declension').value;
+    const level = +document.getElementById('puzzle-level').value;
+    const vocab = VOCABULARY.find(v => v.lemma === this.DEMO_WORDS[dec]);
+
+    const emptySet = new Set();
+    if (level >= 1) { emptySet.add('dat|sg'); emptySet.add('dat|pl'); }
+    if (level === 2) {
+      const others = this.CASES_ORDER.filter(c => c !== 'dat');
+      shuffle(others).slice(0, 2).forEach(c => {
+        emptySet.add(c + '|sg'); emptySet.add(c + '|pl');
+      });
+    }
+    if (level === 3) {
+      this.CASES_ORDER.forEach(c => { emptySet.add(c + '|sg'); emptySet.add(c + '|pl'); });
+    }
+
+    const poolItems = [];
+    emptySet.forEach(key => {
+      const [casus, numerus] = key.split('|');
+      const ending = ENDINGS[dec][numerus][casus] || '—';
+      poolItems.push({ key, ending, placed: false });
+    });
+
+    this.state = {
+      declension: dec, vocab, emptySet,
+      placements: {},
+      selectedChipIdx: null,
+      selectedCellKey: null,
+      pool: shuffle(poolItems)
+    };
+    this.render();
+  },
+
+  render() {
+    const { declension: dec, vocab, emptySet, placements, pool } = this.state;
+    const grid = document.getElementById('puzzle-grid');
+    clear(grid);
+
+    grid.appendChild(el('div'));
+    grid.appendChild(el('div', { class: 'col-label' }, 'Sg.'));
+    grid.appendChild(el('div', { class: 'col-label' }, 'Pl.'));
+
+    this.CASES_ORDER.forEach(c => {
+      grid.appendChild(el('div', { class: 'row-label' }, CASE_LABEL[c]));
+      for (const num of ['sg', 'pl']) {
+        const key = c + '|' + num;
+        const cell = el('div', { class: 'puzzle-cell' });
+        if (emptySet.has(key)) {
+          if (placements[key]) {
+            cell.textContent = vocab.stem + placements[key];
+            cell.classList.add('placed');
+          } else {
+            cell.textContent = '?';
+            cell.classList.add('empty');
+            if (this.state.selectedCellKey === key) cell.classList.add('selected');
+            cell.onclick = () => this.cellClick(key);
+          }
+        } else {
+          cell.textContent = (c === 'nom' && vocab.irregularNomSg)
+            ? vocab.lemma
+            : vocab.stem + ENDINGS[dec][num][c];
+          cell.classList.add('placed');
+        }
+        grid.appendChild(cell);
+      }
+    });
+
+    const poolEl = document.getElementById('puzzle-pool');
+    clear(poolEl);
+    pool.forEach((item, idx) => {
+      const chip = el('div', { class: 'endung-chip' }, '-' + item.ending);
+      if (this.state.selectedChipIdx === idx) chip.classList.add('selected');
+      if (item.placed) chip.classList.add('placed');
+      else chip.onclick = () => this.chipClick(idx);
+      poolEl.appendChild(chip);
+    });
+
+    const remaining = [...emptySet].filter(k => !placements[k]).length;
+    document.getElementById('puzzle-count').textContent =
+      remaining === 0
+        ? '🎉 Alle Zellen gefüllt!'
+        : 'Noch ' + remaining + ' Endung' + (remaining === 1 ? '' : 'en') + ' platzieren.';
+  },
+
+  chipClick(idx) {
+    if (this.state.pool[idx].placed) return;
+    this.state.selectedChipIdx = (this.state.selectedChipIdx === idx) ? null : idx;
+    this.tryAutoPlace();
+    this.render();
+  },
+
+  cellClick(key) {
+    this.state.selectedCellKey = (this.state.selectedCellKey === key) ? null : key;
+    this.tryAutoPlace();
+    this.render();
+  },
+
+  tryAutoPlace() {
+    const { selectedChipIdx, selectedCellKey, pool } = this.state;
+    if (selectedChipIdx == null || !selectedCellKey) return;
+    const chip = pool[selectedChipIdx];
+    const [casus, numerus] = selectedCellKey.split('|');
+    const expectedEnding = ENDINGS[this.state.declension][numerus][casus];
+
+    const fb = document.getElementById('puzzle-feedback');
+    if (chip.ending === expectedEnding) {
+      this.state.placements[selectedCellKey] = chip.ending;
+      chip.placed = true;
+      this.state.selectedChipIdx = null;
+      this.state.selectedCellKey = null;
+      fb.textContent = '';
+      fb.className = 'puzzle-feedback';
+      this.checkComplete();
+    } else {
+      fb.textContent = 'Das passt nicht zu dieser Zelle.';
+      fb.className = 'puzzle-feedback wrong';
+      this.state.selectedChipIdx = null;
+      this.state.selectedCellKey = null;
+      setTimeout(() => { fb.textContent = ''; fb.className = 'puzzle-feedback'; }, 1400);
+    }
+  },
+
+  checkComplete() {
+    const remaining = [...this.state.emptySet].filter(k => !this.state.placements[k]).length;
+    if (remaining === 0) {
+      const leitner = LeitnerStore.load();
+      this.state.emptySet.forEach(key => {
+        const [casus, numerus] = key.split('|');
+        LeitnerStore.promote(leitner, formId(this.state.vocab, casus, numerus));
+      });
+      LeitnerStore.save(leitner);
+      const fb = document.getElementById('puzzle-feedback');
+      fb.className = 'puzzle-feedback correct';
+      fb.textContent = 'Tabelle vollständig — Recte!';
+    }
+  }
+};
+```
+
+- [ ] **Step 4: Im Browser auf Mac und iPad testen**
+
+- Default: o-Deklination, Stufe 1 → Dat-Sg + Dat-Pl leer, Endungen `-ō` und `-īs` im Pool
+- Tap Chip → wird hervorgehoben → Tap Zelle: passt → wird gefüllt
+- Falsche Kombi: Feedback "Das passt nicht…", Selektion zurück
+- Stufe 2 und 3 testen
+- Deklination wechseln → Tabelle neu generiert
+- Auf iPad: Tap funktioniert ohne Doppel-Tap-Zoom-Delay
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Tabellen-Puzzle mit Tap-to-Place"
+```
+
+---
+
+### Task 12: Session-Bilanz und Mix-Modus
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, HTML, JS)
+
+- [ ] **Step 1: CSS**
+
+```css
+.summary {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); padding: 32px 24px; margin: 24px 0;
+  text-align: center;
+}
+.summary .score {
+  font-size: 56px; font-family: Georgia, serif;
+  color: var(--terracotta); margin: 8px 0;
+}
+.summary .score-label { font-size: 16px; color: var(--text-soft); }
+.summary .promoted { color: var(--olive); font-size: 17px; margin-top: 16px; }
+.summary .demoted  { color: var(--wrong); font-size: 14px; margin-top: 6px; }
+.summary .actions {
+  display: flex; gap: 12px; justify-content: center; margin-top: 24px;
+}
+.summary .actions button {
+  padding: 12px 22px; border-radius: var(--radius-sm);
+  border: none; font-size: 16px; cursor: pointer;
+}
+.summary .actions .primary { background: var(--olive); color: white; }
+.summary .actions .secondary { background: var(--card-bg); border: 2px solid var(--line); }
+.summary .list { text-align: left; margin: 18px auto; max-width: 380px; font-size: 14px; padding-left: 18px; }
+.summary .list li { padding: 4px 0; list-style: none; }
+.summary .list .ok::before { content: "✓ "; color: var(--olive); }
+.summary .list .nope::before { content: "✗ "; color: var(--wrong); }
+```
+
+- [ ] **Step 2: Statisches HTML in `#screen-summary`**
+
+```html
+<section id="screen-summary" class="screen">
+  <h2 style="text-align:center;">Session beendet</h2>
+  <div class="summary" id="summary-card"></div>
+</section>
+```
+
+- [ ] **Step 3: JS — echtes SessionSummary und ModeMix**
+
+Den `SessionSummary`-Stub aus Task 9 ersetzen, dahinter `ModeMix` einfügen:
+
+```js
+const SessionSummary = {
+  show(results, originMode) {
+    const correct = results.filter(r => r.correct).length;
+    const total = results.length;
+    const promoted = correct;
+    const demoted  = total - correct;
+
+    const card = document.getElementById('summary-card');
+    clear(card);
+    card.appendChild(el('div', { class: 'score-label' }, 'Richtig'));
+    card.appendChild(el('div', { class: 'score' }, correct + ' / ' + total));
+    card.appendChild(el('div', { class: 'promoted' }, promoted + ' Formen aufgestiegen ⬆'));
+    if (demoted) card.appendChild(el('div', { class: 'demoted' }, demoted + ' Formen zurück in Box 1'));
+
+    const list = el('ul', { class: 'list' });
+    results.forEach(r => {
+      const f = r.form;
+      const lat = decline(f.vocab, f.casus, f.numerus);
+      const tag = CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus];
+      list.appendChild(el('li', { class: r.correct ? 'ok' : 'nope' },
+        el('span', { class: 'latin' }, lat),
+        ' — ' + f.vocab.de + ' (' + tag + ')'
+      ));
+    });
+    card.appendChild(list);
+
+    const actions = el('div', { class: 'actions' });
+    actions.appendChild(el('button', { class: 'primary',
+      onclick: () => this.replay(originMode) }, 'Nochmal'));
+    actions.appendChild(el('button', { class: 'secondary',
+      onclick: () => { showScreen('screen-home'); renderHome(); } }, 'Zur Startseite'));
+    card.appendChild(actions);
+
+    showScreen('screen-summary');
+  },
+
+  replay(originMode) {
+    if (originMode === 'quiz')   return ModeQuiz.start();
+    if (originMode === 'typing') return ModeTyping.start();
+    if (originMode === 'mix')    return ModeMix.start();
+    showScreen('screen-home');
+  }
+};
+
+const ModeMix = {
+  state: null,
+  TASKS_PER_SESSION: 10,
+
+  start() {
+    const setup = SetupStore.load();
+    const leitner = LeitnerStore.load();
+    const tasks = pickTasks(activeForms(setup), leitner, this.TASKS_PER_SESSION);
+    this.state = {
+      tasks: tasks.map(t => ({ form: t, mode: Math.random() < 0.5 ? 'quiz' : 'typing' })),
+      index: 0,
+      results: []
+    };
+    this.next();
+  },
+
+  next() {
+    if (this.state.index >= this.state.tasks.length) {
+      return SessionSummary.show(this.state.results, 'mix');
+    }
+    const { form, mode } = this.state.tasks[this.state.index];
+    const mixCallback = (res) => {
+      this.state.results.push(res[0]);
+      this.state.index++;
+      this.next();
+    };
+    if (mode === 'quiz') {
+      ModeQuiz.state = { tasks: [form], index: 0, results: [], answered: false, _mixCallback: mixCallback };
+      showScreen('screen-quiz');
+      ModeQuiz.render();
+    } else {
+      ModeTyping.state = { tasks: [form], index: 0, results: [], attempts: 0, _mixCallback: mixCallback };
+      showScreen('screen-typing');
+      ModeTyping.render();
+    }
+  }
+};
+
+// Quiz und Typing modifizieren, damit Mix-Callback statt SessionSummary aufgerufen wird:
+const _origQuizFinish = ModeQuiz.finish;
+ModeQuiz.finish = function () {
+  if (this.state && this.state._mixCallback) return this.state._mixCallback(this.state.results);
+  return _origQuizFinish.call(this);
+};
+const _origTypingFinish = ModeTyping.finish;
+ModeTyping.finish = function () {
+  if (this.state && this.state._mixCallback) return this.state._mixCallback(this.state.results);
+  return _origTypingFinish.call(this);
+};
+```
+
+- [ ] **Step 4: Im Browser testen**
+
+- Quick Quiz → 10 Aufgaben → Session-Summary zeigt Score, Aufstiege, Liste mit ✓/✗
+- "Nochmal" → neue Quiz-Session
+- "Zur Startseite" → Home, Fortschritt aktualisiert
+- Mix-Modus → wechselt zwischen Quiz- und Typing-Bildschirmen, beendet mit Summary
+- Karteikarten-Modus weiterhin unbeeinflusst (kein Summary)
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: Session-Bilanz und Mix-Modus"
+```
+
+---
+
+### Task 13: Adjektive und Possessivpronomina (optional via Toggle)
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (JS)
+
+- [ ] **Step 1: Adjektiv- und Possessivpronomen-Daten**
+
+Direkt nach `VOCABULARY` einfügen:
+
+```js
+const ADJ_PRON_VOCABULARY = [
+  { stem: 'bon',   lemma: 'bonus',  declension: 'o', gender: 'm', de: 'gut',   kind: 'adj' },
+  { stem: 'bon',   lemma: 'bona',   declension: 'a', gender: 'f', de: 'gut',   kind: 'adj' },
+  { stem: 'magn',  lemma: 'magnus', declension: 'o', gender: 'm', de: 'groß',  kind: 'adj' },
+  { stem: 'magn',  lemma: 'magna',  declension: 'a', gender: 'f', de: 'groß',  kind: 'adj' },
+  { stem: 'parv',  lemma: 'parvus', declension: 'o', gender: 'm', de: 'klein', kind: 'adj' },
+  { stem: 'parv',  lemma: 'parva',  declension: 'a', gender: 'f', de: 'klein', kind: 'adj' },
+  { stem: 'long',  lemma: 'longus', declension: 'o', gender: 'm', de: 'lang',  kind: 'adj' },
+  { stem: 'long',  lemma: 'longa',  declension: 'a', gender: 'f', de: 'lang',  kind: 'adj' },
+  { stem: 'me',    lemma: 'meus',   declension: 'o', gender: 'm', de: 'mein',  kind: 'pron' },
+  { stem: 'me',    lemma: 'mea',    declension: 'a', gender: 'f', de: 'mein',  kind: 'pron' },
+  { stem: 'tu',    lemma: 'tuus',   declension: 'o', gender: 'm', de: 'dein',  kind: 'pron' },
+  { stem: 'tu',    lemma: 'tua',    declension: 'a', gender: 'f', de: 'dein',  kind: 'pron' },
+  { stem: 'su',    lemma: 'suus',   declension: 'o', gender: 'm', de: 'sein',  kind: 'pron' },
+  { stem: 'su',    lemma: 'sua',    declension: 'a', gender: 'f', de: 'sein',  kind: 'pron' },
+  { stem: 'nostr', lemma: 'noster', declension: 'o', gender: 'm', de: 'unser', irregularNomSg: true, kind: 'pron' },
+  { stem: 'nostr', lemma: 'nostra', declension: 'a', gender: 'f', de: 'unser', kind: 'pron' }
+];
+
+// In GERMAN_PLURAL_SUFFIX leere Strings ergänzen für die deutschen Bedeutungen:
+Object.assign(GERMAN_PLURAL_SUFFIX, {
+  'gut': 'e', 'groß': 'e', 'klein': 'e', 'lang': 'e',
+  'mein': 'e', 'dein': 'e', 'sein': 'e', 'unser': 'e'
+});
+```
+
+- [ ] **Step 2: `activeForms()` erweitern**
+
+Bestehende `activeForms`-Funktion ersetzen:
+
+```js
+function activeForms(setup) {
+  const wordPool = setup.includeAdjectivesPronouns
+    ? [...VOCABULARY, ...ADJ_PRON_VOCABULARY]
+    : VOCABULARY;
+  const result = [];
+  for (const vocab of wordPool) {
+    if (!setup.declensions.includes(vocab.declension)) continue;
+    for (const numerus of setup.numbers) {
+      for (const casus of setup.cases) {
+        result.push({ vocab, casus, numerus });
+      }
+    }
+  }
+  return result;
+}
+```
+
+- [ ] **Step 3: Im Browser testen**
+
+- Setup → "+ Adjektive & Possessivpronomina" aktivieren
+- Aktiver Pool steigt von 120 auf 152 Formen (60 + 16 Wörter × 2 Numeri × 1 Kasus)
+- In allen Modi tauchen Adjektive/Pronomen auf
+- Endungen korrekt: `bonō`, `magnā`, `meīs`, etc.
+- Toggle aus → Pool zurück auf 120
+
+> **Bekannte UI-Approximation:** `germanPhrase()` produziert für Adjektive Wendungen wie "der gut" / "die gute" — Adjektive allein ohne Substantiv klingen im Deutschen unidiomatisch. Das ist für eine Lern-App akzeptabel (sie soll die Endung üben, nicht den deutschen Stil). Falls das stört, kann `germanPhrase()` später um eine Sonderbehandlung für `vocab.kind === 'adj'` oder `'pron'` ergänzt werden (z. B. Anzeige "Dativ Sg. m. von bonus" statt "dem gut").
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: optionales Adjektiv- und Possessivpronomen-Modul"
+```
+
+---
+
+### Task 14: iPad-Polish und manueller Akzeptanztest
+
+**Files:**
+- Modify: `latein-dativ-trainer.html` (CSS, evtl. JS)
+
+- [ ] **Step 1: Polish-CSS-Tweaks**
+
+Im `<style>`-Block ergänzen:
+
+```css
+/* iOS-Polish */
+@supports (-webkit-touch-callout: none) {
+  .mode-card, .chip, .endung-chip, .puzzle-cell, .flashcard, button {
+    -webkit-user-select: none;
+  }
+  /* 100 vh stabil halten bei URL-Bar-Wechsel */
+  body { min-height: -webkit-fill-available; }
+}
+```
+
+- [ ] **Step 2: Vollständiger Akzeptanztest auf iPad**
+
+Auf dem iPad in Safari die App öffnen und Checkliste durchgehen:
+
+| Test | Erwartung |
+|------|-----------|
+| App lädt schnell, keine Fehler in Konsole | ✓ |
+| Setup-Leiste: alle Chips tappbar, persistieren | ✓ |
+| Karteikarten: Tap zum Umdrehen, Sitzt/Nochmal funktioniert | ✓ |
+| Quick Quiz: 4 Buttons gut tappbar (≥44 px), Animationen flüssig | ✓ |
+| Endung tippen: `o` und `ō` werden gleichermaßen akzeptiert | ✓ |
+| Endung tippen: iOS macht aus "patri" KEIN "Patrick" | ✓ |
+| Tabellen-Puzzle: Tap-to-Place ohne Verzögerung | ✓ |
+| Mix-Modus: Wechsel zwischen Quiz und Typing flüssig | ✓ |
+| Session-Summary: lesbar, beide Buttons funktionieren | ✓ |
+| Bildschirmtastatur verdeckt das Eingabefeld nicht | ✓ |
+| Portrait und Landscape beide nutzbar | ✓ |
+| Reset-Fortschritt: Confirm erscheint, danach alles bei 0 | ✓ |
+
+Notiere alle Defizite. Falls Bugs auftauchen: in dieser Task beheben.
+
+- [ ] **Step 3: Hover-Quirks beheben (falls nötig)**
+
+Falls Tap-Effekte auf iPad nach dem Loslassen "hängen bleiben" (Card-Schatten bleibt nach Tap), war die Hover-Regel aus Task 7 schon mit `@media (hover: hover)` eingepackt — passt. Falls dennoch Flicker: prüfen, ob weitere `:hover`-Regeln eingebaut sind, und einpacken.
+
+- [ ] **Step 4: Optisch-funktionaler Smoke-Test auf dem Mac**
+
+In Chrome DevTools → Device Mode → iPad Pro / iPhone-Größen prüfen:
+- Portrait: 1-spaltige Modi auf Phone-Breite, 2×2 auf Tablet-Breite
+- Landscape: 2×2 + Mix-Card unten, max-width 880 px greift
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add latein-dativ-trainer.html
+git commit -m "feat: iPad-Polish und Akzeptanztest-Fixes"
+```
+
+---
+
+## Reihenfolge & Abhängigkeiten
+
+```
+Task 1 (Grundgerüst + Theme + Navigation)
+  └→ Task 2 (Endungstabelle + Vokabular)
+       └→ Task 3 (decline() + Tests)
+            └→ Task 4 (SetupStore + activeForms)
+                 └→ Task 5 (LeitnerStore + pickTasks)
+                      └→ Task 6 (el()-Helper + Setup-Leiste UI)
+                           └→ Task 7 (Startscreen Modi-Grid)
+                                ├→ Task 8 (Karteikarten)
+                                ├→ Task 9 (Quick Quiz)
+                                ├→ Task 10 (Endung tippen)
+                                ├→ Task 11 (Tabellen-Puzzle)
+                                └→ Task 12 (Session-Bilanz + Mix-Modus)
+                                     └→ Task 13 (Adj/Pron-Toggle)
+                                          └→ Task 14 (iPad-Polish + Akzeptanztest)
+```
+
+- Tasks 8–11 können nach Task 7 prinzipiell parallel gebaut werden
+- Task 12 hängt von 9 und 10 ab (Mix-Modus nutzt deren Renderer)
+- Task 13 ist eine Vokabel-Pool-Erweiterung — funktioniert in jedem Modus
+- Task 14 ist Schluss-Polish + Akzeptanztest
+
+## Hinweis zum späteren Vokabel-Austausch
+
+Wenn die Pontes-Vokabelliste vorliegt: nur das `VOCABULARY`-Array in Task 2 ersetzen. Alle anderen Tasks bleiben unverändert. Pro Eintrag müssen `stem`, `lemma`, `declension`, `gender`, `de` und ggf. `irregularNomSg: true` korrekt gesetzt sein — siehe Beispiele in Task 2.
