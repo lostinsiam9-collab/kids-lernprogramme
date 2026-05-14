@@ -184,6 +184,29 @@
     .quiz-feedback.correct { color: var(--correct); }
     .quiz-feedback.wrong   { color: var(--wrong); }
     .quiz-progress { font-size: 13px; color: var(--text-soft); text-align: center; }
+
+    .typing-task {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 28px 22px; box-shadow: var(--shadow);
+      margin: 20px 0; text-align: center;
+      scroll-margin-bottom: 320px;
+    }
+    .typing-stem { font-size: 28px; }
+    .typing-input {
+      border: 2px solid var(--senf); border-radius: var(--radius-sm);
+      padding: 8px 12px; font-size: 26px; font-family: Georgia, serif;
+      width: 130px; text-align: center;
+    }
+    .typing-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(212,160,23,0.25); }
+    .typing-input.correct { border-color: var(--correct); background: #f0f7ea; }
+    .typing-input.wrong   { border-color: var(--wrong);   background: #fbeae3; }
+    .typing-info { margin: 10px 0 18px; color: var(--text-soft); font-size: 14px; }
+    .typing-submit {
+      background: var(--senf); color: white; border: none;
+      padding: 12px 22px; border-radius: var(--radius-sm);
+      font-size: 16px; min-width: 140px; margin-left: 8px;
+    }
+    .typing-hint { color: var(--text-soft); font-size: 14px; margin-top: 8px; min-height: 20px; }
   </style>
 </head>
 <body>
@@ -284,6 +307,24 @@
     <section id="screen-typing" class="screen">
       <button class="back-btn" data-action="home">Zurück</button>
       <h2>Endung tippen</h2>
+      <div class="quiz-progress" id="typing-progress"></div>
+      <div class="typing-task">
+        <div class="typing-info" id="typing-info"></div>
+        <div class="typing-stem">
+          <span class="latin" id="typing-stem"></span><span style="color: var(--text-soft)">-</span><input
+            class="typing-input"
+            id="typing-input"
+            type="text"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            inputmode="text"
+            maxlength="6">
+          <button class="typing-submit" data-action="typing-submit">Prüfen</button>
+        </div>
+        <div class="typing-hint" id="typing-hint"></div>
+      </div>
     </section>
 
     <section id="screen-puzzle" class="screen">
@@ -828,8 +869,107 @@
       }
     };
 
-    // Stubs — werden in Tasks 10–12 implementiert:
-    const ModeTyping = { start() { showScreen('screen-typing'); } };
+    // ===== Mode: Endung tippen =====
+    const ModeTyping = {
+      state: null,
+      TASKS_PER_SESSION: 10,
+
+      start() {
+        const setup = SetupStore.load();
+        const leitner = LeitnerStore.load();
+        const tasks = pickTasks(activeForms(setup), leitner, this.TASKS_PER_SESSION);
+        this.state = { tasks, index: 0, results: [], attempts: 0 };
+        showScreen('screen-typing');
+        this.render();
+        const input = document.getElementById('typing-input');
+        input.onkeydown = (e) => { if (e.key === 'Enter') this.submit(); };
+      },
+
+      render() {
+        const { tasks, index } = this.state;
+        if (index >= tasks.length) return this.finish();
+        const f = tasks[index];
+        document.getElementById('typing-progress').textContent =
+          'Aufgabe ' + (index + 1) + ' / ' + tasks.length;
+
+        const info = document.getElementById('typing-info');
+        clear(info);
+        info.appendChild(document.createTextNode(CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ' von '));
+        info.appendChild(el('i', { class: 'latin' }, f.vocab.lemma));
+        info.appendChild(document.createTextNode(' (' + f.vocab.de + ')'));
+
+        document.getElementById('typing-stem').textContent = f.vocab.stem;
+        const input = document.getElementById('typing-input');
+        input.value = '';
+        input.className = 'typing-input';
+        input.disabled = false;
+        document.getElementById('typing-hint').textContent = '';
+        this.state.attempts = 0;
+
+        // Auf iPad in den sichtbaren Bereich scrollen, damit Tastatur nicht verdeckt
+        document.querySelector('.typing-task').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => input.focus(), 30);
+      },
+
+      normalize(s) {
+        return s.toLowerCase()
+          .replace(/ā/g, 'a').replace(/ē/g, 'e').replace(/ī/g, 'i')
+          .replace(/ō/g, 'o').replace(/ū/g, 'u');
+      },
+
+      submit() {
+        if (!this.state) return;
+        const f = this.state.tasks[this.state.index];
+        const expected = ENDINGS[f.vocab.declension][f.numerus][f.casus];
+        const input = document.getElementById('typing-input');
+        const userRaw = input.value.trim();
+        if (!userRaw) return;
+        const ok = this.normalize(userRaw) === this.normalize(expected);
+        this.state.attempts++;
+
+        if (ok) {
+          input.classList.add('correct');
+          input.disabled = true;
+          document.getElementById('typing-hint').textContent = randomPraise();
+          const leitner = LeitnerStore.load();
+          if (this.state.attempts === 1) LeitnerStore.promote(leitner, formId(f.vocab, f.casus, f.numerus));
+          LeitnerStore.save(leitner);
+          this.state.results.push({ form: f, correct: true });
+          setTimeout(() => { this.state.index++; this.render(); }, 900);
+        } else if (this.state.attempts >= 2) {
+          input.classList.add('wrong');
+          input.disabled = true;
+          document.getElementById('typing-hint').textContent = 'Richtig wäre: -' + expected;
+          const leitner = LeitnerStore.load();
+          LeitnerStore.demote(leitner, formId(f.vocab, f.casus, f.numerus));
+          LeitnerStore.save(leitner);
+          this.state.results.push({ form: f, correct: false });
+          setTimeout(() => { this.state.index++; this.render(); }, 1800);
+        } else {
+          input.classList.add('wrong');
+          document.getElementById('typing-hint').textContent =
+            'Noch nicht richtig — versuch\'s noch einmal (' +
+            DECLENSION_LABEL[f.vocab.declension] + ' ' +
+            CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ').';
+          setTimeout(() => {
+            input.classList.remove('wrong');
+            input.value = '';
+            input.focus();
+          }, 600);
+        }
+      },
+
+      finish() {
+        SessionSummary.show(this.state.results, 'typing');
+      }
+    };
+
+    // Event-Delegation für Submit-Button
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="typing-submit"]')) ModeTyping.submit();
+    });
+
+    // Stubs — werden in Tasks 11–12 implementiert:
     const ModePuzzle = { start() { showScreen('screen-puzzle'); } };
     const ModeMix    = { start() { alert('Mix-Modus: kommt in Task 12.'); } };
 
