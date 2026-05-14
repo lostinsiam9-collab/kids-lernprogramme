@@ -134,6 +134,17 @@
       font-size: 13px; text-decoration: underline; padding: 4px 0;
       min-height: auto;
     }
+    .setup-actions {
+      display: flex; flex-wrap: wrap; gap: 14px;
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+    .setup-actions button {
+      background: none; border: none; color: var(--text-soft);
+      font-size: 13px; text-decoration: underline; padding: 4px 0;
+      min-height: auto; cursor: pointer;
+    }
+    .setup-actions button.danger { color: var(--error); }
 
     /* === Mode Cards === */
     .modes {
@@ -994,6 +1005,83 @@
     StatsStore.load();
 
     // ============================================================
+    //  EXPORT / IMPORT — Fortschritts-Backup
+    // ============================================================
+
+    function exportProgress() {
+      const payload = {
+        app: 'deutsch-zeitformen-trainer',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        setup: SETUP,
+        leitner: LeitnerStore.data,
+        stats: StatsStore.data
+      };
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = 'zeit-reise-fortschritt-' + dateStr + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function importProgress() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json,.json';
+      input.style.display = 'none';
+      input.onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            if (!data || data.app !== 'deutsch-zeitformen-trainer') {
+              alert('Diese Datei ist kein gültiges Zeit-Reise-Backup.');
+              return;
+            }
+            const when = data.exportedAt ? new Date(data.exportedAt).toLocaleDateString('de-DE') : 'unbekanntem Datum';
+            const ok = confirm('Backup vom ' + when + ' einspielen?\n\nDer aktuelle Fortschritt auf diesem Gerät wird ersetzt.');
+            if (!ok) return;
+
+            if (data.setup && typeof data.setup === 'object') {
+              SETUP = {
+                tenses:     Array.isArray(data.setup.tenses)     && data.setup.tenses.length     ? data.setup.tenses     : DEFAULT_SETUP.tenses,
+                pronouns:   Array.isArray(data.setup.pronouns)   && data.setup.pronouns.length   ? data.setup.pronouns   : DEFAULT_SETUP.pronouns,
+                verbGroups: Array.isArray(data.setup.verbGroups) && data.setup.verbGroups.length ? data.setup.verbGroups : DEFAULT_SETUP.verbGroups
+              };
+              SetupStore.save(SETUP);
+            }
+            if (data.leitner && typeof data.leitner === 'object') {
+              LeitnerStore.data = data.leitner;
+              LeitnerStore.save();
+            }
+            if (data.stats && typeof data.stats === 'object') {
+              StatsStore.data = Object.assign(StatsStore.data, data.stats);
+              StatsStore.save();
+            }
+            renderSetupBar();
+            renderProgress();
+            alert('Fortschritt wurde wiederhergestellt!');
+          } catch (err) {
+            alert('Fehler beim Einlesen der Datei:\n' + err.message);
+          }
+        };
+        reader.onerror = () => alert('Datei konnte nicht gelesen werden.');
+        reader.readAsText(file);
+      };
+      document.body.appendChild(input);
+      input.click();
+      setTimeout(() => input.remove(), 1000);
+    }
+
+    // ============================================================
     //  TASK GENERATION
     // ============================================================
 
@@ -1136,9 +1224,16 @@
       bar.appendChild(el('div', { class: 'verb-summary' },
         nVerbs + ' Verben · ' + nForms + ' Formen zum Üben'));
 
-      // Reset button
-      bar.appendChild(el('button', {
-        class: 'setup-reset',
+      // Backup-Aktionen: Export / Import / Reset
+      const actions = el('div', { class: 'setup-actions' });
+      actions.appendChild(el('button', {
+        onclick: () => exportProgress()
+      }, '⬇ Fortschritt exportieren'));
+      actions.appendChild(el('button', {
+        onclick: () => importProgress()
+      }, '⬆ Fortschritt importieren'));
+      actions.appendChild(el('button', {
+        class: 'danger',
         onclick: () => {
           if (confirm('Fortschritt zurücksetzen? Alle gelernten Formen werden auf Anfang gesetzt.')) {
             LeitnerStore.reset();
@@ -1146,6 +1241,7 @@
           }
         }
       }, 'Fortschritt zurücksetzen'));
+      bar.appendChild(actions);
     }
 
     function renderProgress() {
