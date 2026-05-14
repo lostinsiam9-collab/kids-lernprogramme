@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Zeit-Reise · Deutsche Zeitformen</title>
+  <style>
+    :root {
+      --bg-start: #e8f4f8;
+      --bg-end: #fef3e2;
+      --primary: #4a90e2;
+      --primary-dark: #2c5f9e;
+      --accent: #f5a623;
+      --success: #58a55c;
+      --success-bg: #e8f5e9;
+      --error: #e85c5c;
+      --error-bg: #fde8e8;
+      --text: #2c3e50;
+      --text-soft: #7f8c8d;
+      --line: #e0e6ed;
+      --line-strong: #c8d2dc;
+      --card-bg: #ffffff;
+      --tone-praes: #58a55c;
+      --tone-praet: #f5a623;
+      --tone-perf:  #4a90e2;
+      --tone-futur: #9b59b6;
+      --tone-praes-bg: #e8f5e9;
+      --tone-praet-bg: #fff3e0;
+      --tone-perf-bg:  #e3f2fd;
+      --tone-futur-bg: #f3e5f5;
+      --shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+      --shadow-lg: 0 8px 24px rgba(44, 62, 80, 0.15);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 19px;
+      min-height: 100vh;
+      padding: 20px 14px 80px;
+    }
+
+    h1, h2, h3 { font-family: 'Segoe UI', system-ui, sans-serif; }
+    h1 { font-size: 32px; margin: 0; text-align: center; color: var(--primary-dark); letter-spacing: 1px; }
+    h1 .sub { display: block; font-size: 13px; letter-spacing: 4px; color: var(--text-soft); margin-bottom: 6px; text-transform: uppercase; }
+    h2 { font-size: 24px; color: var(--primary-dark); margin: 0 0 16px; }
+
+    button, input, select { font-family: inherit; font-size: 19px; }
+    button { cursor: pointer; touch-action: manipulation; min-height: 48px; }
+    input[type="text"] {
+      min-height: 48px; padding: 10px 14px;
+      border: 2px solid var(--line-strong); border-radius: var(--radius-sm);
+      background: var(--card-bg); color: var(--text);
+      outline: none; transition: border-color 0.15s;
+    }
+    input[type="text"]:focus { border-color: var(--primary); }
+    input[type="text"].correct { border-color: var(--success); background: var(--success-bg); }
+    input[type="text"].wrong { border-color: var(--error); background: var(--error-bg); animation: shake 0.4s; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    @keyframes pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-15deg); }
+      75% { transform: rotate(15deg); }
+    }
+    @keyframes pulse-success {
+      0% { box-shadow: 0 0 0 0 rgba(88, 165, 92, 0.5); }
+      70% { box-shadow: 0 0 0 16px rgba(88, 165, 92, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(88, 165, 92, 0); }
+    }
+
+    main { max-width: 920px; margin: 0 auto; }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fade-in 0.25s; }
+
+    .back-btn {
+      background: none; border: none; color: var(--text);
+      font-size: 16px; padding: 8px 12px; margin-bottom: 12px;
+    }
+    .back-btn::before { content: "← "; }
+
+    /* === Setup-Bar === */
+    .setup-bar {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin: 18px 0 22px;
+      box-shadow: var(--shadow);
+    }
+    .setup-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .setup-row:last-child { margin-bottom: 0; }
+    .setup-label {
+      font-weight: 600;
+      color: var(--text-soft); font-size: 13px;
+      text-transform: uppercase; letter-spacing: 1px;
+      width: 100%; margin-bottom: 4px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 8px 14px; border-radius: 22px;
+      border: 2px solid var(--line); background: white;
+      cursor: pointer; font-size: 15px; user-select: none;
+      min-height: 40px; min-width: 56px;
+      transition: all 0.15s;
+    }
+    .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .chip.tone-praes.active { background: var(--tone-praes); border-color: var(--tone-praes); }
+    .chip.tone-praet.active { background: var(--tone-praet); border-color: var(--tone-praet); }
+    .chip.tone-perf.active  { background: var(--tone-perf);  border-color: var(--tone-perf); }
+    .chip.tone-futur.active { background: var(--tone-futur); border-color: var(--tone-futur); }
+    .setup-reset {
+      background: none; border: none; color: var(--text-soft);
+      font-size: 13px; text-decoration: underline; padding: 4px 0;
+      min-height: auto;
+    }
+
+    /* === Mode Cards === */
+    .modes {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 14px; margin-bottom: 18px;
+    }
+    .mode-card {
+      background: var(--card-bg);
+      border-left: 5px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 18px;
+      text-align: left;
+      box-shadow: var(--shadow);
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      border-top: none; border-right: none; border-bottom: none;
+      display: block; width: 100%; color: var(--text);
+    }
+    @media (hover: hover) {
+      .mode-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    }
+    .mode-card .icon { font-size: 30px; margin-bottom: 4px; display: block; }
+    .mode-card h3 { margin: 4px 0 4px; font-size: 19px; color: var(--primary-dark); }
+    .mode-card p { margin: 0; font-size: 14px; color: var(--text-soft); }
+    .mode-card.cards   { border-left-color: #e07a5f; }
+    .mode-card.typing  { border-left-color: var(--primary); }
+    .mode-card.quiz    { border-left-color: var(--success); }
+    .mode-card.sorter  { border-left-color: var(--tone-futur); }
+    .mode-card.mix {
+      grid-column: 1 / -1;
+      border-left-color: var(--accent);
+      background: linear-gradient(135deg, #fff 0%, #fff8e7 100%);
+    }
+
+    /* === Progress Bars === */
+    .progress {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 14px 18px; box-shadow: var(--shadow); margin-top: 16px;
+    }
+    .progress h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-soft); margin: 0 0 10px; }
+    .progress-row { display: grid; grid-template-columns: 100px 1fr 50px; gap: 10px; align-items: center; margin: 6px 0; font-size: 15px; }
+    .progress-row .bar { background: var(--line); border-radius: 4px; height: 10px; overflow: hidden; }
+    .progress-row .bar-fill { height: 100%; transition: width 0.4s; }
+    .progress-row.praes .bar-fill { background: var(--tone-praes); }
+    .progress-row.praet .bar-fill { background: var(--tone-praet); }
+    .progress-row.perf  .bar-fill { background: var(--tone-perf); }
+    .progress-row.futur .bar-fill { background: var(--tone-futur); }
+    .progress-row .pct { text-align: right; color: var(--text-soft); font-size: 14px; }
+
+    /* === Task Bar (Aufgabe x von y, Streak) === */
+    .task-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 14px; color: var(--text-soft); margin-bottom: 14px;
+    }
+    .streak { font-size: 16px; letter-spacing: 2px; }
+
+    /* === Karteikarten === */
+    .flashcard {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 50px 30px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      margin: 30px 0 24px;
+      cursor: pointer;
+      min-height: 220px;
+      display: flex; flex-direction: column; justify-content: center;
+      transition: transform 0.4s;
+      transform-style: preserve-3d;
+    }
+    .flashcard.flipped { transform: rotateY(0deg); }
+    .flashcard .question {
+      font-size: 28px; margin-bottom: 10px;
+    }
+    .flashcard .question .pronoun {
+      color: var(--primary); font-weight: 700;
+    }
+    .flashcard .question .verb {
+      color: var(--text); font-style: italic;
+    }
+    .flashcard .tense-tag {
+      display: inline-block;
+      padding: 6px 14px; border-radius: 16px;
+      font-size: 14px; font-weight: 600; letter-spacing: 1px;
+      margin-top: 12px;
+    }
+    .flashcard .tense-tag.praes { background: var(--tone-praes-bg); color: var(--tone-praes); }
+    .flashcard .tense-tag.praet { background: var(--tone-praet-bg); color: var(--tone-praet); }
+    .flashcard .tense-tag.perf  { background: var(--tone-perf-bg);  color: var(--tone-perf); }
+    .flashcard .tense-tag.futur { background: var(--tone-futur-bg); color: var(--tone-futur); }
+    .flashcard .answer {
+      font-size: 36px; font-weight: 700; color: var(--primary-dark);
+      margin: 20px 0 8px;
+      animation: pop 0.3s;
+    }
+    .flashcard .hint { color: var(--text-soft); font-size: 14px; margin-top: 16px; }
+    .flashcard-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .flashcard-buttons button {
+      padding: 14px; border-radius: var(--radius);
+      border: 2px solid var(--line-strong); background: white;
+      font-size: 17px; font-weight: 600;
+    }
+    .flashcard-buttons .sitzt { background: var(--success); color: white; border-color: var(--success); }
+    .flashcard-buttons .nochmal { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* === Tippen-Modus === */
+    .typing-container {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .typing-step {
+      animation: fade-in 0.3s;
+    }
+    .typing-prompt {
+      font-size: 16px; color: var(--text-soft);
+      margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .typing-tense {
+      display: inline-block; padding: 4px 12px; border-radius: 14px;
+      font-weight: 700; letter-spacing: 1px;
+    }
+    .typing-tense.praes { background: var(--tone-praes-bg); color: var(--tone-praes); }
+    .typing-tense.praet { background: var(--tone-praet-bg); color: var(--tone-praet); }
+    .typing-tense.perf  { background: var(--tone-perf-bg);  color: var(--tone-perf); }
+    .typing-tense.futur { background: var(--tone-futur-bg); color: var(--tone-futur); }
+    .typing-task {
+      font-size: 26px; margin: 16px 0 14px; text-align: center;
+    }
+    .typing-task .pronoun { color: var(--primary); font-weight: 700; }
+    .typing-task .verb { color: var(--text); font-style: italic; }
+    .typing-input-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .typing-input-row .pronoun-label {
+      font-size: 22px; color: var(--primary); font-weight: 700; min-width: 70px;
+    }
+    .typing-input-row input[type="text"] {
+      flex: 1; min-width: 120px;
+    }
+    .typing-input-row input.aux { max-width: 110px; flex: 0 1 110px; }
+    .typing-input-row input.main { flex: 1; }
+    .typing-input-row button.check {
+      background: var(--primary); color: white; border: none;
+      border-radius: var(--radius-sm); padding: 10px 22px;
+      font-weight: 600; font-size: 17px;
+    }
+    .typing-feedback {
+      padding: 12px 14px; border-radius: var(--radius-sm);
+      font-size: 17px; margin-top: 8px;
+      animation: fade-in 0.3s;
+    }
+    .typing-feedback.correct { background: var(--success-bg); color: var(--success); font-weight: 600; }
+    .typing-feedback.wrong { background: var(--error-bg); color: var(--error); }
+    .typing-feedback .hint { font-size: 14px; color: var(--text-soft); margin-top: 4px; }
+    .typing-feedback .correct-form { font-weight: 700; font-size: 19px; }
+    .rewrite-block {
+      margin-top: 12px;
+      animation: fade-in 0.4s;
+    }
+    .rewrite-block p { margin: 0 0 6px; font-size: 14px; color: var(--text-soft); }
+    .typing-divider {
+      margin: 20px 0 14px;
+      border-top: 1px dashed var(--line-strong);
+      padding-top: 14px;
+    }
+
+    /* === Quick Quiz === */
+    .quiz-container {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 24px 22px; box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    .quiz-task { font-size: 22px; text-align: center; margin: 8px 0 18px; }
+    .quiz-task .pronoun { color: var(--primary); font-weight: 700; }
+    .quiz-task .verb { font-style: italic; }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .quiz-option {
+      background: white; border: 2px solid var(--line-strong);
+      border-radius: var(--radius); padding: 16px;
+      font-size: 19px; min-height: 60px;
+      transition: all 0.15s; text-align: center;
+    }
+    @media (hover: hover) {
+      .quiz-option:hover { border-color: var(--primary); }
+    }
+    .quiz-option.correct { background: var(--success); color: white; border-color: var(--success); animation: pulse-success 0.6s; }
+    .quiz-option.wrong { background: var(--error); color: white; border-color: var(--error); animation: shake 0.4s; }
+    .quiz-option.show-correct { background: var(--success-bg); border-color: var(--success); color: var(--success); font-weight: 700; }
+    .quiz-next-bar {
+      margin-top: 16px; text-align: center; min-height: 50px;
+    }
+    .quiz-next-bar button {
+      background: var(--primary); color: white; border: none;
+      border-radius: var(--radius-sm); padding: 12px 28px;
+      font-weight: 600; font-size: 17px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .quiz-next-bar button.show { opacity: 1; }
+
+    /* === Zeit-Sortierer === */
+    .sorter-container {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 18px 16px; box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    .sorter-instructions {
+      text-align: center; color: var(--text-soft); font-size: 15px;
+      margin: 8px 0 14px;
+    }
+    .sorter-pool {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: center;
+      min-height: 140px;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      background: rgba(0,0,0,0.02);
+      margin-bottom: 18px;
+    }
+    .sorter-card {
+      background: white;
+      border: 2px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 18px; font-weight: 600;
+      box-shadow: var(--shadow);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: box-shadow 0.15s;
+      position: relative;
+    }
+    .sorter-card.dragging {
+      cursor: grabbing;
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      transition: none;
+    }
+    .sorter-card.placed { visibility: hidden; }
+    .sorter-card.returning { transition: transform 0.3s ease-out; }
+
+    .sorter-dropzones {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .dropzone {
+      border-radius: var(--radius);
+      padding: 22px 8px;
+      text-align: center;
+      font-weight: 700; font-size: 15px;
+      letter-spacing: 1px;
+      min-height: 90px;
+      border: 3px dashed transparent;
+      transition: all 0.15s;
+    }
+    .dropzone.praes { background: var(--tone-praes-bg); color: var(--tone-praes); border-color: var(--tone-praes); }
+    .dropzone.praet { background: var(--tone-praet-bg); color: var(--tone-praet); border-color: var(--tone-praet); }
+    .dropzone.perf  { background: var(--tone-perf-bg);  color: var(--tone-perf);  border-color: var(--tone-perf); }
+    .dropzone.futur { background: var(--tone-futur-bg); color: var(--tone-futur); border-color: var(--tone-futur); }
+    .dropzone .count {
+      display: block; font-size: 13px; opacity: 0.7; margin-top: 4px; font-weight: 400;
+    }
+    .dropzone.hover-target { transform: scale(1.05); }
+    .dropzone.success-flash { animation: pulse-success 0.5s; }
+    .dropzone.error-shake { animation: shake 0.4s; }
+
+    /* Tap-Fallback Popup */
+    .tap-popup {
+      position: absolute;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 10px;
+      z-index: 200;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      animation: pop 0.2s;
+    }
+    .tap-popup button {
+      padding: 10px 14px; border: none; border-radius: var(--radius-sm);
+      font-weight: 700; font-size: 14px; letter-spacing: 1px;
+      min-width: 110px;
+    }
+    .tap-popup .praes { background: var(--tone-praes-bg); color: var(--tone-praes); }
+    .tap-popup .praet { background: var(--tone-praet-bg); color: var(--tone-praet); }
+    .tap-popup .perf  { background: var(--tone-perf-bg);  color: var(--tone-perf); }
+    .tap-popup .futur { background: var(--tone-futur-bg); color: var(--tone-futur); }
+
+    /* === Session-Bilanz === */
+    .summary-container {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 28px 22px; box-shadow: var(--shadow); text-align: center;
+    }
+    .summary-title { font-size: 28px; margin-bottom: 6px; }
+    .summary-score { font-size: 48px; font-weight: 700; color: var(--primary); margin: 12px 0; }
+    .summary-headline { color: var(--text-soft); margin-bottom: 18px; }
+    .summary-results {
+      text-align: left; max-height: 280px; overflow-y: auto;
+      margin: 18px 0; padding: 12px;
+      background: rgba(0,0,0,0.02); border-radius: var(--radius-sm);
+    }
+    .summary-results .row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 0; font-size: 15px;
+      border-bottom: 1px solid var(--line);
+    }
+    .summary-results .row:last-child { border-bottom: none; }
+    .summary-results .row .icon { width: 24px; text-align: center; font-weight: 700; font-size: 18px; }
+    .summary-results .row .icon.ok { color: var(--success); }
+    .summary-results .row .icon.no { color: var(--error); }
+    .summary-results .row .form { font-weight: 600; }
+    .summary-results .row .meta { color: var(--text-soft); font-size: 13px; }
+    .heatmap { margin: 18px 0; }
+    .heatmap-row { display: grid; grid-template-columns: 110px 1fr 50px; gap: 8px; align-items: center; margin: 4px 0; font-size: 14px; }
+    .heatmap-row .bar { background: var(--line); border-radius: 4px; height: 8px; overflow: hidden; }
+    .heatmap-row .bar-fill { height: 100%; }
+    .summary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .summary-actions button {
+      padding: 14px; border-radius: var(--radius);
+      font-size: 17px; font-weight: 600;
+      border: 2px solid var(--primary);
+      background: var(--primary); color: white;
+    }
+    .summary-actions button.secondary { background: white; color: var(--primary); }
+
+    /* === Maskottchen === */
+    .mascot {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 64px; height: 64px;
+      font-size: 56px;
+      display: none;
+      pointer-events: none;
+      z-index: 999;
+      animation: wave 0.6s ease-in-out 2;
+    }
+    .mascot.show { display: block; }
+
+    /* === Verb Group Filter === */
+    .verb-summary {
+      font-size: 14px; color: var(--text-soft);
+      margin-top: 8px;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 600px) {
+      body { padding: 14px 10px 80px; font-size: 17px; }
+      h1 { font-size: 26px; }
+      .modes { grid-template-columns: 1fr; }
+      .quiz-options { grid-template-columns: 1fr; }
+      .sorter-dropzones { grid-template-columns: repeat(2, 1fr); }
+      .progress-row { grid-template-columns: 80px 1fr 40px; font-size: 13px; }
+      .heatmap-row { grid-template-columns: 90px 1fr 40px; }
+      .flashcard .question { font-size: 22px; }
+      .flashcard .answer { font-size: 30px; }
+      .typing-task { font-size: 22px; }
+      .typing-input-row .pronoun-label { font-size: 19px; min-width: 50px; }
+    }
+
+    /* iPad-Spezifika */
+    .sorter-container { overscroll-behavior: contain; }
+    .typing-container input, .typing-container button { -webkit-appearance: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <section id="screen-home" class="screen active">
+      <h1><span class="sub">Zeit-Reise</span>Deutsche Zeitformen</h1>
+
+      <div class="setup-bar" id="setup-bar"></div>
+
+      <div class="modes">
+        <button class="mode-card cards" data-action="start-cards">
+          <span class="icon">📜</span>
+          <h3>Karteikarten</h3>
+          <p>Verbform raten, selbst einschätzen</p>
+        </button>
+        <button class="mode-card typing" data-action="start-typing">
+          <span class="icon">✏️</span>
+          <h3>Tippen</h3>
+          <p>2-Schritt-Aufgabe mit Folgenfrage</p>
+        </button>
+        <button class="mode-card quiz" data-action="start-quiz">
+          <span class="icon">⚡</span>
+          <h3>Quick Quiz</h3>
+          <p>4 Antworten zur Auswahl</p>
+        </button>
+        <button class="mode-card sorter" data-action="start-sorter">
+          <span class="icon">🧲</span>
+          <h3>Zeit-Sortierer</h3>
+          <p>Ziehen &amp; in den richtigen Topf legen</p>
+        </button>
+        <button class="mode-card mix" data-action="start-mix">
+          <span class="icon">🎯</span>
+          <h3>Mix-Modus</h3>
+          <p>Alle Modi gemischt — kleiner Test</p>
+        </button>
+      </div>
+
+      <div class="progress" id="progress"></div>
+    </section>
+
+    <section id="screen-cards" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <div class="task-bar">
+        <span id="cards-counter"></span>
+      </div>
+      <div id="cards-area"></div>
+    </section>
+
+    <section id="screen-typing" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <div class="task-bar">
+        <span id="typing-counter"></span>
+        <span class="streak" id="typing-streak"></span>
+      </div>
+      <div id="typing-area"></div>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <div class="task-bar">
+        <span id="quiz-counter"></span>
+        <span class="streak" id="quiz-streak"></span>
+      </div>
+      <div id="quiz-area"></div>
+    </section>
+
+    <section id="screen-sorter" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <div class="task-bar">
+        <span id="sorter-counter"></span>
+        <span class="streak" id="sorter-streak"></span>
+      </div>
+      <div id="sorter-area"></div>
+    </section>
+
+    <section id="screen-summary" class="screen">
+      <div id="summary-area"></div>
+    </section>
+  </main>
+
+  <div class="mascot" id="mascot">🦊</div>
+
+  <script>
+    'use strict';
+
+    // ============================================================
+    //  DATA LAYER — Pronouns, Tenses, Endings, Verbs
+    // ============================================================
+
+    const PRONOUNS = [
+      { key: 'ich',    label: 'ich',  num: 'sg' },
+      { key: 'du',     label: 'du',   num: 'sg' },
+      { key: 'er',     label: 'er',   num: 'sg' },
+      { key: 'sie_sg', label: 'sie',  num: 'sg' },
+      { key: 'es',     label: 'es',   num: 'sg' },
+      { key: 'wir',    label: 'wir',  num: 'pl' },
+      { key: 'ihr',    label: 'ihr',  num: 'pl' },
+      { key: 'sie_pl', label: 'sie',  num: 'pl' }
+    ];
+
+    const PRONOUN_BY_KEY = Object.fromEntries(PRONOUNS.map(p => [p.key, p]));
+
+    const TENSES = [
+      { key: 'praes', label: 'Präsens',    short: 'Präsens' },
+      { key: 'praet', label: 'Präteritum', short: 'Präteritum' },
+      { key: 'perf',  label: 'Perfekt',    short: 'Perfekt' },
+      { key: 'futur', label: 'Futur',      short: 'Futur' }
+    ];
+
+    function slotFor(pronKey) {
+      // sie_sg and es share the form of er
+      if (pronKey === 'sie_sg' || pronKey === 'es') return 'er';
+      return pronKey;
+    }
+
+    const REG_ENDINGS_PRAES = { ich: 'e',  du: 'st',   er: 't',  wir: 'en',  ihr: 't',   sie_pl: 'en' };
+    const REG_ENDINGS_PRAET = { ich: 'te', du: 'test', er: 'te', wir: 'ten', ihr: 'tet', sie_pl: 'ten' };
+    const STRONG_PRAET_ENDINGS = { ich: '', du: 'st', er: '', wir: 'en', ihr: 't', sie_pl: 'en' };
+
+    const VERBS = [
+      // --- Suppletiv (3) ---
+      { lemma:'sein', type:'suppletive', aux:'sein', partizip:'gewesen', group:'suppletive',
+        forms: {
+          praes: { ich:'bin', du:'bist', er:'ist', wir:'sind', ihr:'seid', sie_pl:'sind' },
+          praet: { ich:'war', du:'warst', er:'war', wir:'waren', ihr:'wart', sie_pl:'waren' }
+        }},
+      { lemma:'haben', type:'suppletive', aux:'haben', partizip:'gehabt', group:'suppletive',
+        forms: {
+          praes: { ich:'habe', du:'hast', er:'hat', wir:'haben', ihr:'habt', sie_pl:'haben' },
+          praet: { ich:'hatte', du:'hattest', er:'hatte', wir:'hatten', ihr:'hattet', sie_pl:'hatten' }
+        }},
+      { lemma:'werden', type:'suppletive', aux:'sein', partizip:'geworden', group:'suppletive',
+        forms: {
+          praes: { ich:'werde', du:'wirst', er:'wird', wir:'werden', ihr:'werdet', sie_pl:'werden' },
+          praet: { ich:'wurde', du:'wurdest', er:'wurde', wir:'wurden', ihr:'wurdet', sie_pl:'wurden' }
+        }},
+
+      // --- Regelmäßig, haben (16) ---
+      { lemma:'spielen', stem:'spiel', type:'regular', aux:'haben', partizip:'gespielt', group:'regular' },
+      { lemma:'lernen',  stem:'lern',  type:'regular', aux:'haben', partizip:'gelernt',  group:'regular' },
+      { lemma:'machen',  stem:'mach',  type:'regular', aux:'haben', partizip:'gemacht',  group:'regular' },
+      { lemma:'kaufen',  stem:'kauf',  type:'regular', aux:'haben', partizip:'gekauft',  group:'regular' },
+      { lemma:'lachen',  stem:'lach',  type:'regular', aux:'haben', partizip:'gelacht',  group:'regular' },
+      { lemma:'wohnen',  stem:'wohn',  type:'regular', aux:'haben', partizip:'gewohnt',  group:'regular' },
+      { lemma:'hören',   stem:'hör',   type:'regular', aux:'haben', partizip:'gehört',   group:'regular' },
+      { lemma:'sagen',   stem:'sag',   type:'regular', aux:'haben', partizip:'gesagt',   group:'regular' },
+      { lemma:'malen',   stem:'mal',   type:'regular', aux:'haben', partizip:'gemalt',   group:'regular' },
+      { lemma:'kochen',  stem:'koch',  type:'regular', aux:'haben', partizip:'gekocht',  group:'regular' },
+      { lemma:'putzen',  stem:'putz',  type:'regular', aux:'haben', partizip:'geputzt',  group:'regular' },
+      { lemma:'fragen',  stem:'frag',  type:'regular', aux:'haben', partizip:'gefragt',  group:'regular' },
+      { lemma:'antworten', stem:'antwort', type:'regular', aux:'haben', partizip:'geantwortet', group:'regular' },
+      { lemma:'holen',   stem:'hol',   type:'regular', aux:'haben', partizip:'geholt',   group:'regular' },
+      { lemma:'suchen',  stem:'such',  type:'regular', aux:'haben', partizip:'gesucht',  group:'regular' },
+      { lemma:'zeigen',  stem:'zeig',  type:'regular', aux:'haben', partizip:'gezeigt',  group:'regular' },
+
+      // --- Stark, haben (21) ---
+      { lemma:'essen',   stem:'ess',   type:'strong', aux:'haben', partizip:'gegessen',  group:'strong',
+        praesForms:{ du:'isst', er:'isst' }, praetStem:'aß', praetEndings:'strong' },
+      { lemma:'trinken', stem:'trink', type:'strong', aux:'haben', partizip:'getrunken', group:'strong',
+        praetStem:'trank', praetEndings:'strong' },
+      { lemma:'lesen',   stem:'les',   type:'strong', aux:'haben', partizip:'gelesen',   group:'strong',
+        praesForms:{ du:'liest', er:'liest' }, praetStem:'las', praetEndings:'strong' },
+      { lemma:'sehen',   stem:'seh',   type:'strong', aux:'haben', partizip:'gesehen',   group:'strong',
+        praesForms:{ du:'siehst', er:'sieht' }, praetStem:'sah', praetEndings:'strong' },
+      { lemma:'schreiben', stem:'schreib', type:'strong', aux:'haben', partizip:'geschrieben', group:'strong',
+        praetStem:'schrieb', praetEndings:'strong' },
+      { lemma:'nehmen',  stem:'nehm',  type:'strong', aux:'haben', partizip:'genommen',  group:'strong',
+        praesForms:{ du:'nimmst', er:'nimmt' }, praetStem:'nahm', praetEndings:'strong' },
+      { lemma:'geben',   stem:'geb',   type:'strong', aux:'haben', partizip:'gegeben',   group:'strong',
+        praesForms:{ du:'gibst', er:'gibt' }, praetStem:'gab', praetEndings:'strong' },
+      { lemma:'finden',  stem:'find',  type:'strong', aux:'haben', partizip:'gefunden',  group:'strong',
+        praetStem:'fand', praetEndings:'strong' },
+      { lemma:'singen',  stem:'sing',  type:'strong', aux:'haben', partizip:'gesungen',  group:'strong',
+        praetStem:'sang', praetEndings:'strong' },
+      { lemma:'sprechen', stem:'sprech', type:'strong', aux:'haben', partizip:'gesprochen', group:'strong',
+        praesForms:{ du:'sprichst', er:'spricht' }, praetStem:'sprach', praetEndings:'strong' },
+      { lemma:'helfen',  stem:'helf',  type:'strong', aux:'haben', partizip:'geholfen',  group:'strong',
+        praesForms:{ du:'hilfst', er:'hilft' }, praetStem:'half', praetEndings:'strong' },
+      { lemma:'halten',  stem:'halt',  type:'strong', aux:'haben', partizip:'gehalten',  group:'strong',
+        praesForms:{ du:'hältst', er:'hält' }, praetStem:'hielt', praetEndings:'strong' },
+      { lemma:'lassen',  stem:'lass',  type:'strong', aux:'haben', partizip:'gelassen',  group:'strong',
+        praesForms:{ du:'lässt', er:'lässt' }, praetStem:'ließ', praetEndings:'strong' },
+      { lemma:'schlafen', stem:'schlaf', type:'strong', aux:'haben', partizip:'geschlafen', group:'strong',
+        praesForms:{ du:'schläfst', er:'schläft' }, praetStem:'schlief', praetEndings:'strong' },
+      { lemma:'treffen', stem:'treff', type:'strong', aux:'haben', partizip:'getroffen', group:'strong',
+        praesForms:{ du:'triffst', er:'trifft' }, praetStem:'traf', praetEndings:'strong' },
+      { lemma:'vergessen', stem:'vergess', type:'strong', aux:'haben', partizip:'vergessen', group:'strong',
+        praesForms:{ du:'vergisst', er:'vergisst' }, praetStem:'vergaß', praetEndings:'strong' },
+      { lemma:'werfen',  stem:'werf',  type:'strong', aux:'haben', partizip:'geworfen',  group:'strong',
+        praesForms:{ du:'wirfst', er:'wirft' }, praetStem:'warf', praetEndings:'strong' },
+      { lemma:'ziehen',  stem:'zieh',  type:'strong', aux:'haben', partizip:'gezogen',   group:'strong',
+        praetStem:'zog', praetEndings:'strong' },
+      { lemma:'beginnen', stem:'beginn', type:'strong', aux:'haben', partizip:'begonnen', group:'strong',
+        praetStem:'begann', praetEndings:'strong' },
+      { lemma:'gewinnen', stem:'gewinn', type:'strong', aux:'haben', partizip:'gewonnen', group:'strong',
+        praetStem:'gewann', praetEndings:'strong' },
+      { lemma:'rufen',   stem:'ruf',   type:'strong', aux:'haben', partizip:'gerufen',   group:'strong',
+        praetStem:'rief', praetEndings:'strong' },
+
+      // --- Stark, sein (12) ---
+      { lemma:'gehen',   stem:'geh',   type:'strong', aux:'sein',  partizip:'gegangen',  group:'strong',
+        praetStem:'ging', praetEndings:'strong' },
+      { lemma:'fahren',  stem:'fahr',  type:'strong', aux:'sein',  partizip:'gefahren',  group:'strong',
+        praesForms:{ du:'fährst', er:'fährt' }, praetStem:'fuhr', praetEndings:'strong' },
+      { lemma:'kommen',  stem:'komm',  type:'strong', aux:'sein',  partizip:'gekommen',  group:'strong',
+        praetStem:'kam', praetEndings:'strong' },
+      { lemma:'laufen',  stem:'lauf',  type:'strong', aux:'sein',  partizip:'gelaufen',  group:'strong',
+        praesForms:{ du:'läufst', er:'läuft' }, praetStem:'lief', praetEndings:'strong' },
+      { lemma:'bleiben', stem:'bleib', type:'strong', aux:'sein',  partizip:'geblieben', group:'strong',
+        praetStem:'blieb', praetEndings:'strong' },
+      { lemma:'fliegen', stem:'flieg', type:'strong', aux:'sein',  partizip:'geflogen',  group:'strong',
+        praetStem:'flog', praetEndings:'strong' },
+      { lemma:'schwimmen', stem:'schwimm', type:'strong', aux:'sein', partizip:'geschwommen', group:'strong',
+        praetStem:'schwamm', praetEndings:'strong' },
+      { lemma:'steigen', stem:'steig', type:'strong', aux:'sein',  partizip:'gestiegen', group:'strong',
+        praetStem:'stieg', praetEndings:'strong' },
+      { lemma:'fallen',  stem:'fall',  type:'strong', aux:'sein',  partizip:'gefallen',  group:'strong',
+        praesForms:{ du:'fällst', er:'fällt' }, praetStem:'fiel', praetEndings:'strong' },
+      { lemma:'springen', stem:'spring', type:'strong', aux:'sein', partizip:'gesprungen', group:'strong',
+        praetStem:'sprang', praetEndings:'strong' },
+      { lemma:'reiten',  stem:'reit',  type:'strong', aux:'sein',  partizip:'geritten',  group:'strong',
+        praetStem:'ritt', praetEndings:'strong' },
+      { lemma:'wachsen', stem:'wachs', type:'strong', aux:'sein',  partizip:'gewachsen', group:'strong',
+        praesForms:{ du:'wächst', er:'wächst' }, praetStem:'wuchs', praetEndings:'strong' },
+
+      // --- Mischverben (5) ---
+      { lemma:'bringen', stem:'bring', type:'mixed',  aux:'haben', partizip:'gebracht',  group:'mixed',
+        praetStem:'brach', praetEndings:'weak' },
+      { lemma:'denken',  stem:'denk',  type:'mixed',  aux:'haben', partizip:'gedacht',   group:'mixed',
+        praetStem:'dach', praetEndings:'weak' },
+      { lemma:'kennen',  stem:'kenn',  type:'mixed',  aux:'haben', partizip:'gekannt',   group:'mixed',
+        praetStem:'kann', praetEndings:'weak' },
+      { lemma:'wissen',  type:'suppletive', aux:'haben', partizip:'gewusst',  group:'mixed',
+        forms: {
+          praes: { ich:'weiß', du:'weißt', er:'weiß', wir:'wissen', ihr:'wisst', sie_pl:'wissen' },
+          praet: { ich:'wusste', du:'wusstest', er:'wusste', wir:'wussten', ihr:'wusstet', sie_pl:'wussten' }
+        }},
+      { lemma:'rennen',  stem:'renn',  type:'mixed',  aux:'sein',  partizip:'gerannt',   group:'mixed',
+        praetStem:'rann', praetEndings:'weak' }
+    ];
+
+    const VERB_BY_LEMMA = Object.fromEntries(VERBS.map(v => [v.lemma, v]));
+    function getVerb(lemma) { return VERB_BY_LEMMA[lemma]; }
+
+    // ============================================================
+    //  CONJUGATION
+    // ============================================================
+
+    function applyEphenthesis(stem, ending, hasStemChange) {
+      // Rule 1: stem ends in s/ß/z + ending starts with st → collapse to t
+      // (e.g., 'liest', 'isst', 'lässt', 'wächst')
+      if (/[sßz]$/.test(stem) && ending === 'st') {
+        return stem + 't';
+      }
+      // Rule 2: stem ends in t/d + ending starts with t or s → insert e
+      // Skip in Präsens when stem change present (e.g., 'er hält' not 'hältet')
+      if (!hasStemChange && /[td]$/.test(stem) && /^[ts]/.test(ending)) {
+        return stem + 'e' + ending;
+      }
+      // Rule 3: stem ends in consonant + m/n + ending starts with t or s → insert e
+      // The preceding consonant must NOT be l/r/m/n (e.g., 'öffn' → öffnet,
+      // but 'kann'/'rann' do NOT get e-insert: kannte, rannte)
+      if (/[^aeiouäöülrmn][mn]$/.test(stem) && /^[ts]/.test(ending)) {
+        return stem + 'e' + ending;
+      }
+      return stem + ending;
+    }
+
+    function conjugate(verb, tense, pronKey) {
+      if (!verb) return null;
+      const slot = slotFor(pronKey);
+
+      // Suppletive verbs use lookup table directly
+      if (verb.type === 'suppletive' && verb.forms[tense]) {
+        return verb.forms[tense][slot];
+      }
+
+      if (tense === 'praes') {
+        // Per-slot full-form override (vowel change verbs)
+        if (verb.praesForms && verb.praesForms[slot]) return verb.praesForms[slot];
+        const ending = REG_ENDINGS_PRAES[slot];
+        return applyEphenthesis(verb.stem, ending, false);
+      }
+
+      if (tense === 'praet') {
+        const stem = verb.praetStem || verb.stem;
+        if (verb.praetEndings === 'strong') {
+          const ending = STRONG_PRAET_ENDINGS[slot];
+          return applyEphenthesis(stem, ending, false);
+        }
+        // weak (mixed verbs, regular)
+        const ending = REG_ENDINGS_PRAET[slot];
+        return applyEphenthesis(stem, ending, false);
+      }
+
+      if (tense === 'perf') {
+        const auxVerb = getVerb(verb.aux);
+        const auxForm = conjugate(auxVerb, 'praes', pronKey);
+        return auxForm + ' ' + verb.partizip;
+      }
+
+      if (tense === 'futur') {
+        const werden = getVerb('werden');
+        const auxForm = conjugate(werden, 'praes', pronKey);
+        return auxForm + ' ' + verb.lemma;
+      }
+
+      return null;
+    }
+
+    function conjugateParts(verb, tense, pronKey) {
+      // For Perfekt / Futur: { aux, main } — for dual-input UI
+      if (tense === 'perf') {
+        return { aux: conjugate(getVerb(verb.aux), 'praes', pronKey), main: verb.partizip };
+      }
+      if (tense === 'futur') {
+        return { aux: conjugate(getVerb('werden'), 'praes', pronKey), main: verb.lemma };
+      }
+      return null;
+    }
+
+    // ============================================================
+    //  INPUT NORMALIZATION & COMPARISON
+    // ============================================================
+
+    function normalize(s) {
+      return String(s || '').toLowerCase().trim().replace(/\s+/g, ' ').replace(/ß/g, 'ss');
+    }
+    function stripUmlauts(s) {
+      return String(s || '').toLowerCase().trim()
+        .replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss');
+    }
+    function compareForms(input, expected) {
+      return normalize(input) === normalize(expected);
+    }
+    function isUmlautError(input, expected) {
+      if (compareForms(input, expected)) return false;
+      return stripUmlauts(input) === stripUmlauts(expected);
+    }
+
+    // ============================================================
+    //  DOM HELPERS
+    // ============================================================
+
+    function el(tag, props, ...children) {
+      const node = document.createElement(tag);
+      if (props) {
+        for (const key in props) {
+          if (key === 'class') node.className = props[key];
+          else if (key === 'style' && typeof props[key] === 'object') Object.assign(node.style, props[key]);
+          else if (key.startsWith('on') && typeof props[key] === 'function') node.addEventListener(key.slice(2), props[key]);
+          else if (key === 'dataset' && typeof props[key] === 'object') Object.assign(node.dataset, props[key]);
+          else if (key in node) node[key] = props[key];
+          else node.setAttribute(key, props[key]);
+        }
+      }
+      for (const c of children) {
+        if (c === null || c === undefined || c === false) continue;
+        if (Array.isArray(c)) c.forEach(x => node.appendChild(typeof x === 'string' ? document.createTextNode(x) : x));
+        else node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+      }
+      return node;
+    }
+
+    function $(id) { return document.getElementById(id); }
+    function $$(sel) { return document.querySelectorAll(sel); }
+
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+    function showScreen(id) {
+      $$('.screen').forEach(s => s.classList.remove('active'));
+      $(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ============================================================
+    //  SETUP STORE
+    // ============================================================
+
+    const SETUP_KEY = 'deutsch-zeitformen:setup';
+    const DEFAULT_SETUP = {
+      tenses: ['praes', 'praet', 'perf', 'futur'],
+      pronouns: ['ich', 'du', 'er', 'sie_sg', 'wir', 'ihr', 'sie_pl'],
+      verbGroups: ['suppletive', 'regular', 'strong', 'mixed']
+    };
+
+    const SetupStore = {
+      load() {
+        try {
+          const raw = localStorage.getItem(SETUP_KEY);
+          if (!raw) return { ...DEFAULT_SETUP };
+          const obj = JSON.parse(raw);
+          return {
+            tenses:     Array.isArray(obj.tenses)     && obj.tenses.length     ? obj.tenses     : [...DEFAULT_SETUP.tenses],
+            pronouns:   Array.isArray(obj.pronouns)   && obj.pronouns.length   ? obj.pronouns   : [...DEFAULT_SETUP.pronouns],
+            verbGroups: Array.isArray(obj.verbGroups) && obj.verbGroups.length ? obj.verbGroups : [...DEFAULT_SETUP.verbGroups]
+          };
+        } catch (e) {
+          return { ...DEFAULT_SETUP };
+        }
+      },
+      save(setup) {
+        try { localStorage.setItem(SETUP_KEY, JSON.stringify(setup)); } catch (e) {}
+      },
+      reset() {
+        try { localStorage.removeItem(SETUP_KEY); } catch (e) {}
+      }
+    };
+
+    let SETUP = SetupStore.load();
+
+    // ============================================================
+    //  LEITNER STORE
+    // ============================================================
+
+    const LEITNER_KEY = 'deutsch-zeitformen:leitner';
+    const BOX_WEIGHTS = [16, 8, 4, 2, 1];   // Box 1 → 5
+    const MAX_BOX = 5;
+
+    const LeitnerStore = {
+      data: {},
+      load() {
+        try {
+          this.data = JSON.parse(localStorage.getItem(LEITNER_KEY)) || {};
+        } catch (e) {
+          this.data = {};
+        }
+      },
+      save() {
+        try { localStorage.setItem(LEITNER_KEY, JSON.stringify(this.data)); } catch (e) {}
+      },
+      formId(verb, tense, pronKey) {
+        return verb.lemma + '|' + tense + '|' + pronKey;
+      },
+      get(verb, tense, pronKey) {
+        return this.data[this.formId(verb, tense, pronKey)] || { box: 1, lastSeen: 0 };
+      },
+      getBox(verb, tense, pronKey) {
+        return this.get(verb, tense, pronKey).box;
+      },
+      promote(verb, tense, pronKey) {
+        const id = this.formId(verb, tense, pronKey);
+        const cur = this.data[id] || { box: 1 };
+        cur.box = Math.min(MAX_BOX, (cur.box || 1) + 1);
+        cur.lastSeen = Date.now();
+        delete cur.recentFailure;
+        this.data[id] = cur;
+        this.save();
+      },
+      demote(verb, tense, pronKey) {
+        const id = this.formId(verb, tense, pronKey);
+        this.data[id] = { box: 1, lastSeen: Date.now(), recentFailure: true };
+        this.save();
+      },
+      reset() {
+        this.data = {};
+        try { localStorage.removeItem(LEITNER_KEY); } catch (e) {}
+      }
+    };
+    LeitnerStore.load();
+
+    // ============================================================
+    //  STATS STORE
+    // ============================================================
+
+    const STATS_KEY = 'deutsch-zeitformen:stats';
+    const StatsStore = {
+      data: { sessionsTotal: 0, byTense: {}, byPron: {}, byMode: {}, lastSession: 0 },
+      load() {
+        try {
+          const raw = JSON.parse(localStorage.getItem(STATS_KEY));
+          if (raw) this.data = Object.assign(this.data, raw);
+        } catch (e) {}
+      },
+      save() {
+        try { localStorage.setItem(STATS_KEY, JSON.stringify(this.data)); } catch (e) {}
+      },
+      record(tense, pronKey, mode, correct) {
+        const bumps = [
+          ['byTense', tense],
+          ['byPron', pronKey],
+          ['byMode', mode]
+        ];
+        bumps.forEach(([cat, key]) => {
+          this.data[cat] = this.data[cat] || {};
+          this.data[cat][key] = this.data[cat][key] || { correct: 0, wrong: 0 };
+          this.data[cat][key][correct ? 'correct' : 'wrong']++;
+        });
+      },
+      endSession() {
+        this.data.sessionsTotal++;
+        this.data.lastSession = Date.now();
+        this.save();
+      }
+    };
+    StatsStore.load();
+
+    // ============================================================
+    //  TASK GENERATION
+    // ============================================================
+
+    function activeVerbs() {
+      return VERBS.filter(v => SETUP.verbGroups.includes(v.group));
+    }
+
+    function buildAllFormIds() {
+      const ids = [];
+      for (const verb of activeVerbs()) {
+        for (const tense of SETUP.tenses) {
+          for (const pronKey of SETUP.pronouns) {
+            ids.push({ verbLemma: verb.lemma, tense, pronKey });
+          }
+        }
+      }
+      return ids;
+    }
+
+    function weightForBox(box) {
+      return BOX_WEIGHTS[Math.min(MAX_BOX, Math.max(1, box)) - 1];
+    }
+
+    function pickTasks(allIds, n) {
+      // Weighted random sampling, no repeats
+      const pool = allIds.slice();
+      const picked = [];
+      while (picked.length < n && pool.length > 0) {
+        const weights = pool.map(id => {
+          const item = LeitnerStore.get(getVerb(id.verbLemma), id.tense, id.pronKey);
+          let w = weightForBox(item.box);
+          if (item.recentFailure) w *= 1.5;
+          return w;
+        });
+        const total = weights.reduce((s, w) => s + w, 0);
+        let r = Math.random() * total;
+        let idx = 0;
+        for (let i = 0; i < weights.length; i++) {
+          r -= weights[i];
+          if (r <= 0) { idx = i; break; }
+        }
+        picked.push(pool[idx]);
+        pool.splice(idx, 1);
+      }
+      return picked;
+    }
+
+    function pickFollowupPron(verb, tense, alreadyAskedKeys) {
+      const active = SETUP.pronouns;
+      const remaining = active.filter(k => !alreadyAskedKeys.includes(k));
+      if (remaining.length === 0) return null;
+      const lastNum = PRONOUN_BY_KEY[alreadyAskedKeys[alreadyAskedKeys.length - 1]].num;
+      const scored = remaining.map(k => {
+        const box = LeitnerStore.getBox(verb, tense, k);
+        const numerusBonus = PRONOUN_BY_KEY[k].num !== lastNum ? -0.5 : 0;
+        return { key: k, score: box + numerusBonus + Math.random() * 0.1 };
+      });
+      scored.sort((a, b) => a.score - b.score);
+      return scored[0].key;
+    }
+
+    // ============================================================
+    //  HOME SCREEN — Setup-Bar + Progress
+    // ============================================================
+
+    function renderSetupBar() {
+      const bar = $('setup-bar');
+      clear(bar);
+
+      // Tenses row
+      bar.appendChild(el('div', { class: 'setup-label' }, 'Welche Zeiten?'));
+      const tenseRow = el('div', { class: 'setup-row' });
+      TENSES.forEach(t => {
+        const isActive = SETUP.tenses.includes(t.key);
+        const chip = el('button', {
+          class: 'chip tone-' + t.key + (isActive ? ' active' : ''),
+          onclick: () => {
+            if (isActive && SETUP.tenses.length === 1) return; // keep at least one
+            SETUP.tenses = isActive
+              ? SETUP.tenses.filter(k => k !== t.key)
+              : [...SETUP.tenses, t.key];
+            SetupStore.save(SETUP);
+            renderSetupBar(); renderProgress();
+          }
+        }, t.label);
+        tenseRow.appendChild(chip);
+      });
+      bar.appendChild(tenseRow);
+
+      // Pronouns row
+      bar.appendChild(el('div', { class: 'setup-label' }, 'Welche Pronomen?'));
+      const pronRow = el('div', { class: 'setup-row' });
+      PRONOUNS.forEach(p => {
+        const isActive = SETUP.pronouns.includes(p.key);
+        const label = p.key === 'sie_pl' ? 'sie (Pl)' : p.key === 'sie_sg' ? 'sie' : p.label;
+        const chip = el('button', {
+          class: 'chip' + (isActive ? ' active' : ''),
+          onclick: () => {
+            if (isActive && SETUP.pronouns.length <= 2) return; // keep at least 2 for follow-up
+            SETUP.pronouns = isActive
+              ? SETUP.pronouns.filter(k => k !== p.key)
+              : [...SETUP.pronouns, p.key];
+            SetupStore.save(SETUP);
+            renderSetupBar(); renderProgress();
+          }
+        }, label);
+        pronRow.appendChild(chip);
+      });
+      bar.appendChild(pronRow);
+
+      // Verb groups row
+      bar.appendChild(el('div', { class: 'setup-label' }, 'Welche Verben?'));
+      const groupRow = el('div', { class: 'setup-row' });
+      const GROUPS = [
+        { key: 'suppletive', label: 'sein/haben/werden' },
+        { key: 'regular',    label: 'regelmäßig' },
+        { key: 'strong',     label: 'stark/unregelmäßig' },
+        { key: 'mixed',      label: 'mischverben' }
+      ];
+      GROUPS.forEach(g => {
+        const isActive = SETUP.verbGroups.includes(g.key);
+        const chip = el('button', {
+          class: 'chip' + (isActive ? ' active' : ''),
+          onclick: () => {
+            if (isActive && SETUP.verbGroups.length === 1) return;
+            SETUP.verbGroups = isActive
+              ? SETUP.verbGroups.filter(k => k !== g.key)
+              : [...SETUP.verbGroups, g.key];
+            SetupStore.save(SETUP);
+            renderSetupBar(); renderProgress();
+          }
+        }, g.label);
+        groupRow.appendChild(chip);
+      });
+      bar.appendChild(groupRow);
+
+      // Verb summary line
+      const nVerbs = activeVerbs().length;
+      const nForms = nVerbs * SETUP.tenses.length * SETUP.pronouns.length;
+      bar.appendChild(el('div', { class: 'verb-summary' },
+        nVerbs + ' Verben · ' + nForms + ' Formen zum Üben'));
+
+      // Reset button
+      bar.appendChild(el('button', {
+        class: 'setup-reset',
+        onclick: () => {
+          if (confirm('Fortschritt zurücksetzen? Alle gelernten Formen werden auf Anfang gesetzt.')) {
+            LeitnerStore.reset();
+            renderProgress();
+          }
+        }
+      }, 'Fortschritt zurücksetzen'));
+    }
+
+    function renderProgress() {
+      const node = $('progress');
+      clear(node);
+      node.appendChild(el('h3', null, 'Dein Fortschritt'));
+
+      TENSES.forEach(t => {
+        // Calculate progress: percent of active form-ids for this tense in box 4-5
+        const ids = [];
+        for (const v of activeVerbs()) {
+          for (const p of SETUP.pronouns) {
+            ids.push({ verbLemma: v.lemma, tense: t.key, pronKey: p });
+          }
+        }
+        const totalCount = ids.length || 1;
+        const learnedCount = ids.filter(id => {
+          const box = LeitnerStore.getBox(getVerb(id.verbLemma), id.tense, id.pronKey);
+          return box >= 4;
+        }).length;
+        const pct = Math.round((learnedCount / totalCount) * 100);
+        const row = el('div', { class: 'progress-row ' + t.key },
+          el('span', null, t.label),
+          el('div', { class: 'bar' },
+            el('div', { class: 'bar-fill', style: { width: pct + '%' } })),
+          el('span', { class: 'pct' }, pct + '%')
+        );
+        node.appendChild(row);
+      });
+    }
+
+    // ============================================================
+    //  SESSION STATE
+    // ============================================================
+
+    let SESSION = null;
+
+    function newSession(mode) {
+      SESSION = {
+        mode,
+        tasks: [],
+        currentIdx: 0,
+        results: [],
+        streak: 0,
+        startTime: Date.now()
+      };
+    }
+
+    function endSession() {
+      if (!SESSION) return;
+      StatsStore.endSession();
+      renderSummary();
+      renderProgress();
+      showScreen('screen-summary');
+    }
+
+    // ============================================================
+    //  MASCOT
+    // ============================================================
+
+    function bumpStreak(success) {
+      if (!SESSION) return;
+      if (success) {
+        SESSION.streak++;
+        if (SESSION.streak > 0 && SESSION.streak % 5 === 0) showMascot();
+      } else {
+        SESSION.streak = 0;
+      }
+    }
+
+    function showMascot() {
+      const m = $('mascot');
+      const animals = ['🦊', '🦔', '🐿️', '🐰', '🐼'];
+      m.textContent = animals[Math.floor(Math.random() * animals.length)];
+      m.classList.add('show');
+      setTimeout(() => m.classList.remove('show'), 1400);
+    }
+
+    function renderStreak(elementId) {
+      const node = $(elementId);
+      if (!node) return;
+      const s = SESSION ? SESSION.streak : 0;
+      const stars = Math.min(s, 5);
+      node.textContent = '★'.repeat(stars) + '☆'.repeat(Math.max(0, 5 - stars)) + ' Streak: ' + s;
+    }
+
+    // ============================================================
+    //  MODE 1: KARTEIKARTEN
+    // ============================================================
+
+    function startCards() {
+      const allIds = buildAllFormIds();
+      if (allIds.length === 0) { alert('Bitte mindestens ein Tempus, ein Pronomen und eine Verbgruppe auswählen.'); return; }
+      newSession('cards');
+      SESSION.tasks = pickTasks(allIds, 12);
+      renderNextCard();
+      showScreen('screen-cards');
+    }
+
+    function renderNextCard() {
+      if (SESSION.currentIdx >= SESSION.tasks.length) return endSession();
+      const task = SESSION.tasks[SESSION.currentIdx];
+      const verb = getVerb(task.verbLemma);
+      const pron = PRONOUN_BY_KEY[task.pronKey];
+      const expected = conjugate(verb, task.tense, task.pronKey);
+      const tenseLabel = TENSES.find(t => t.key === task.tense).label;
+
+      $('cards-counter').textContent = 'Karte ' + (SESSION.currentIdx + 1) + ' von ' + SESSION.tasks.length;
+      const area = $('cards-area');
+      clear(area);
+
+      const card = el('div', { class: 'flashcard' });
+      const question = el('div', { class: 'question' },
+        el('span', { class: 'pronoun' }, pron.label),
+        '  +  ',
+        el('span', { class: 'verb' }, verb.lemma)
+      );
+      const tenseTag = el('div', { class: 'tense-tag ' + task.tense }, tenseLabel.toUpperCase());
+      const hint = el('div', { class: 'hint' }, '(tippe, um die Lösung zu sehen)');
+
+      card.appendChild(question);
+      card.appendChild(tenseTag);
+      card.appendChild(hint);
+
+      let revealed = false;
+      card.onclick = () => {
+        if (revealed) return;
+        revealed = true;
+        clear(card);
+        card.appendChild(question);
+        card.appendChild(tenseTag);
+        card.appendChild(el('div', { class: 'answer' }, expected));
+        renderCardButtons();
+      };
+
+      area.appendChild(card);
+      const buttons = el('div', { class: 'flashcard-buttons', id: 'card-buttons' });
+      area.appendChild(buttons);
+
+      function renderCardButtons() {
+        clear(buttons);
+        buttons.appendChild(el('button', {
+          class: 'nochmal',
+          onclick: () => answerCard(false)
+        }, '🔁 Nochmal'));
+        buttons.appendChild(el('button', {
+          class: 'sitzt',
+          onclick: () => answerCard(true)
+        }, '👍 Sitzt'));
+      }
+
+      function answerCard(sitzt) {
+        SESSION.results.push({ task, expected, correct: sitzt, mode: 'cards' });
+        StatsStore.record(task.tense, task.pronKey, 'cards', sitzt);
+        if (sitzt) LeitnerStore.promote(verb, task.tense, task.pronKey);
+        else LeitnerStore.demote(verb, task.tense, task.pronKey);
+        SESSION.currentIdx++;
+        renderNextCard();
+      }
+    }
+
+    // ============================================================
+    //  MODE 2: TIPPEN (with 2-step follow-up)
+    // ============================================================
+
+    function startTyping() {
+      const allIds = buildAllFormIds();
+      if (allIds.length === 0) { alert('Bitte mindestens ein Tempus, ein Pronomen und eine Verbgruppe auswählen.'); return; }
+      newSession('typing');
+      SESSION.tasks = pickTasks(allIds, 8);
+      SESSION.followups = []; // list of follow-up pron keys already used in current task cascade
+      renderTypingTask({ stepIndex: 0 });
+      showScreen('screen-typing');
+    }
+
+    function renderTypingTask(opts) {
+      opts = opts || { stepIndex: 0 };
+      if (SESSION.currentIdx >= SESSION.tasks.length) return endSession();
+
+      $('typing-counter').textContent = 'Aufgabe ' + (SESSION.currentIdx + 1) + ' von ' + SESSION.tasks.length;
+      renderStreak('typing-streak');
+
+      const baseTask = SESSION.tasks[SESSION.currentIdx];
+      const verb = getVerb(baseTask.verbLemma);
+      const tense = baseTask.tense;
+
+      // For step 0: use baseTask.pronKey; for step 1+: pick a follow-up
+      let pronKey;
+      if (opts.stepIndex === 0) {
+        SESSION.followups = [baseTask.pronKey];
+        pronKey = baseTask.pronKey;
+      } else {
+        pronKey = pickFollowupPron(verb, tense, SESSION.followups);
+        if (!pronKey) {
+          // no more pronouns to ask, advance to next task
+          advanceToNextTask();
+          return;
+        }
+        SESSION.followups.push(pronKey);
+      }
+
+      const pron = PRONOUN_BY_KEY[pronKey];
+      const tenseLabel = TENSES.find(t => t.key === tense).label;
+      const expected = conjugate(verb, tense, pronKey);
+      const parts = conjugateParts(verb, tense, pronKey);
+      const isCompound = !!parts;
+
+      const area = $('typing-area');
+      if (opts.stepIndex === 0) clear(area);
+
+      const container = el('div', { class: 'typing-container typing-step' });
+
+      if (opts.stepIndex === 0) {
+        container.appendChild(el('div', { class: 'typing-prompt' },
+          'Setze in das ',
+          el('span', { class: 'typing-tense ' + tense }, tenseLabel)
+        ));
+      } else {
+        container.appendChild(el('div', { class: 'typing-divider' },
+          el('div', { class: 'typing-prompt' },
+            'Und mit ',
+            el('span', { class: 'pronoun', style: { color: 'var(--primary)', fontWeight: 700 } }, pron.label),
+            '?  (gleiche Zeit)'
+          )
+        ));
+      }
+
+      container.appendChild(el('div', { class: 'typing-task' },
+        el('span', { class: 'pronoun' }, pron.label),
+        '  +  ',
+        el('span', { class: 'verb' }, verb.lemma)
+      ));
+
+      const inputRow = el('div', { class: 'typing-input-row' });
+      inputRow.appendChild(el('span', { class: 'pronoun-label' }, pron.label));
+
+      let inputs;
+      if (isCompound) {
+        const auxIn = el('input', {
+          type: 'text',
+          class: 'aux',
+          placeholder: 'Hilfsverb',
+          autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false'
+        });
+        const mainIn = el('input', {
+          type: 'text',
+          class: 'main',
+          placeholder: (tense === 'futur' ? 'Infinitiv' : 'Partizip'),
+          autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false'
+        });
+        inputRow.appendChild(auxIn);
+        inputRow.appendChild(mainIn);
+        inputs = { aux: auxIn, main: mainIn, compound: true };
+      } else {
+        const singleIn = el('input', {
+          type: 'text',
+          placeholder: 'Verbform',
+          autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false'
+        });
+        inputRow.appendChild(singleIn);
+        inputs = { single: singleIn, compound: false };
+      }
+
+      const checkBtn = el('button', { class: 'check' }, 'Prüfen');
+      inputRow.appendChild(checkBtn);
+      container.appendChild(inputRow);
+
+      const feedback = el('div', { id: 'feedback-' + opts.stepIndex });
+      container.appendChild(feedback);
+      area.appendChild(container);
+
+      // Focus first input
+      setTimeout(() => {
+        if (inputs.compound) inputs.aux.focus();
+        else inputs.single.focus();
+        // scroll into view on iPad
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, opts.stepIndex === 0 ? 50 : 450);
+
+      // Submit handlers
+      function submit() {
+        let userInput;
+        let isCorrect;
+        let isUmlaut = false;
+        if (isCompound) {
+          const auxVal = inputs.aux.value;
+          const mainVal = inputs.main.value;
+          userInput = auxVal + ' ' + mainVal;
+          const auxOk = compareForms(auxVal, parts.aux);
+          const mainOk = compareForms(mainVal, parts.main);
+          isCorrect = auxOk && mainOk;
+          if (!auxOk) inputs.aux.classList.add('wrong');
+          else inputs.aux.classList.add('correct');
+          if (!mainOk) inputs.main.classList.add('wrong');
+          else inputs.main.classList.add('correct');
+          if (!isCorrect && (isUmlautError(auxVal, parts.aux) || isUmlautError(mainVal, parts.main))) isUmlaut = true;
+        } else {
+          userInput = inputs.single.value;
+          isCorrect = compareForms(userInput, expected);
+          if (isCorrect) inputs.single.classList.add('correct');
+          else inputs.single.classList.add('wrong');
+          if (!isCorrect && isUmlautError(userInput, expected)) isUmlaut = true;
+        }
+
+        inputs.aux && (inputs.aux.disabled = true);
+        inputs.main && (inputs.main.disabled = true);
+        inputs.single && (inputs.single.disabled = true);
+        checkBtn.disabled = true;
+
+        SESSION.results.push({
+          task: { verbLemma: verb.lemma, tense, pronKey },
+          expected,
+          userInput,
+          correct: isCorrect,
+          mode: 'typing'
+        });
+        StatsStore.record(tense, pronKey, 'typing', isCorrect);
+        bumpStreak(isCorrect);
+        renderStreak('typing-streak');
+
+        if (isCorrect) {
+          LeitnerStore.promote(verb, tense, pronKey);
+          clear(feedback);
+          feedback.appendChild(el('div', { class: 'typing-feedback correct' },
+            '✓ Super! ',
+            el('span', { class: 'correct-form' }, pron.label + ' ' + expected)
+          ));
+          // After 400ms, show follow-up (max 3 steps in cascade)
+          if (opts.stepIndex < 2 && SESSION.followups.length < SETUP.pronouns.length) {
+            setTimeout(() => renderTypingTask({ stepIndex: opts.stepIndex + 1 }), 600);
+          } else {
+            setTimeout(() => advanceToNextTask(), 800);
+          }
+        } else {
+          LeitnerStore.demote(verb, tense, pronKey);
+          clear(feedback);
+          const fb = el('div', { class: 'typing-feedback wrong' },
+            'Hoppla, schau nochmal: ',
+            el('span', { class: 'correct-form' }, pron.label + ' ' + expected)
+          );
+          if (isUmlaut) {
+            fb.appendChild(el('div', { class: 'hint' }, 'Tipp: Schau nochmal auf den Umlaut (ä, ö, ü).'));
+          }
+          feedback.appendChild(fb);
+
+          // Rewrite block
+          const rewriteBlock = el('div', { class: 'rewrite-block' });
+          rewriteBlock.appendChild(el('p', null, 'Schreibe die richtige Form nach:'));
+          const rewriteRow = el('div', { class: 'typing-input-row' });
+          rewriteRow.appendChild(el('span', { class: 'pronoun-label' }, pron.label));
+
+          // Show input with first letter prefilled
+          if (isCompound) {
+            const rwAux = el('input', {
+              type: 'text', class: 'aux',
+              value: parts.aux.charAt(0),
+              autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false'
+            });
+            const rwMain = el('input', {
+              type: 'text', class: 'main',
+              value: parts.main.charAt(0),
+              autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false'
+            });
+            const rwBtn = el('button', { class: 'check' }, 'Weiter');
+            rewriteRow.appendChild(rwAux);
+            rewriteRow.appendChild(rwMain);
+            rewriteRow.appendChild(rwBtn);
+            rwBtn.onclick = () => {
+              if (compareForms(rwAux.value, parts.aux) && compareForms(rwMain.value, parts.main)) {
+                advanceToNextTask();
+              } else {
+                rwAux.classList.add('wrong');
+                rwMain.classList.add('wrong');
+                setTimeout(() => { rwAux.classList.remove('wrong'); rwMain.classList.remove('wrong'); }, 500);
+              }
+            };
+            setTimeout(() => rwAux.focus(), 80);
+          } else {
+            const rwIn = el('input', {
+              type: 'text',
+              value: expected.charAt(0),
+              autocomplete: 'off', autocorrect: 'off', autocapitalize: 'off', spellcheck: 'false'
+            });
+            const rwBtn = el('button', { class: 'check' }, 'Weiter');
+            rewriteRow.appendChild(rwIn);
+            rewriteRow.appendChild(rwBtn);
+            rwBtn.onclick = () => {
+              if (compareForms(rwIn.value, expected)) advanceToNextTask();
+              else {
+                rwIn.classList.add('wrong');
+                setTimeout(() => rwIn.classList.remove('wrong'), 500);
+              }
+            };
+            setTimeout(() => rwIn.focus(), 80);
+          }
+          rewriteBlock.appendChild(rewriteRow);
+          feedback.appendChild(rewriteBlock);
+        }
+      }
+
+      function advanceToNextTask() {
+        SESSION.currentIdx++;
+        SESSION.followups = [];
+        renderTypingTask({ stepIndex: 0 });
+      }
+
+      checkBtn.onclick = submit;
+      const allInputs = isCompound ? [inputs.aux, inputs.main] : [inputs.single];
+      allInputs.forEach(input => {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); submit(); }
+        });
+      });
+    }
+
+    // ============================================================
+    //  MODE 3: QUICK QUIZ
+    // ============================================================
+
+    function startQuiz() {
+      const allIds = buildAllFormIds();
+      if (allIds.length === 0) { alert('Bitte mindestens ein Tempus, ein Pronomen und eine Verbgruppe auswählen.'); return; }
+      newSession('quiz');
+      SESSION.tasks = pickTasks(allIds, 10);
+      renderNextQuiz();
+      showScreen('screen-quiz');
+    }
+
+    function buildDistractors(verb, tense, pronKey, correct) {
+      const distractors = new Set();
+
+      // 1. Übergeneralisierung (regular ending on strong verb stem)
+      if (verb.type === 'strong' && verb.stem && tense === 'praet') {
+        const overgen = verb.stem + REG_ENDINGS_PRAET[slotFor(pronKey)];
+        if (overgen !== correct) distractors.add(overgen);
+      }
+      if (verb.type === 'strong' && verb.stem && tense === 'perf' && verb.partizip) {
+        // overgeneralized partizip: stem + 'gt' or 'et'
+        const overgen = (conjugate(getVerb(verb.aux), 'praes', pronKey) || '') + ' ge' + verb.stem + 't';
+        if (overgen !== correct) distractors.add(overgen);
+      }
+
+      // 2. Wrong numerus match (same tense, swap pronoun)
+      const otherPron = PRONOUN_BY_KEY[pronKey].num === 'sg' ? 'sie_pl' : 'ich';
+      const otherForm = conjugate(verb, tense, otherPron);
+      if (otherForm && otherForm !== correct) distractors.add(otherForm);
+
+      // 3. Different tense, same pronoun
+      const otherTenses = ['praes', 'praet', 'perf', 'futur'].filter(t => t !== tense);
+      for (const ot of otherTenses) {
+        const form = conjugate(verb, ot, pronKey);
+        if (form && form !== correct && !distractors.has(form)) {
+          distractors.add(form);
+          break;
+        }
+      }
+
+      // Pad with random forms if still less than 3
+      const otherPronKeys = SETUP.pronouns.filter(k => k !== pronKey);
+      while (distractors.size < 3) {
+        const pk = otherPronKeys[Math.floor(Math.random() * otherPronKeys.length)];
+        const ot = otherTenses[Math.floor(Math.random() * otherTenses.length)];
+        const form = conjugate(verb, ot, pk);
+        if (form && form !== correct) distractors.add(form);
+      }
+
+      return Array.from(distractors).slice(0, 3);
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function renderNextQuiz() {
+      if (SESSION.currentIdx >= SESSION.tasks.length) return endSession();
+      const task = SESSION.tasks[SESSION.currentIdx];
+      const verb = getVerb(task.verbLemma);
+      const pron = PRONOUN_BY_KEY[task.pronKey];
+      const tenseLabel = TENSES.find(t => t.key === task.tense).label;
+      const correct = conjugate(verb, task.tense, task.pronKey);
+      const distractors = buildDistractors(verb, task.tense, task.pronKey, correct);
+      const options = shuffle([correct, ...distractors]);
+
+      $('quiz-counter').textContent = 'Frage ' + (SESSION.currentIdx + 1) + ' von ' + SESSION.tasks.length;
+      renderStreak('quiz-streak');
+
+      const area = $('quiz-area');
+      clear(area);
+
+      const container = el('div', { class: 'quiz-container' });
+      container.appendChild(el('div', { class: 'typing-prompt' },
+        'Setze in das ',
+        el('span', { class: 'typing-tense ' + task.tense }, tenseLabel)
+      ));
+      container.appendChild(el('div', { class: 'quiz-task' },
+        el('span', { class: 'pronoun' }, pron.label),
+        '  +  ',
+        el('span', { class: 'verb' }, verb.lemma)
+      ));
+
+      const optsNode = el('div', { class: 'quiz-options' });
+      const buttons = [];
+      options.forEach(opt => {
+        const btn = el('button', { class: 'quiz-option' }, pron.label + ' ' + opt);
+        btn.onclick = () => handleAnswer(opt, btn);
+        buttons.push(btn);
+        optsNode.appendChild(btn);
+      });
+      container.appendChild(optsNode);
+
+      const nextBar = el('div', { class: 'quiz-next-bar' });
+      const nextBtn = el('button', null, 'Weiter →');
+      nextBar.appendChild(nextBtn);
+      container.appendChild(nextBar);
+
+      area.appendChild(container);
+
+      function handleAnswer(picked, btn) {
+        const isCorrect = picked === correct;
+        buttons.forEach(b => b.disabled = true);
+        if (isCorrect) {
+          btn.classList.add('correct');
+          LeitnerStore.promote(verb, task.tense, task.pronKey);
+        } else {
+          btn.classList.add('wrong');
+          // Highlight the correct option
+          buttons.forEach((b, i) => {
+            if (options[i] === correct) b.classList.add('show-correct');
+          });
+          LeitnerStore.demote(verb, task.tense, task.pronKey);
+        }
+        SESSION.results.push({
+          task,
+          expected: correct,
+          userInput: picked,
+          correct: isCorrect,
+          mode: 'quiz'
+        });
+        StatsStore.record(task.tense, task.pronKey, 'quiz', isCorrect);
+        bumpStreak(isCorrect);
+        renderStreak('quiz-streak');
+        nextBtn.classList.add('show');
+      }
+
+      nextBtn.onclick = () => {
+        SESSION.currentIdx++;
+        renderNextQuiz();
+      };
+    }
+
+    // ============================================================
+    //  MODE 4: ZEIT-SORTIERER (Drag + Tap-Fallback)
+    // ============================================================
+
+    let SORTER_STATE = null;
+
+    function startSorter() {
+      const allIds = buildAllFormIds();
+      if (allIds.length === 0) { alert('Bitte mindestens ein Tempus, ein Pronomen und eine Verbgruppe auswählen.'); return; }
+      if (SETUP.tenses.length < 2) { alert('Bitte mindestens 2 Zeiten aktivieren, damit es etwas zu sortieren gibt.'); return; }
+      newSession('sorter');
+      SORTER_STATE = { roundIdx: 0, totalRounds: 2 };
+      renderSorterRound();
+      showScreen('screen-sorter');
+    }
+
+    function renderSorterRound() {
+      if (SORTER_STATE.roundIdx >= SORTER_STATE.totalRounds) return endSession();
+
+      // Pick 8 form-ids that cover the active tenses
+      const allIds = buildAllFormIds();
+      const picked = pickTasks(allIds, 8);
+      // Ensure we have at least 1 of each active tense; if not, fix up
+      const tenseCount = {};
+      picked.forEach(p => { tenseCount[p.tense] = (tenseCount[p.tense] || 0) + 1; });
+      const missingTenses = SETUP.tenses.filter(t => !tenseCount[t]);
+      for (const mt of missingTenses) {
+        const candidates = allIds.filter(id => id.tense === mt);
+        if (candidates.length === 0) continue;
+        const replace = picked.findIndex(p => tenseCount[p.tense] > 1);
+        if (replace < 0) break;
+        tenseCount[picked[replace].tense]--;
+        picked[replace] = candidates[Math.floor(Math.random() * candidates.length)];
+        tenseCount[mt] = (tenseCount[mt] || 0) + 1;
+      }
+
+      $('sorter-counter').textContent = 'Runde ' + (SORTER_STATE.roundIdx + 1) + ' von ' + SORTER_STATE.totalRounds;
+      renderStreak('sorter-streak');
+
+      const area = $('sorter-area');
+      clear(area);
+
+      const container = el('div', { class: 'sorter-container' });
+      container.appendChild(el('div', { class: 'sorter-instructions' },
+        'Ziehe jede Form in den passenden Topf — oder tippe sie kurz an, um zu wählen.'));
+
+      const pool = el('div', { class: 'sorter-pool', id: 'sorter-pool' });
+      const cards = picked.map((task, i) => {
+        const verb = getVerb(task.verbLemma);
+        const form = conjugate(verb, task.tense, task.pronKey);
+        const card = el('div', {
+          class: 'sorter-card',
+          dataset: { tense: task.tense, idx: String(i) }
+        }, form);
+        card.dataset.task = JSON.stringify(task);
+        pool.appendChild(card);
+        return card;
+      });
+      container.appendChild(pool);
+
+      const dropzones = el('div', { class: 'sorter-dropzones' });
+      const dropZoneEls = {};
+      SETUP.tenses.forEach(t => {
+        const tenseInfo = TENSES.find(x => x.key === t);
+        const dz = el('div', {
+          class: 'dropzone ' + t,
+          dataset: { tense: t }
+        },
+          tenseInfo.label.toUpperCase(),
+          el('span', { class: 'count' }, '0')
+        );
+        dropZoneEls[t] = dz;
+        dropzones.appendChild(dz);
+      });
+      // If not all 4 tenses active, still show only active ones
+      container.appendChild(dropzones);
+      area.appendChild(container);
+
+      // State: how many cards each zone has consumed
+      const zoneCounts = {};
+      SETUP.tenses.forEach(t => zoneCounts[t] = 0);
+
+      let placedCount = 0;
+      const totalCards = cards.length;
+
+      cards.forEach(card => {
+        setupDrag(card, dropZoneEls, (correctTense, chosenTense, taskObj) => {
+          const verb = getVerb(taskObj.verbLemma);
+          const isCorrect = correctTense === chosenTense;
+          SESSION.results.push({
+            task: taskObj,
+            expected: TENSES.find(t => t.key === correctTense).label,
+            userInput: TENSES.find(t => t.key === chosenTense).label,
+            correct: isCorrect,
+            mode: 'sorter'
+          });
+          StatsStore.record(taskObj.tense, taskObj.pronKey, 'sorter', isCorrect);
+          bumpStreak(isCorrect);
+          renderStreak('sorter-streak');
+          if (isCorrect) {
+            LeitnerStore.promote(verb, taskObj.tense, taskObj.pronKey);
+            zoneCounts[chosenTense]++;
+            dropZoneEls[chosenTense].querySelector('.count').textContent = String(zoneCounts[chosenTense]);
+            dropZoneEls[chosenTense].classList.add('success-flash');
+            setTimeout(() => dropZoneEls[chosenTense].classList.remove('success-flash'), 500);
+            card.classList.add('placed');
+            placedCount++;
+            if (placedCount === totalCards) {
+              setTimeout(() => {
+                SORTER_STATE.roundIdx++;
+                renderSorterRound();
+              }, 800);
+            }
+          } else {
+            LeitnerStore.demote(verb, taskObj.tense, taskObj.pronKey);
+            dropZoneEls[chosenTense].classList.add('error-shake');
+            setTimeout(() => dropZoneEls[chosenTense].classList.remove('error-shake'), 500);
+            // After wrong attempt, allow re-try → don't lock card. Card returns automatically.
+          }
+        });
+      });
+    }
+
+    function setupDrag(cardEl, dropZoneEls, onDrop) {
+      let startX = 0, startY = 0, currentX = 0, currentY = 0;
+      let hasMoved = false;
+      let originalRect = null;
+
+      function getTaskObj() { return JSON.parse(cardEl.dataset.task); }
+      function getCorrectTense() { return cardEl.dataset.tense; }
+
+      function onPointerDown(e) {
+        if (cardEl.classList.contains('placed')) return;
+        // Prevent text selection during drag
+        e.preventDefault();
+        cardEl.setPointerCapture(e.pointerId);
+        startX = e.clientX; startY = e.clientY;
+        currentX = startX; currentY = startY;
+        hasMoved = false;
+        originalRect = cardEl.getBoundingClientRect();
+        cardEl.classList.add('dragging');
+        cardEl.classList.remove('returning');
+      }
+
+      function onPointerMove(e) {
+        if (!cardEl.hasPointerCapture(e.pointerId)) return;
+        currentX = e.clientX; currentY = e.clientY;
+        const dx = currentX - startX;
+        const dy = currentY - startY;
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) hasMoved = true;
+        cardEl.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(1.06)';
+
+        // Highlight target dropzone
+        const target = document.elementFromPoint(currentX, currentY);
+        Object.values(dropZoneEls).forEach(dz => dz.classList.remove('hover-target'));
+        if (target) {
+          const dz = target.closest('.dropzone');
+          if (dz) dz.classList.add('hover-target');
+        }
+      }
+
+      function onPointerUp(e) {
+        if (cardEl.hasPointerCapture(e.pointerId)) {
+          cardEl.releasePointerCapture(e.pointerId);
+        }
+        cardEl.classList.remove('dragging');
+        Object.values(dropZoneEls).forEach(dz => dz.classList.remove('hover-target'));
+
+        if (!hasMoved) {
+          // Tap, not drag → show fallback popup
+          cardEl.style.transform = '';
+          showTapFallback(cardEl, dropZoneEls, (chosenTense) => {
+            onDrop(getCorrectTense(), chosenTense, getTaskObj());
+          });
+          return;
+        }
+
+        // Determine drop target
+        const dropTarget = document.elementFromPoint(currentX, currentY);
+        const dz = dropTarget && dropTarget.closest('.dropzone');
+        if (dz && dz.dataset.tense) {
+          const chosen = dz.dataset.tense;
+          const isCorrect = chosen === getCorrectTense();
+          if (isCorrect) {
+            // Animate snap into zone
+            const zoneRect = dz.getBoundingClientRect();
+            const cardRect = cardEl.getBoundingClientRect();
+            const tx = (zoneRect.left + zoneRect.width / 2) - (originalRect.left + cardEl.offsetWidth / 2);
+            const ty = (zoneRect.top + zoneRect.height / 2) - (originalRect.top + cardEl.offsetHeight / 2);
+            cardEl.classList.add('returning');
+            cardEl.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(0.5)';
+            setTimeout(() => { cardEl.style.opacity = '0'; }, 300);
+          } else {
+            // Wrong → spring back
+            cardEl.classList.add('returning');
+            cardEl.style.transform = '';
+            setTimeout(() => cardEl.classList.remove('returning'), 300);
+          }
+          onDrop(getCorrectTense(), chosen, getTaskObj());
+        } else {
+          // No target hit → return
+          cardEl.classList.add('returning');
+          cardEl.style.transform = '';
+          setTimeout(() => cardEl.classList.remove('returning'), 300);
+        }
+      }
+
+      cardEl.addEventListener('pointerdown', onPointerDown);
+      cardEl.addEventListener('pointermove', onPointerMove);
+      cardEl.addEventListener('pointerup', onPointerUp);
+      cardEl.addEventListener('pointercancel', onPointerUp);
+    }
+
+    let activeTapPopup = null;
+    function showTapFallback(cardEl, dropZoneEls, callback) {
+      if (activeTapPopup) { activeTapPopup.remove(); activeTapPopup = null; }
+      const popup = el('div', { class: 'tap-popup' });
+      const tenseInfo = TENSES.filter(t => SETUP.tenses.includes(t.key));
+      tenseInfo.forEach(t => {
+        const btn = el('button', { class: t.key }, t.label);
+        btn.onclick = () => {
+          popup.remove();
+          activeTapPopup = null;
+          callback(t.key);
+        };
+        popup.appendChild(btn);
+      });
+      // Position below card
+      const rect = cardEl.getBoundingClientRect();
+      popup.style.position = 'fixed';
+      popup.style.left = Math.max(8, Math.min(window.innerWidth - 240, rect.left)) + 'px';
+      popup.style.top = (rect.bottom + 8) + 'px';
+      document.body.appendChild(popup);
+      activeTapPopup = popup;
+
+      // Click outside to close
+      setTimeout(() => {
+        const onDocClick = (ev) => {
+          if (!popup.contains(ev.target)) {
+            popup.remove();
+            activeTapPopup = null;
+            document.removeEventListener('pointerdown', onDocClick);
+          }
+        };
+        document.addEventListener('pointerdown', onDocClick);
+      }, 50);
+    }
+
+    // ============================================================
+    //  MODE 5: MIX
+    // ============================================================
+
+    function startMix() {
+      const allIds = buildAllFormIds();
+      if (allIds.length === 0) { alert('Bitte mindestens ein Tempus, ein Pronomen und eine Verbgruppe auswählen.'); return; }
+      newSession('mix');
+      SESSION.tasks = pickTasks(allIds, 12);
+      SESSION.followups = [];
+      SESSION.mixIdx = 0;
+      renderMixNext();
+      // Mix uses the typing/quiz/cards screens interchangeably
+    }
+
+    function renderMixNext() {
+      if (SESSION.currentIdx >= SESSION.tasks.length) return endSession();
+      // Pick a random sub-mode: cards/typing/quiz (sorter excluded — different session structure)
+      const subModes = ['cards', 'typing', 'quiz'];
+      const sub = subModes[Math.floor(Math.random() * subModes.length)];
+      const task = SESSION.tasks[SESSION.currentIdx];
+      SESSION.subMode = sub;
+
+      if (sub === 'cards') {
+        showScreen('screen-cards');
+        renderMixCard(task);
+      } else if (sub === 'typing') {
+        showScreen('screen-typing');
+        renderMixTyping(task);
+      } else {
+        showScreen('screen-quiz');
+        renderMixQuiz(task);
+      }
+    }
+
+    function renderMixCard(task) {
+      const verb = getVerb(task.verbLemma);
+      const pron = PRONOUN_BY_KEY[task.pronKey];
+      const expected = conjugate(verb, task.tense, task.pronKey);
+      const tenseLabel = TENSES.find(t => t.key === task.tense).label;
+
+      $('cards-counter').textContent = 'Mix · Aufgabe ' + (SESSION.currentIdx + 1) + ' von ' + SESSION.tasks.length;
+      const area = $('cards-area');
+      clear(area);
+
+      const card = el('div', { class: 'flashcard' });
+      const question = el('div', { class: 'question' },
+        el('span', { class: 'pronoun' }, pron.label),
+        '  +  ',
+        el('span', { class: 'verb' }, verb.lemma)
+      );
+      const tenseTag = el('div', { class: 'tense-tag ' + task.tense }, tenseLabel.toUpperCase());
+      const hint = el('div', { class: 'hint' }, '(tippe, um die Lösung zu sehen)');
+      card.appendChild(question);
+      card.appendChild(tenseTag);
+      card.appendChild(hint);
+
+      let revealed = false;
+      card.onclick = () => {
+        if (revealed) return;
+        revealed = true;
+        clear(card);
+        card.appendChild(question);
+        card.appendChild(tenseTag);
+        card.appendChild(el('div', { class: 'answer' }, expected));
+        renderButtons();
+      };
+      area.appendChild(card);
+      const buttons = el('div', { class: 'flashcard-buttons' });
+      area.appendChild(buttons);
+
+      function renderButtons() {
+        clear(buttons);
+        buttons.appendChild(el('button', { class: 'nochmal', onclick: () => answer(false) }, '🔁 Nochmal'));
+        buttons.appendChild(el('button', { class: 'sitzt',   onclick: () => answer(true) },  '👍 Sitzt'));
+      }
+      function answer(sitzt) {
+        SESSION.results.push({ task, expected, correct: sitzt, mode: 'mix-cards' });
+        StatsStore.record(task.tense, task.pronKey, 'mix', sitzt);
+        if (sitzt) LeitnerStore.promote(verb, task.tense, task.pronKey);
+        else LeitnerStore.demote(verb, task.tense, task.pronKey);
+        bumpStreak(sitzt);
+        SESSION.currentIdx++;
+        renderMixNext();
+      }
+    }
+
+    function renderMixTyping(task) {
+      const verb = getVerb(task.verbLemma);
+      const pron = PRONOUN_BY_KEY[task.pronKey];
+      const tenseLabel = TENSES.find(t => t.key === task.tense).label;
+      const expected = conjugate(verb, task.tense, task.pronKey);
+      const parts = conjugateParts(verb, task.tense, task.pronKey);
+      const isCompound = !!parts;
+
+      $('typing-counter').textContent = 'Mix · Aufgabe ' + (SESSION.currentIdx + 1) + ' von ' + SESSION.tasks.length;
+      renderStreak('typing-streak');
+
+      const area = $('typing-area');
+      clear(area);
+
+      const container = el('div', { class: 'typing-container' });
+      container.appendChild(el('div', { class: 'typing-prompt' },
+        'Setze in das ',
+        el('span', { class: 'typing-tense ' + task.tense }, tenseLabel)
+      ));
+      container.appendChild(el('div', { class: 'typing-task' },
+        el('span', { class: 'pronoun' }, pron.label),
+        '  +  ',
+        el('span', { class: 'verb' }, verb.lemma)
+      ));
+
+      const inputRow = el('div', { class: 'typing-input-row' });
+      inputRow.appendChild(el('span', { class: 'pronoun-label' }, pron.label));
+
+      let inputs;
+      if (isCompound) {
+        const auxIn = el('input', { type: 'text', class: 'aux', autocomplete:'off', autocorrect:'off', autocapitalize:'off', spellcheck:'false' });
+        const mainIn = el('input', { type: 'text', class: 'main', autocomplete:'off', autocorrect:'off', autocapitalize:'off', spellcheck:'false' });
+        inputRow.appendChild(auxIn);
+        inputRow.appendChild(mainIn);
+        inputs = { aux: auxIn, main: mainIn, compound: true };
+      } else {
+        const singleIn = el('input', { type: 'text', autocomplete:'off', autocorrect:'off', autocapitalize:'off', spellcheck:'false' });
+        inputRow.appendChild(singleIn);
+        inputs = { single: singleIn, compound: false };
+      }
+      const checkBtn = el('button', { class: 'check' }, 'Prüfen');
+      inputRow.appendChild(checkBtn);
+      container.appendChild(inputRow);
+
+      const feedback = el('div');
+      container.appendChild(feedback);
+      area.appendChild(container);
+
+      setTimeout(() => (isCompound ? inputs.aux : inputs.single).focus(), 50);
+
+      function submit() {
+        let isCorrect;
+        if (isCompound) {
+          isCorrect = compareForms(inputs.aux.value, parts.aux) && compareForms(inputs.main.value, parts.main);
+          inputs.aux.classList.add(isCorrect ? 'correct' : 'wrong');
+          inputs.main.classList.add(isCorrect ? 'correct' : 'wrong');
+        } else {
+          isCorrect = compareForms(inputs.single.value, expected);
+          inputs.single.classList.add(isCorrect ? 'correct' : 'wrong');
+        }
+        checkBtn.disabled = true;
+        SESSION.results.push({ task, expected, correct: isCorrect, mode: 'mix-typing' });
+        StatsStore.record(task.tense, task.pronKey, 'mix', isCorrect);
+        if (isCorrect) LeitnerStore.promote(verb, task.tense, task.pronKey);
+        else LeitnerStore.demote(verb, task.tense, task.pronKey);
+        bumpStreak(isCorrect);
+        renderStreak('typing-streak');
+
+        clear(feedback);
+        if (isCorrect) {
+          feedback.appendChild(el('div', { class: 'typing-feedback correct' },
+            '✓ Super! ',
+            el('span', { class: 'correct-form' }, pron.label + ' ' + expected)
+          ));
+        } else {
+          feedback.appendChild(el('div', { class: 'typing-feedback wrong' },
+            'Richtig wäre: ',
+            el('span', { class: 'correct-form' }, pron.label + ' ' + expected)
+          ));
+        }
+        setTimeout(() => { SESSION.currentIdx++; renderMixNext(); }, 1100);
+      }
+      checkBtn.onclick = submit;
+      (isCompound ? [inputs.aux, inputs.main] : [inputs.single]).forEach(input => {
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+      });
+    }
+
+    function renderMixQuiz(task) {
+      const verb = getVerb(task.verbLemma);
+      const pron = PRONOUN_BY_KEY[task.pronKey];
+      const tenseLabel = TENSES.find(t => t.key === task.tense).label;
+      const correct = conjugate(verb, task.tense, task.pronKey);
+      const distractors = buildDistractors(verb, task.tense, task.pronKey, correct);
+      const options = shuffle([correct, ...distractors]);
+
+      $('quiz-counter').textContent = 'Mix · Aufgabe ' + (SESSION.currentIdx + 1) + ' von ' + SESSION.tasks.length;
+      renderStreak('quiz-streak');
+
+      const area = $('quiz-area');
+      clear(area);
+
+      const container = el('div', { class: 'quiz-container' });
+      container.appendChild(el('div', { class: 'typing-prompt' },
+        'Setze in das ',
+        el('span', { class: 'typing-tense ' + task.tense }, tenseLabel)
+      ));
+      container.appendChild(el('div', { class: 'quiz-task' },
+        el('span', { class: 'pronoun' }, pron.label),
+        '  +  ',
+        el('span', { class: 'verb' }, verb.lemma)
+      ));
+
+      const optsNode = el('div', { class: 'quiz-options' });
+      const buttons = [];
+      options.forEach(opt => {
+        const btn = el('button', { class: 'quiz-option' }, pron.label + ' ' + opt);
+        btn.onclick = () => {
+          const isCorrect = opt === correct;
+          buttons.forEach(b => b.disabled = true);
+          btn.classList.add(isCorrect ? 'correct' : 'wrong');
+          if (!isCorrect) {
+            buttons.forEach((b, i) => { if (options[i] === correct) b.classList.add('show-correct'); });
+            LeitnerStore.demote(verb, task.tense, task.pronKey);
+          } else {
+            LeitnerStore.promote(verb, task.tense, task.pronKey);
+          }
+          SESSION.results.push({ task, expected: correct, userInput: opt, correct: isCorrect, mode: 'mix-quiz' });
+          StatsStore.record(task.tense, task.pronKey, 'mix', isCorrect);
+          bumpStreak(isCorrect);
+          renderStreak('quiz-streak');
+          setTimeout(() => { SESSION.currentIdx++; renderMixNext(); }, 1100);
+        };
+        buttons.push(btn);
+        optsNode.appendChild(btn);
+      });
+      container.appendChild(optsNode);
+      area.appendChild(container);
+    }
+
+    // ============================================================
+    //  SESSION-BILANZ (Summary)
+    // ============================================================
+
+    function renderSummary() {
+      const area = $('summary-area');
+      clear(area);
+
+      const total = SESSION.results.length;
+      const correct = SESSION.results.filter(r => r.correct).length;
+      const wrong = total - correct;
+      const promoted = correct;
+      const demoted = wrong;
+
+      const container = el('div', { class: 'summary-container' });
+      container.appendChild(el('div', { class: 'summary-title' }, '⭐ Toll gemacht!'));
+      container.appendChild(el('div', { class: 'summary-score' }, correct + ' / ' + total));
+      const headline = wrong === 0
+        ? 'Alles richtig! Du bist ein Zeitformen-Profi!'
+        : (promoted + ' Formen sind eine Stufe weiter. ' + demoted + (demoted === 1 ? ' Form' : ' Formen') + ' noch mal üben.');
+      container.appendChild(el('div', { class: 'summary-headline' }, headline));
+
+      // Heatmap pro Tempus
+      const heatmap = el('div', { class: 'heatmap' });
+      heatmap.appendChild(el('h3', { style: { fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', margin: '0 0 8px' } }, 'Heute geübt'));
+      TENSES.forEach(t => {
+        const tResults = SESSION.results.filter(r => r.task.tense === t.key);
+        if (tResults.length === 0) return;
+        const tCorrect = tResults.filter(r => r.correct).length;
+        const pct = Math.round((tCorrect / tResults.length) * 100);
+        const row = el('div', { class: 'heatmap-row' },
+          el('span', null, t.label),
+          el('div', { class: 'bar' },
+            el('div', { class: 'bar-fill', style: { width: pct + '%', background: 'var(--tone-' + t.key + ')' } })),
+          el('span', { class: 'pct' }, tCorrect + '/' + tResults.length)
+        );
+        heatmap.appendChild(row);
+      });
+      container.appendChild(heatmap);
+
+      // Results list
+      const results = el('div', { class: 'summary-results' });
+      SESSION.results.forEach(r => {
+        const verb = getVerb(r.task.verbLemma);
+        const tenseLabel = TENSES.find(t => t.key === r.task.tense).label;
+        const pron = PRONOUN_BY_KEY[r.task.pronKey];
+        const formText = pron.label + ' ' + r.expected;
+        const meta = '(' + tenseLabel + ' von ' + verb.lemma + ')';
+        const row = el('div', { class: 'row' },
+          el('span', { class: 'icon ' + (r.correct ? 'ok' : 'no') }, r.correct ? '✓' : '✗'),
+          el('span', { class: 'form' }, formText),
+          el('span', { class: 'meta' }, meta)
+        );
+        results.appendChild(row);
+      });
+      container.appendChild(results);
+
+      const actions = el('div', { class: 'summary-actions' });
+      actions.appendChild(el('button', { class: 'secondary', onclick: () => repeatSession() }, 'Nochmal'));
+      actions.appendChild(el('button', { onclick: () => goHome() }, 'Zur Startseite'));
+      container.appendChild(actions);
+      area.appendChild(container);
+    }
+
+    function repeatSession() {
+      const mode = SESSION.mode;
+      if (mode === 'cards') startCards();
+      else if (mode === 'typing') startTyping();
+      else if (mode === 'quiz') startQuiz();
+      else if (mode === 'sorter') startSorter();
+      else if (mode === 'mix') startMix();
+      else goHome();
+    }
+
+    function goHome() {
+      SESSION = null;
+      renderProgress();
+      renderSetupBar();
+      showScreen('screen-home');
+    }
+
+    // ============================================================
+    //  GLOBAL HANDLERS & INIT
+    // ============================================================
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      if (action === 'home') goHome();
+      else if (action === 'start-cards') startCards();
+      else if (action === 'start-typing') startTyping();
+      else if (action === 'start-quiz') startQuiz();
+      else if (action === 'start-sorter') startSorter();
+      else if (action === 'start-mix') startMix();
+    });
+
+    function init() {
+      renderSetupBar();
+      renderProgress();
+    }
+    init();
+
+    // ============================================================
+    //  DEBUG / AUDIT — run window.auditAllForms() in console
+    // ============================================================
+
+    window.auditAllForms = function () {
+      let total = 0, problems = 0;
+      const issues = [];
+      for (const verb of VERBS) {
+        for (const tense of ['praes', 'praet', 'perf', 'futur']) {
+          for (const pronKey of ['ich','du','er','sie_sg','es','wir','ihr','sie_pl']) {
+            total++;
+            const form = conjugate(verb, tense, pronKey);
+            if (!form || form.includes('undefined') || form.trim() === '') {
+              problems++;
+              issues.push({ verb: verb.lemma, tense, pronKey, form });
+            }
+          }
+        }
+      }
+      console.log('Audit: ' + total + ' Formen gepruft, ' + problems + ' Probleme');
+      if (issues.length) console.table(issues);
+      return { total, problems, issues };
+    };
+
+    window.testConjugate = function () {
+      const tests = [
+        ['spielen', 'praes', 'ich', 'spiele'],
+        ['spielen', 'praet', 'wir', 'spielten'],
+        ['geben', 'praes', 'du', 'gibst'],
+        ['geben', 'praes', 'er', 'gibt'],
+        ['gehen', 'perf', 'ich', 'bin gegangen'],
+        ['gehen', 'praet', 'du', 'gingst'],
+        ['gehen', 'praet', 'ihr', 'gingt'],
+        ['sein', 'praet', 'wir', 'waren'],
+        ['sein', 'praes', 'du', 'bist'],
+        ['haben', 'praes', 'er', 'hat'],
+        ['werden', 'praes', 'du', 'wirst'],
+        ['finden', 'praes', 'ihr', 'findet'],
+        ['finden', 'praet', 'ihr', 'fandet'],
+        ['lesen', 'praes', 'du', 'liest'],
+        ['lesen', 'praes', 'er', 'liest'],
+        ['fahren', 'praes', 'du', 'fährst'],
+        ['vergessen', 'perf', 'ich', 'habe vergessen'],
+        ['beginnen', 'perf', 'ich', 'habe begonnen'],
+        ['rennen', 'perf', 'ich', 'bin gerannt'],
+        ['rennen', 'praet', 'du', 'ranntest'],
+        ['wachsen', 'praes', 'du', 'wächst'],
+        ['halten', 'praes', 'er', 'hält'],
+        ['halten', 'praes', 'du', 'hältst'],
+        ['lassen', 'praes', 'du', 'lässt'],
+        ['essen', 'praes', 'du', 'isst'],
+        ['nehmen', 'praes', 'du', 'nimmst'],
+        ['nehmen', 'praes', 'er', 'nimmt'],
+        ['reiten', 'praes', 'du', 'reitest'],
+        ['reiten', 'praet', 'ihr', 'rittet'],
+        ['antworten', 'praes', 'du', 'antwortest'],
+        ['antworten', 'praet', 'er', 'antwortete'],
+        ['ziehen', 'praes', 'du', 'ziehst'],
+        ['wissen', 'praes', 'ich', 'weiß'],
+        ['wissen', 'praes', 'wir', 'wissen'],
+        ['fallen', 'praes', 'er', 'fällt'],
+        ['singen', 'praet', 'ihr', 'sangt'],
+        ['spielen', 'futur', 'ich', 'werde spielen'],
+        ['gehen', 'futur', 'du', 'wirst gehen']
+      ];
+      let pass = 0, fail = 0;
+      const fails = [];
+      for (const [lemma, tense, pron, expected] of tests) {
+        const actual = conjugate(getVerb(lemma), tense, pron);
+        if (actual === expected) pass++;
+        else { fail++; fails.push({ lemma, tense, pron, expected, actual }); }
+      }
+      console.log('Tests: ' + pass + ' passed, ' + fail + ' failed');
+      if (fails.length) console.table(fails);
+      return { pass, fail, fails };
+    };
+  </script>
+</body>
+</html>
