@@ -183,6 +183,39 @@
       { stem: 'capit',    lemma: 'caput',      declension: 'kons', gender: 'n', de: 'Kopf', irregularNomSg: true }
     ];
 
+    // ===== Core Logic =====
+
+    function decline(vocab, casus, numerus) {
+      if (casus === 'nom' && numerus === 'sg' && vocab.irregularNomSg) {
+        return vocab.lemma;
+      }
+      const ending = ENDINGS[vocab.declension][numerus][casus];
+      return vocab.stem + ending;
+    }
+
+    function germanPhrase(vocab, casus, numerus) {
+      if (casus === 'abl') return '(Ablativ: ' + vocab.de + ')';
+      const article = CASE_GERMAN[casus][numerus][vocab.gender];
+      return article + ' ' + vocab.de + (numerus === 'pl' ? germanPluralSuffix(vocab.de) : '');
+    }
+
+    const GERMAN_PLURAL_SUFFIX = {
+      'Sklave': 'n', 'Herr': 'en', 'Freund': 'e', 'Junge': 'n', 'Acker': '',
+      'Lehrer': '', 'Sohn': 'e', 'Gott': 'er', 'Volk': 'er', 'Pferd': 'e',
+      'Mann': 'er', 'Buch': 'er', 'Schüler': '', 'Arzt': 'e', 'Bote': 'n',
+      'Gesandter': '', 'Schwert': 'er', 'Garten': '', 'Geist': 'er', 'Römer': '',
+      'Tochter': '', 'Mädchen': '', 'Rose': 'n', 'Erde': 'n', 'Weg': 'e',
+      'Wasser': '', 'Leben': '', 'Königin': 'nen', 'Schule': 'n', 'Geschichte': 'n',
+      'Freundin': 'nen', 'Göttin': 'nen', 'Wald': 'er', 'Heimat': 'en', 'Herrin': 'nen',
+      'Magd': 'e', 'Familie': 'n', 'Ruhm': '', 'Sieg': 'e', 'Zorn': '',
+      'Vater': '', 'Mutter': '', 'Bruder': '', 'Schwester': 'n',
+      'König': 'e', 'Mensch': 'en', 'Soldat': 'en', 'junge Frau': 'en',
+      'Gesetz': 'e', 'Körper': '', 'Senator': 'en', 'Konsul': 'n',
+      'Anführer': '', 'Feldherr': 'en', 'Stadt': 'e', 'Nacht': 'e',
+      'Frieden': '', 'Tod': 'e', 'Fuß': 'e', 'Kopf': 'e'
+    };
+    function germanPluralSuffix(de) { return GERMAN_PLURAL_SUFFIX[de] ?? ''; }
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
@@ -194,6 +227,33 @@
       const btn = e.target.closest('[data-action="home"]');
       if (btn) showScreen('screen-home');
     });
+
+    // ===== Tests (nur bei ?test=1) =====
+    if (new URLSearchParams(location.search).get('test') === '1') {
+      function assert(name, actual, expected) {
+        const ok = actual === expected;
+        console[ok ? 'log' : 'error'](
+          (ok ? '✅' : '❌') + ' ' + name + ' → ' + JSON.stringify(actual) +
+          (ok ? '' : ' (erwartet: ' + JSON.stringify(expected) + ')')
+        );
+      }
+      const servus = VOCABULARY.find(v => v.lemma === 'servus');
+      const filia  = VOCABULARY.find(v => v.lemma === 'fīlia');
+      const pater  = VOCABULARY.find(v => v.lemma === 'pater');
+      const rex    = VOCABULARY.find(v => v.lemma === 'rēx');
+
+      assert('servus Dat Sg', decline(servus, 'dat', 'sg'), 'servō');
+      assert('servus Dat Pl', decline(servus, 'dat', 'pl'), 'servīs');
+      assert('servus Nom Sg', decline(servus, 'nom', 'sg'), 'servus');
+      assert('fīlia Dat Sg',  decline(filia,  'dat', 'sg'), 'fīliae');
+      assert('fīlia Dat Pl',  decline(filia,  'dat', 'pl'), 'fīliīs');
+      assert('pater Dat Sg',  decline(pater,  'dat', 'sg'), 'patrī');
+      assert('pater Dat Pl',  decline(pater,  'dat', 'pl'), 'patribus');
+      assert('pater Nom Sg',  decline(pater,  'nom', 'sg'), 'pater');
+      assert('rēx Nom Sg',    decline(rex,    'nom', 'sg'), 'rēx');
+      assert('rēx Dat Sg',    decline(rex,    'dat', 'sg'), 'rēgī');
+      assert('rēx Dat Pl',    decline(rex,    'dat', 'pl'), 'rēgibus');
+    }
   </script>
 </body>
 </html>
