@@ -216,6 +216,56 @@
     };
     function germanPluralSuffix(de) { return GERMAN_PLURAL_SUFFIX[de] ?? ''; }
 
+    // ===== Setup Store =====
+
+    const SETUP_KEY = 'dativ-trainer:setup';
+    const SETUP_DEFAULTS = {
+      declensions: ['o', 'a', 'kons'],
+      cases: ['dat'],
+      numbers: ['sg', 'pl'],
+      includeAdjectivesPronouns: false
+    };
+
+    const SetupStore = {
+      load() {
+        try {
+          const raw = localStorage.getItem(SETUP_KEY);
+          if (!raw) return { ...SETUP_DEFAULTS };
+          const parsed = JSON.parse(raw);
+          return {
+            declensions: Array.isArray(parsed.declensions) && parsed.declensions.length
+              ? parsed.declensions : [...SETUP_DEFAULTS.declensions],
+            cases: Array.isArray(parsed.cases) && parsed.cases.length
+              ? parsed.cases : [...SETUP_DEFAULTS.cases],
+            numbers: Array.isArray(parsed.numbers) && parsed.numbers.length
+              ? parsed.numbers : [...SETUP_DEFAULTS.numbers],
+            includeAdjectivesPronouns: !!parsed.includeAdjectivesPronouns
+          };
+        } catch (e) {
+          return { ...SETUP_DEFAULTS };
+        }
+      },
+      save(setup) { localStorage.setItem(SETUP_KEY, JSON.stringify(setup)); },
+      reset() { localStorage.removeItem(SETUP_KEY); }
+    };
+
+    function activeForms(setup) {
+      const result = [];
+      for (const vocab of VOCABULARY) {
+        if (!setup.declensions.includes(vocab.declension)) continue;
+        for (const numerus of setup.numbers) {
+          for (const casus of setup.cases) {
+            result.push({ vocab, casus, numerus });
+          }
+        }
+      }
+      return result;
+    }
+
+    function formId(vocab, casus, numerus) {
+      return vocab.lemma + '|' + casus + '|' + numerus;
+    }
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
