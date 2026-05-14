@@ -286,6 +286,21 @@
     .summary .list li { padding: 4px 0; list-style: none; }
     .summary .list .ok::before { content: "✓ "; color: var(--olive); }
     .summary .list .nope::before { content: "✗ "; color: var(--wrong); }
+
+    /* iOS-Polish */
+    @supports (-webkit-touch-callout: none) {
+      .mode-card, .chip, .endung-chip, .puzzle-cell, .flashcard, button {
+        -webkit-user-select: none;
+      }
+      /* 100 vh stabil halten bei URL-Bar-Wechsel */
+      body { min-height: -webkit-fill-available; }
+    }
+
+    /* Button-Fokus für Tastatur-Nutzer (zusätzlich zur Maus/Touch-UX) */
+    button:focus-visible {
+      outline: 2px solid var(--senf);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
