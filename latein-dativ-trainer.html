@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Latein-Dativ-Trainer</title>
+  <style>
+    :root {
+      --bg-start: #fef7ed;
+      --bg-end: #fde4cf;
+      --terracotta: #c75d36;
+      --olive: #5a8a3a;
+      --senf: #d4a017;
+      --meerblau: #2e6b8a;
+      --text: #7a3d2a;
+      --text-soft: #a07060;
+      --line: #e8c9a8;
+      --card-bg: #ffffff;
+      --correct: #5a8a3a;
+      --wrong: #c75d36;
+      --shadow: 0 2px 6px rgba(122, 61, 42, 0.12);
+      --shadow-lg: 0 6px 18px rgba(122, 61, 42, 0.18);
+      --radius: 12px;
+      --radius-sm: 6px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 17px;
+      min-height: 100vh;
+      padding: 24px 16px 80px;
+    }
+    h1, h2, h3, .latin { font-family: Georgia, 'Cormorant Garamond', serif; }
+    h1 { font-size: 32px; letter-spacing: 4px; text-transform: uppercase; margin: 0; text-align: center; }
+    h1 .sub { display: block; font-size: 13px; letter-spacing: 6px; color: var(--text-soft); margin-bottom: 4px; }
+    .latin { font-style: italic; font-size: 1.15em; }
+
+    button, input, select { font-family: inherit; font-size: 17px; }
+    button { cursor: pointer; touch-action: manipulation; min-height: 44px; }
+
+    main { max-width: 880px; margin: 0 auto; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .back-btn {
+      background: none; border: none; color: var(--text);
+      font-size: 16px; padding: 8px 12px; margin-bottom: 16px; cursor: pointer;
+    }
+    .back-btn::before { content: "← "; }
+  </style>
+</head>
+<body>
+  <main>
+    <section id="screen-home" class="screen active">
+      <h1><span class="sub">Datīvus</span>Latīna</h1>
+    </section>
+
+    <section id="screen-cards" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Karteikarten</h2>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Quick Quiz</h2>
+    </section>
+
+    <section id="screen-typing" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Endung tippen</h2>
+    </section>
+
+    <section id="screen-puzzle" class="screen">
+      <button class="back-btn" data-action="home">Zurück</button>
+      <h2>Tabellen-Puzzle</h2>
+    </section>
+
+    <section id="screen-summary" class="screen">
+      <h2 style="text-align:center;">Session beendet</h2>
+    </section>
+  </main>
+
+  <script>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // Globaler Back-Button-Handler
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="home"]');
+      if (btn) showScreen('screen-home');
+    });
+  </script>
+</body>
+</html>
