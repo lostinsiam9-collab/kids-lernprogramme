@@ -998,7 +998,7 @@
       },
 
       finish() {
-        SessionSummary.show(this.state.results);
+        SessionSummary.show(this.state.results, 'quiz');
       }
     };
 
@@ -1054,7 +1054,12 @@
       start() {
         const setup = SetupStore.load();
         const leitner = LeitnerStore.load();
-        const tasks = pickTasks(activeForms(setup), leitner, this.TASKS_PER_SESSION);
+        // Filter: typing doesn't make sense for irregular Nom Sg forms
+        // (their lemma is shown directly, no ending to type)
+        const allForms = activeForms(setup).filter(f =>
+          !(f.casus === 'nom' && f.numerus === 'sg' && f.vocab.irregularNomSg)
+        );
+        const tasks = pickTasks(allForms, leitner, this.TASKS_PER_SESSION);
         this.state = { tasks, index: 0, results: [], attempts: 0 };
         showScreen('screen-typing');
         this.render();
@@ -1218,7 +1223,7 @@
                 cell.onclick = () => this.cellClick(key);
               }
             } else {
-              cell.textContent = (c === 'nom' && vocab.irregularNomSg)
+              cell.textContent = (c === 'nom' && num === 'sg' && vocab.irregularNomSg)
                 ? vocab.lemma
                 : vocab.stem + ENDINGS[dec][num][c];
               cell.classList.add('placed');
@@ -1365,7 +1370,7 @@
     // Globaler Back-Button-Handler
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action="home"]');
-      if (btn) showScreen('screen-home');
+      if (btn) { showScreen('screen-home'); renderHome(); }
     });
 
     // ===== Tests (nur bei ?test=1) =====
