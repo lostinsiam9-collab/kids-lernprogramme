@@ -88,6 +88,101 @@
   </main>
 
   <script>
+    // ===== Data Layer =====
+
+    const ENDINGS = {
+      o: {
+        sg: { nom: 'us', gen: 'ī',    dat: 'ō',    acc: 'um', abl: 'ō' },
+        pl: { nom: 'ī',  gen: 'ōrum', dat: 'īs',   acc: 'ōs', abl: 'īs' }
+      },
+      a: {
+        sg: { nom: 'a',  gen: 'ae',   dat: 'ae',   acc: 'am', abl: 'ā' },
+        pl: { nom: 'ae', gen: 'ārum', dat: 'īs',   acc: 'ās', abl: 'īs' }
+      },
+      kons: {
+        sg: { nom: '',   gen: 'is',   dat: 'ī',    acc: 'em', abl: 'e' },
+        pl: { nom: 'ēs', gen: 'um',   dat: 'ibus', acc: 'ēs', abl: 'ibus' }
+      }
+    };
+
+    const DECLENSION_LABEL = { o: 'o-Deklination', a: 'a-Deklination', kons: 'kons. Deklination' };
+    const CASE_LABEL  = { nom: 'Nom.', gen: 'Gen.', dat: 'Dat.', acc: 'Akk.', abl: 'Abl.' };
+    const NUM_LABEL   = { sg: 'Sg.', pl: 'Pl.' };
+    const CASE_GERMAN = {
+      nom: { sg: { m: 'der', f: 'die', n: 'das' }, pl: { m: 'die', f: 'die', n: 'die' } },
+      gen: { sg: { m: 'des', f: 'der', n: 'des' }, pl: { m: 'der', f: 'der', n: 'der' } },
+      dat: { sg: { m: 'dem', f: 'der', n: 'dem' }, pl: { m: 'den', f: 'den', n: 'den' } },
+      acc: { sg: { m: 'den', f: 'die', n: 'das' }, pl: { m: 'die', f: 'die', n: 'die' } }
+    };
+
+    const VOCABULARY = [
+      // ----- o-Deklination (Maskulina) -----
+      { stem: 'serv',     lemma: 'servus',     declension: 'o',    gender: 'm', de: 'Sklave' },
+      { stem: 'domin',    lemma: 'dominus',    declension: 'o',    gender: 'm', de: 'Herr' },
+      { stem: 'amīc',     lemma: 'amīcus',     declension: 'o',    gender: 'm', de: 'Freund' },
+      { stem: 'puer',     lemma: 'puer',       declension: 'o',    gender: 'm', de: 'Junge', irregularNomSg: true },
+      { stem: 'agr',      lemma: 'ager',       declension: 'o',    gender: 'm', de: 'Acker', irregularNomSg: true },
+      { stem: 'magistr',  lemma: 'magister',   declension: 'o',    gender: 'm', de: 'Lehrer', irregularNomSg: true },
+      { stem: 'fīli',     lemma: 'fīlius',     declension: 'o',    gender: 'm', de: 'Sohn' },
+      { stem: 'de',       lemma: 'deus',       declension: 'o',    gender: 'm', de: 'Gott' },
+      { stem: 'popul',    lemma: 'populus',    declension: 'o',    gender: 'm', de: 'Volk' },
+      { stem: 'equ',      lemma: 'equus',      declension: 'o',    gender: 'm', de: 'Pferd' },
+      { stem: 'vir',      lemma: 'vir',        declension: 'o',    gender: 'm', de: 'Mann', irregularNomSg: true },
+      { stem: 'libr',     lemma: 'liber',      declension: 'o',    gender: 'm', de: 'Buch', irregularNomSg: true },
+      { stem: 'discipul', lemma: 'discipulus', declension: 'o',    gender: 'm', de: 'Schüler' },
+      { stem: 'medic',    lemma: 'medicus',    declension: 'o',    gender: 'm', de: 'Arzt' },
+      { stem: 'nūnti',    lemma: 'nūntius',    declension: 'o',    gender: 'm', de: 'Bote' },
+      { stem: 'lēgāt',    lemma: 'lēgātus',    declension: 'o',    gender: 'm', de: 'Gesandter' },
+      { stem: 'gladi',    lemma: 'gladius',    declension: 'o',    gender: 'm', de: 'Schwert' },
+      { stem: 'hort',     lemma: 'hortus',     declension: 'o',    gender: 'm', de: 'Garten' },
+      { stem: 'anim',     lemma: 'animus',     declension: 'o',    gender: 'm', de: 'Geist' },
+      { stem: 'Rōmān',    lemma: 'Rōmānus',    declension: 'o',    gender: 'm', de: 'Römer' },
+
+      // ----- a-Deklination (Feminina) -----
+      { stem: 'fīli',     lemma: 'fīlia',      declension: 'a',    gender: 'f', de: 'Tochter' },
+      { stem: 'puell',    lemma: 'puella',     declension: 'a',    gender: 'f', de: 'Mädchen' },
+      { stem: 'ros',      lemma: 'rosa',       declension: 'a',    gender: 'f', de: 'Rose' },
+      { stem: 'terr',     lemma: 'terra',      declension: 'a',    gender: 'f', de: 'Erde' },
+      { stem: 'vi',       lemma: 'via',        declension: 'a',    gender: 'f', de: 'Weg' },
+      { stem: 'aqu',      lemma: 'aqua',       declension: 'a',    gender: 'f', de: 'Wasser' },
+      { stem: 'vīt',      lemma: 'vīta',       declension: 'a',    gender: 'f', de: 'Leben' },
+      { stem: 'rēgīn',    lemma: 'rēgīna',     declension: 'a',    gender: 'f', de: 'Königin' },
+      { stem: 'schol',    lemma: 'schola',     declension: 'a',    gender: 'f', de: 'Schule' },
+      { stem: 'fābul',    lemma: 'fābula',     declension: 'a',    gender: 'f', de: 'Geschichte' },
+      { stem: 'amīc',     lemma: 'amīca',      declension: 'a',    gender: 'f', de: 'Freundin' },
+      { stem: 'de',       lemma: 'dea',        declension: 'a',    gender: 'f', de: 'Göttin' },
+      { stem: 'silv',     lemma: 'silva',      declension: 'a',    gender: 'f', de: 'Wald' },
+      { stem: 'patri',    lemma: 'patria',     declension: 'a',    gender: 'f', de: 'Heimat' },
+      { stem: 'domin',    lemma: 'domina',     declension: 'a',    gender: 'f', de: 'Herrin' },
+      { stem: 'ancill',   lemma: 'ancilla',    declension: 'a',    gender: 'f', de: 'Magd' },
+      { stem: 'famili',   lemma: 'familia',    declension: 'a',    gender: 'f', de: 'Familie' },
+      { stem: 'glōri',    lemma: 'glōria',     declension: 'a',    gender: 'f', de: 'Ruhm' },
+      { stem: 'victōri',  lemma: 'victōria',   declension: 'a',    gender: 'f', de: 'Sieg' },
+      { stem: 'īr',       lemma: 'īra',        declension: 'a',    gender: 'f', de: 'Zorn' },
+
+      // ----- Konsonantische Deklination -----
+      { stem: 'patr',     lemma: 'pater',      declension: 'kons', gender: 'm', de: 'Vater', irregularNomSg: true },
+      { stem: 'mātr',     lemma: 'māter',      declension: 'kons', gender: 'f', de: 'Mutter', irregularNomSg: true },
+      { stem: 'frātr',    lemma: 'frāter',     declension: 'kons', gender: 'm', de: 'Bruder', irregularNomSg: true },
+      { stem: 'sorōr',    lemma: 'soror',      declension: 'kons', gender: 'f', de: 'Schwester', irregularNomSg: true },
+      { stem: 'rēg',      lemma: 'rēx',        declension: 'kons', gender: 'm', de: 'König', irregularNomSg: true },
+      { stem: 'homin',    lemma: 'homō',       declension: 'kons', gender: 'm', de: 'Mensch', irregularNomSg: true },
+      { stem: 'mīlit',    lemma: 'mīles',      declension: 'kons', gender: 'm', de: 'Soldat', irregularNomSg: true },
+      { stem: 'virgin',   lemma: 'virgō',      declension: 'kons', gender: 'f', de: 'junge Frau', irregularNomSg: true },
+      { stem: 'lēg',      lemma: 'lēx',        declension: 'kons', gender: 'f', de: 'Gesetz', irregularNomSg: true },
+      { stem: 'corpor',   lemma: 'corpus',     declension: 'kons', gender: 'n', de: 'Körper', irregularNomSg: true },
+      { stem: 'senātōr',  lemma: 'senātor',    declension: 'kons', gender: 'm', de: 'Senator', irregularNomSg: true },
+      { stem: 'cōnsul',   lemma: 'cōnsul',     declension: 'kons', gender: 'm', de: 'Konsul', irregularNomSg: true },
+      { stem: 'duc',      lemma: 'dux',        declension: 'kons', gender: 'm', de: 'Anführer', irregularNomSg: true },
+      { stem: 'imperātōr',lemma: 'imperātor',  declension: 'kons', gender: 'm', de: 'Feldherr', irregularNomSg: true },
+      { stem: 'urb',      lemma: 'urbs',       declension: 'kons', gender: 'f', de: 'Stadt', irregularNomSg: true },
+      { stem: 'noct',     lemma: 'nox',        declension: 'kons', gender: 'f', de: 'Nacht', irregularNomSg: true },
+      { stem: 'pāc',      lemma: 'pāx',        declension: 'kons', gender: 'f', de: 'Frieden', irregularNomSg: true },
+      { stem: 'mort',     lemma: 'mors',       declension: 'kons', gender: 'f', de: 'Tod', irregularNomSg: true },
+      { stem: 'ped',      lemma: 'pēs',        declension: 'kons', gender: 'm', de: 'Fuß', irregularNomSg: true },
+      { stem: 'capit',    lemma: 'caput',      declension: 'kons', gender: 'n', de: 'Kopf', irregularNomSg: true }
+    ];
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
