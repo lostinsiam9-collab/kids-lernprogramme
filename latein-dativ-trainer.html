@@ -132,6 +132,34 @@
     @media (max-width: 600px) {
       .modes { grid-template-columns: 1fr; }
     }
+
+    .flashcard {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 48px 24px; box-shadow: var(--shadow-lg);
+      text-align: center; margin: 24px 0; min-height: 220px;
+      display: flex; flex-direction: column; justify-content: center;
+      cursor: pointer; user-select: none; position: relative;
+    }
+    .flashcard .side-front { font-size: 26px; }
+    .flashcard .side-back  { display: none; }
+    .flashcard.flipped .side-front { display: none; }
+    .flashcard.flipped .side-back  { display: block; }
+    .flashcard .latin-form { font-size: 38px; margin-bottom: 14px; }
+    .flashcard .meta { font-size: 14px; color: var(--text-soft); }
+    .flashcard .flip-hint {
+      position: absolute; bottom: 10px; right: 14px;
+      font-size: 12px; color: var(--text-soft);
+    }
+
+    .card-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .card-nav button {
+      flex: 1; background: var(--card-bg); border: 2px solid var(--line);
+      padding: 12px; border-radius: var(--radius-sm); font-size: 16px;
+    }
+    .card-nav button.primary { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+    .card-nav button.success { background: var(--olive); color: white; border-color: var(--olive); }
+
+    .card-counter { font-size: 14px; color: var(--text-soft); text-align: center; }
   </style>
 </head>
 <body>
@@ -203,6 +231,18 @@
     <section id="screen-cards" class="screen">
       <button class="back-btn" data-action="home">Zurück</button>
       <h2>Karteikarten</h2>
+      <div class="card-counter" id="cards-counter"></div>
+      <div class="flashcard" id="flashcard" data-action="flip">
+        <div class="side-front" id="card-front"></div>
+        <div class="side-back" id="card-back"></div>
+        <div class="flip-hint">Tap zum Umdrehen</div>
+      </div>
+      <div class="card-nav">
+        <button data-cards="prev">◄ Zurück</button>
+        <button data-cards="again">Nochmal</button>
+        <button class="success" data-cards="gotit">Sitzt</button>
+        <button class="primary" data-cards="next">Nächste ►</button>
+      </div>
     </section>
 
     <section id="screen-quiz" class="screen">
@@ -574,8 +614,79 @@
       if (btn) openMode(btn.dataset.mode);
     });
 
-    // Stubs — werden in Tasks 8–12 implementiert:
-    const ModeCards  = { start() { showScreen('screen-cards');  } };
+    // ===== Mode: Karteikarten =====
+    const ModeCards = {
+      state: null,
+
+      start() {
+        const setup = SetupStore.load();
+        const forms = shuffle(activeForms(setup));
+        if (!forms.length) return;
+        this.state = { forms, index: 0, flipped: false };
+        showScreen('screen-cards');
+        this.render();
+      },
+
+      render() {
+        const { forms, index, flipped } = this.state;
+        const f = forms[index];
+        const front = germanPhrase(f.vocab, f.casus, f.numerus);
+        const lat = decline(f.vocab, f.casus, f.numerus);
+        const tag = CASE_LABEL[f.casus] + ' ' + NUM_LABEL[f.numerus] + ' · ' + DECLENSION_LABEL[f.vocab.declension];
+
+        const front$ = document.getElementById('card-front');
+        clear(front$);
+        front$.appendChild(el('span', { class: 'latin' }, '"' + front + '"'));
+
+        const back$ = document.getElementById('card-back');
+        clear(back$);
+        back$.appendChild(el('div', { class: 'latin-form latin' }, lat));
+        back$.appendChild(el('div', { class: 'meta' },
+          tag + ' · ',
+          el('i', {}, f.vocab.lemma),
+          ' = ' + f.vocab.de));
+
+        document.getElementById('cards-counter').textContent =
+          'Karte ' + (index + 1) + ' / ' + forms.length;
+        document.getElementById('flashcard').classList.toggle('flipped', flipped);
+      },
+
+      flip()       { this.state.flipped = !this.state.flipped; this.render(); },
+      next()       { this.state.index = (this.state.index + 1) % this.state.forms.length;
+                     this.state.flipped = false; this.render(); },
+      prev()       { this.state.index = (this.state.index - 1 + this.state.forms.length) % this.state.forms.length;
+                     this.state.flipped = false; this.render(); },
+      markGotIt()  {
+        const leitner = LeitnerStore.load();
+        const f = this.state.forms[this.state.index];
+        LeitnerStore.promote(leitner, formId(f.vocab, f.casus, f.numerus));
+        LeitnerStore.save(leitner);
+        this.next();
+      },
+      markAgain()  {
+        const leitner = LeitnerStore.load();
+        const f = this.state.forms[this.state.index];
+        LeitnerStore.demote(leitner, formId(f.vocab, f.casus, f.numerus));
+        LeitnerStore.save(leitner);
+        this.next();
+      }
+    };
+
+    // Event-Delegation für Karteikarten-Buttons
+    document.addEventListener('click', (e) => {
+      const flip = e.target.closest('[data-action="flip"]');
+      if (flip && ModeCards.state) ModeCards.flip();
+      const cardBtn = e.target.closest('[data-cards]');
+      if (cardBtn && ModeCards.state) {
+        const action = cardBtn.dataset.cards;
+        if (action === 'next')  ModeCards.next();
+        if (action === 'prev')  ModeCards.prev();
+        if (action === 'gotit') ModeCards.markGotIt();
+        if (action === 'again') ModeCards.markAgain();
+      }
+    });
+
+    // Stubs — werden in Tasks 9–12 implementiert:
     const ModeQuiz   = { start() { showScreen('screen-quiz');   } };
     const ModeTyping = { start() { showScreen('screen-typing'); } };
     const ModePuzzle = { start() { showScreen('screen-puzzle'); } };
