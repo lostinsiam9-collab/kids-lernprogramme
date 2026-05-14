@@ -207,6 +207,59 @@
       font-size: 16px; min-width: 140px; margin-left: 8px;
     }
     .typing-hint { color: var(--text-soft); font-size: 14px; margin-top: 8px; min-height: 20px; }
+
+    .puzzle-controls {
+      display: flex; gap: 12px; align-items: center;
+      flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .puzzle-select {
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      border: 2px solid var(--meerblau); background: white;
+    }
+    .puzzle-level { font-size: 13px; color: var(--text-soft); }
+
+    .puzzle-table {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px;
+    }
+    .puzzle-grid {
+      display: grid; grid-template-columns: 90px 1fr 1fr;
+      gap: 6px; font-family: Georgia, serif;
+    }
+    .puzzle-grid .row-label,
+    .puzzle-grid .col-label { color: var(--text-soft); font-size: 14px; padding: 6px; }
+    .puzzle-grid .col-label { font-weight: bold; text-align: center; }
+    .puzzle-cell {
+      border: 2px solid var(--line); border-radius: var(--radius-sm);
+      padding: 12px; text-align: center; font-size: 19px;
+      min-height: 48px; display: flex; align-items: center; justify-content: center;
+    }
+    .puzzle-cell.empty {
+      border: 2px dashed var(--meerblau); background: #f0f6f9;
+      color: var(--text-soft); cursor: pointer;
+    }
+    .puzzle-cell.empty.selected { background: #d8e6ee; }
+    .puzzle-cell.placed { background: white; color: var(--text); }
+    .puzzle-cell.complete { background: #ebf4e3; border-color: var(--correct); }
+
+    .puzzle-pool {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 12px; box-shadow: var(--shadow); min-height: 60px;
+    }
+    .endung-chip {
+      background: var(--meerblau); color: white;
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      font-family: Georgia, serif; font-size: 18px;
+      cursor: pointer; border: 2px solid transparent;
+      min-height: 44px;
+    }
+    .endung-chip.selected { border-color: var(--senf); transform: scale(1.05); }
+    .endung-chip.placed { opacity: 0.35; cursor: default; }
+
+    .puzzle-feedback { margin-top: 14px; min-height: 24px; text-align: center; font-size: 16px; }
+    .puzzle-feedback.correct { color: var(--correct); }
+    .puzzle-feedback.wrong   { color: var(--wrong); }
   </style>
 </head>
 <body>
@@ -330,6 +383,27 @@
     <section id="screen-puzzle" class="screen">
       <button class="back-btn" data-action="home">Zurück</button>
       <h2>Tabellen-Puzzle</h2>
+
+      <div class="puzzle-controls">
+        <select class="puzzle-select" id="puzzle-declension">
+          <option value="o">o-Deklination (servus)</option>
+          <option value="a">a-Deklination (fīlia)</option>
+          <option value="kons">konsonantische Dekl. (pater)</option>
+        </select>
+        <select class="puzzle-select" id="puzzle-level">
+          <option value="1">Stufe 1: nur Dativ leer</option>
+          <option value="2">Stufe 2: Dativ + 2 weitere</option>
+          <option value="3">Stufe 3: alle leer</option>
+        </select>
+        <span class="puzzle-level" id="puzzle-count"></span>
+      </div>
+
+      <div class="puzzle-table">
+        <div class="puzzle-grid" id="puzzle-grid"></div>
+      </div>
+
+      <div class="puzzle-pool" id="puzzle-pool"></div>
+      <div class="puzzle-feedback" id="puzzle-feedback"></div>
     </section>
 
     <section id="screen-summary" class="screen">
@@ -969,8 +1043,158 @@
       if (e.target.closest('[data-action="typing-submit"]')) ModeTyping.submit();
     });
 
-    // Stubs — werden in Tasks 11–12 implementiert:
-    const ModePuzzle = { start() { showScreen('screen-puzzle'); } };
+    // ===== Mode: Tabellen-Puzzle =====
+    const ModePuzzle = {
+      state: null,
+      DEMO_WORDS: { o: 'servus', a: 'fīlia', kons: 'pater' },
+      CASES_ORDER: ['nom', 'gen', 'dat', 'acc', 'abl'],
+
+      start() {
+        showScreen('screen-puzzle');
+        document.getElementById('puzzle-declension').onchange = () => this.rebuild();
+        document.getElementById('puzzle-level').onchange = () => this.rebuild();
+        this.rebuild();
+      },
+
+      rebuild() {
+        const dec = document.getElementById('puzzle-declension').value;
+        const level = +document.getElementById('puzzle-level').value;
+        const vocab = VOCABULARY.find(v => v.lemma === this.DEMO_WORDS[dec]);
+
+        const emptySet = new Set();
+        if (level >= 1) { emptySet.add('dat|sg'); emptySet.add('dat|pl'); }
+        if (level === 2) {
+          const others = this.CASES_ORDER.filter(c => c !== 'dat');
+          shuffle(others).slice(0, 2).forEach(c => {
+            emptySet.add(c + '|sg'); emptySet.add(c + '|pl');
+          });
+        }
+        if (level === 3) {
+          this.CASES_ORDER.forEach(c => { emptySet.add(c + '|sg'); emptySet.add(c + '|pl'); });
+        }
+
+        const poolItems = [];
+        emptySet.forEach(key => {
+          const [casus, numerus] = key.split('|');
+          const ending = ENDINGS[dec][numerus][casus] || '—';
+          poolItems.push({ key, ending, placed: false });
+        });
+
+        this.state = {
+          declension: dec, vocab, emptySet,
+          placements: {},
+          selectedChipIdx: null,
+          selectedCellKey: null,
+          pool: shuffle(poolItems)
+        };
+        this.render();
+      },
+
+      render() {
+        const { declension: dec, vocab, emptySet, placements, pool } = this.state;
+        const grid = document.getElementById('puzzle-grid');
+        clear(grid);
+
+        grid.appendChild(el('div'));
+        grid.appendChild(el('div', { class: 'col-label' }, 'Sg.'));
+        grid.appendChild(el('div', { class: 'col-label' }, 'Pl.'));
+
+        this.CASES_ORDER.forEach(c => {
+          grid.appendChild(el('div', { class: 'row-label' }, CASE_LABEL[c]));
+          for (const num of ['sg', 'pl']) {
+            const key = c + '|' + num;
+            const cell = el('div', { class: 'puzzle-cell' });
+            if (emptySet.has(key)) {
+              if (placements[key]) {
+                cell.textContent = vocab.stem + placements[key];
+                cell.classList.add('placed');
+              } else {
+                cell.textContent = '?';
+                cell.classList.add('empty');
+                if (this.state.selectedCellKey === key) cell.classList.add('selected');
+                cell.onclick = () => this.cellClick(key);
+              }
+            } else {
+              cell.textContent = (c === 'nom' && vocab.irregularNomSg)
+                ? vocab.lemma
+                : vocab.stem + ENDINGS[dec][num][c];
+              cell.classList.add('placed');
+            }
+            grid.appendChild(cell);
+          }
+        });
+
+        const poolEl = document.getElementById('puzzle-pool');
+        clear(poolEl);
+        pool.forEach((item, idx) => {
+          const chip = el('div', { class: 'endung-chip' }, '-' + item.ending);
+          if (this.state.selectedChipIdx === idx) chip.classList.add('selected');
+          if (item.placed) chip.classList.add('placed');
+          else chip.onclick = () => this.chipClick(idx);
+          poolEl.appendChild(chip);
+        });
+
+        const remaining = [...emptySet].filter(k => !placements[k]).length;
+        document.getElementById('puzzle-count').textContent =
+          remaining === 0
+            ? '🎉 Alle Zellen gefüllt!'
+            : 'Noch ' + remaining + ' Endung' + (remaining === 1 ? '' : 'en') + ' platzieren.';
+      },
+
+      chipClick(idx) {
+        if (this.state.pool[idx].placed) return;
+        this.state.selectedChipIdx = (this.state.selectedChipIdx === idx) ? null : idx;
+        this.tryAutoPlace();
+        this.render();
+      },
+
+      cellClick(key) {
+        this.state.selectedCellKey = (this.state.selectedCellKey === key) ? null : key;
+        this.tryAutoPlace();
+        this.render();
+      },
+
+      tryAutoPlace() {
+        const { selectedChipIdx, selectedCellKey, pool } = this.state;
+        if (selectedChipIdx == null || !selectedCellKey) return;
+        const chip = pool[selectedChipIdx];
+        const [casus, numerus] = selectedCellKey.split('|');
+        const expectedEnding = ENDINGS[this.state.declension][numerus][casus];
+
+        const fb = document.getElementById('puzzle-feedback');
+        if (chip.ending === expectedEnding) {
+          this.state.placements[selectedCellKey] = chip.ending;
+          chip.placed = true;
+          this.state.selectedChipIdx = null;
+          this.state.selectedCellKey = null;
+          fb.textContent = '';
+          fb.className = 'puzzle-feedback';
+          this.checkComplete();
+        } else {
+          fb.textContent = 'Das passt nicht zu dieser Zelle.';
+          fb.className = 'puzzle-feedback wrong';
+          this.state.selectedChipIdx = null;
+          this.state.selectedCellKey = null;
+          setTimeout(() => { fb.textContent = ''; fb.className = 'puzzle-feedback'; }, 1400);
+        }
+      },
+
+      checkComplete() {
+        const remaining = [...this.state.emptySet].filter(k => !this.state.placements[k]).length;
+        if (remaining === 0) {
+          const leitner = LeitnerStore.load();
+          this.state.emptySet.forEach(key => {
+            const [casus, numerus] = key.split('|');
+            LeitnerStore.promote(leitner, formId(this.state.vocab, casus, numerus));
+          });
+          LeitnerStore.save(leitner);
+          const fb = document.getElementById('puzzle-feedback');
+          fb.className = 'puzzle-feedback correct';
+          fb.textContent = 'Tabelle vollständig — Recte!';
+        }
+      }
+    };
+
     const ModeMix    = { start() { alert('Mix-Modus: kommt in Task 12.'); } };
 
     function init() {
