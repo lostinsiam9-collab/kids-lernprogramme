@@ -534,6 +534,25 @@
       { stem: 'capit',    lemma: 'caput',      declension: 'kons', gender: 'n', de: 'Kopf', irregularNomSg: true }
     ];
 
+    const ADJ_PRON_VOCABULARY = [
+      { stem: 'bon',   lemma: 'bonus',  declension: 'o', gender: 'm', de: 'gut',   kind: 'adj' },
+      { stem: 'bon',   lemma: 'bona',   declension: 'a', gender: 'f', de: 'gut',   kind: 'adj' },
+      { stem: 'magn',  lemma: 'magnus', declension: 'o', gender: 'm', de: 'groß',  kind: 'adj' },
+      { stem: 'magn',  lemma: 'magna',  declension: 'a', gender: 'f', de: 'groß',  kind: 'adj' },
+      { stem: 'parv',  lemma: 'parvus', declension: 'o', gender: 'm', de: 'klein', kind: 'adj' },
+      { stem: 'parv',  lemma: 'parva',  declension: 'a', gender: 'f', de: 'klein', kind: 'adj' },
+      { stem: 'long',  lemma: 'longus', declension: 'o', gender: 'm', de: 'lang',  kind: 'adj' },
+      { stem: 'long',  lemma: 'longa',  declension: 'a', gender: 'f', de: 'lang',  kind: 'adj' },
+      { stem: 'me',    lemma: 'meus',   declension: 'o', gender: 'm', de: 'mein',  kind: 'pron' },
+      { stem: 'me',    lemma: 'mea',    declension: 'a', gender: 'f', de: 'mein',  kind: 'pron' },
+      { stem: 'tu',    lemma: 'tuus',   declension: 'o', gender: 'm', de: 'dein',  kind: 'pron' },
+      { stem: 'tu',    lemma: 'tua',    declension: 'a', gender: 'f', de: 'dein',  kind: 'pron' },
+      { stem: 'su',    lemma: 'suus',   declension: 'o', gender: 'm', de: 'sein',  kind: 'pron' },
+      { stem: 'su',    lemma: 'sua',    declension: 'a', gender: 'f', de: 'sein',  kind: 'pron' },
+      { stem: 'nostr', lemma: 'noster', declension: 'o', gender: 'm', de: 'unser', irregularNomSg: true, kind: 'pron' },
+      { stem: 'nostr', lemma: 'nostra', declension: 'a', gender: 'f', de: 'unser', kind: 'pron' }
+    ];
+
     // ===== Core Logic =====
 
     function decline(vocab, casus, numerus) {
@@ -566,6 +585,11 @@
       'Frieden': '', 'Tod': 'e', 'Fuß': 'e', 'Kopf': 'e'
     };
     function germanPluralSuffix(de) { return GERMAN_PLURAL_SUFFIX[de] ?? ''; }
+
+    Object.assign(GERMAN_PLURAL_SUFFIX, {
+      'gut': 'e', 'groß': 'e', 'klein': 'e', 'lang': 'e',
+      'mein': 'e', 'dein': 'e', 'sein': 'e', 'unser': 'e'
+    });
 
     // ===== Setup Store =====
 
@@ -601,8 +625,11 @@
     };
 
     function activeForms(setup) {
+      const wordPool = setup.includeAdjectivesPronouns
+        ? [...VOCABULARY, ...ADJ_PRON_VOCABULARY]
+        : VOCABULARY;
       const result = [];
-      for (const vocab of VOCABULARY) {
+      for (const vocab of wordPool) {
         if (!setup.declensions.includes(vocab.declension)) continue;
         for (const numerus of setup.numbers) {
           for (const casus of setup.cases) {
