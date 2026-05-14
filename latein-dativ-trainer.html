@@ -83,6 +83,55 @@
       background: none; border: none; color: var(--text-soft);
       font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 8px;
     }
+
+    .modes {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin-bottom: 16px;
+    }
+    .mode-card {
+      background: var(--card-bg);
+      border-left: 4px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      text-align: left; cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      border-top: none; border-right: none; border-bottom: none;
+      display: block; width: 100%; color: var(--text);
+    }
+    @media (hover: hover) {
+      .mode-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    }
+    .mode-card .icon { font-size: 28px; margin-bottom: 6px; }
+    .mode-card h3 { margin: 4px 0 4px; font-size: 19px; }
+    .mode-card p { margin: 0; font-size: 14px; color: var(--text-soft); }
+    .mode-card.cards   { border-left-color: var(--terracotta); }
+    .mode-card.quiz    { border-left-color: var(--olive); }
+    .mode-card.typing  { border-left-color: var(--senf); }
+    .mode-card.puzzle  { border-left-color: var(--meerblau); }
+    .mode-card.mix {
+      grid-column: 1 / -1;
+      border-left-color: var(--text);
+      background: linear-gradient(135deg, #fff 0%, #fef7ed 100%);
+    }
+
+    .progress {
+      background: var(--card-bg); border-radius: var(--radius);
+      padding: 14px 18px; box-shadow: var(--shadow);
+      font-size: 14px; color: var(--text-soft);
+    }
+    .progress-bar {
+      height: 10px; background: var(--line);
+      border-radius: 5px; overflow: hidden; margin: 8px 0 4px;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--terracotta), var(--olive));
+      transition: width 0.4s ease;
+    }
+
+    @media (max-width: 600px) {
+      .modes { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -114,6 +163,40 @@
           <label class="chip toggle"><input type="checkbox" data-setup="includeAdjectivesPronouns"> + Adjektive &amp; Possessivpronomina</label>
         </div>
         <button class="setup-reset" id="setup-reset-btn">Fortschritt zurücksetzen</button>
+      </div>
+
+      <div class="modes">
+        <button class="mode-card cards"  data-mode="cards">
+          <div class="icon">📜</div>
+          <h3>Karteikarten</h3>
+          <p>Formen anschauen und lernen.</p>
+        </button>
+        <button class="mode-card quiz"   data-mode="quiz">
+          <div class="icon">⚡</div>
+          <h3>Quick Quiz</h3>
+          <p>4 Antworten, sofort wissen wie's geht.</p>
+        </button>
+        <button class="mode-card typing" data-mode="typing">
+          <div class="icon">✏️</div>
+          <h3>Endung tippen</h3>
+          <p>Selbst formulieren — nur die Endung.</p>
+        </button>
+        <button class="mode-card puzzle" data-mode="puzzle">
+          <div class="icon">🧩</div>
+          <h3>Tabellen-Puzzle</h3>
+          <p>Endungen in die richtige Zelle.</p>
+        </button>
+        <button class="mode-card mix"    data-mode="mix">
+          <div class="icon">🎯</div>
+          <h3>Mix-Modus</h3>
+          <p>Alles gemischt — wie ein Mini-Test.</p>
+        </button>
+      </div>
+
+      <div class="progress" id="progress-block">
+        <div id="progress-text"></div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+        <div style="font-size: 13px; opacity: 0.7;" id="progress-detail"></div>
       </div>
     </section>
 
@@ -452,8 +535,51 @@
     }
 
     function renderHome() {
-      // Wird in Task 7 erweitert.
+      const setup = SetupStore.load();
+      const forms = activeForms(setup);
+      const leitner = LeitnerStore.load();
+      const mastered = forms.filter(f =>
+        LeitnerStore.getBox(leitner, formId(f.vocab, f.casus, f.numerus)) >= 4
+      ).length;
+      const pct = forms.length ? Math.round(100 * mastered / forms.length) : 0;
+
+      document.getElementById('progress-fill').style.width = pct + '%';
+      const txt = document.getElementById('progress-text');
+      const detail = document.getElementById('progress-detail');
+      if (forms.length === 0) {
+        txt.textContent = 'Wähle mindestens eine Deklination, einen Kasus und einen Numerus.';
+        detail.textContent = '';
+      } else {
+        txt.textContent = mastered + ' von ' + forms.length + ' Formen sitzen.';
+        detail.textContent = 'Aktiver Pool: ' + forms.length + ' Formen.';
+      }
     }
+
+    function openMode(mode) {
+      const forms = activeForms(SetupStore.load());
+      if (!forms.length) {
+        alert('Bitte erst Deklination, Kasus und Numerus oben auswählen.');
+        return;
+      }
+      if (mode === 'cards')  return ModeCards.start();
+      if (mode === 'quiz')   return ModeQuiz.start();
+      if (mode === 'typing') return ModeTyping.start();
+      if (mode === 'puzzle') return ModePuzzle.start();
+      if (mode === 'mix')    return ModeMix.start();
+    }
+
+    // Click-Delegation für Modi-Karten
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-mode]');
+      if (btn) openMode(btn.dataset.mode);
+    });
+
+    // Stubs — werden in Tasks 8–12 implementiert:
+    const ModeCards  = { start() { showScreen('screen-cards');  } };
+    const ModeQuiz   = { start() { showScreen('screen-quiz');   } };
+    const ModeTyping = { start() { showScreen('screen-typing'); } };
+    const ModePuzzle = { start() { showScreen('screen-puzzle'); } };
+    const ModeMix    = { start() { alert('Mix-Modus: kommt in Task 12.'); } };
 
     function init() {
       renderSetupBar();
