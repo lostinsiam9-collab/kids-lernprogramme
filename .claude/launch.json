@@ -18,6 +18,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8092"],
       "port": 8092
+    },
+    {
+      "name": "herz-kreislauf-trainer",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8093"],
+      "port": 8093
     }
   ]
 }

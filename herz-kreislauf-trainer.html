@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#fde9ec">
+  <title>Herz &amp; Kreislauf · Entdecken und Üben</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-grad-start:    #fde9ec;
+      --bg-grad-end:      #e7f3ff;
+      --bg-spot:          rgba(255,255,255,0.65);
+      --blood-oxy:        #e85d5d;
+      --blood-oxy-soft:   #ffd6d6;
+      --blood-deoxy:      #4a90c2;
+      --blood-deoxy-soft: #cfe4f3;
+      --heart-muscle:     #b85450;
+      --heart-muscle-deep:#8a3a37;
+      --heart-muscle-soft:#d98480;
+      --valve:            #fbf7ee;
+      --valve-edge:       #c9bfa8;
+      --ink:              #2b3a4a;
+      --ink-soft:         #6b7a8a;
+      --ink-faint:        #aab5c2;
+      --card:             rgba(255,255,255,0.86);
+      --card-strong:      rgba(255,255,255,0.96);
+      --card-shadow:      0 10px 30px rgba(46, 64, 87, 0.10), 0 2px 6px rgba(46, 64, 87, 0.06);
+      --card-shadow-lg:   0 20px 50px rgba(46, 64, 87, 0.16), 0 4px 12px rgba(46, 64, 87, 0.08);
+      --success:          #4caf6e;
+      --success-soft:     #e6f5ec;
+      --success-glow:     rgba(76, 175, 110, 0.35);
+      --error:            #e07277;
+      --error-soft:       #fbe7e9;
+      --accent-warm:      #f6b26b;
+      --accent-cool:      #8da9d6;
+      --radius-lg:        20px;
+      --radius-md:        14px;
+      --radius-sm:        9px;
+      --ease-soft:        cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-pop:         cubic-bezier(0.34, 1.56, 0.64, 1);
+      --font-display:     'Nunito', 'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-body:        'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 30%, var(--bg-spot), transparent 70%),
+        linear-gradient(160deg, var(--bg-grad-start) 0%, #f4ecf4 45%, var(--bg-grad-end) 100%);
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 19px;
+      line-height: 1.45;
+      min-height: 100vh;
+      padding: 16px max(14px, env(safe-area-inset-left)) calc(80px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-right));
+      padding-top: max(16px, env(safe-area-inset-top));
+    }
+
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: 0.2px; }
+    h1 {
+      font-size: clamp(28px, 4vw, 38px);
+      margin: 0;
+      text-align: center;
+      color: var(--heart-muscle-deep);
+    }
+    h1 .sub {
+      display: block;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 4px;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    h2 { font-size: 22px; color: var(--ink); margin: 0 0 14px; }
+    h3 { font-size: 18px; color: var(--ink); margin: 0 0 10px; }
+
+    button, input, select { font-family: inherit; font-size: 19px; }
+    button { cursor: pointer; touch-action: manipulation; min-height: 48px; }
+
+    .app { max-width: 1100px; margin: 0 auto; }
+
+    header.hero {
+      text-align: center;
+      padding: 6px 8px 14px;
+      animation: fade-in 0.6s var(--ease-soft);
+    }
+    header.hero .tagline {
+      margin: 6px 0 0;
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 12px auto 18px;
+      max-width: 420px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 6px;
+      border-radius: 999px;
+      box-shadow: var(--card-shadow);
+    }
+    .tab-nav button {
+      flex: 1;
+      min-height: 48px;
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 17px;
+      border-radius: 999px;
+      transition: all 0.25s var(--ease-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .tab-nav button.active {
+      background: linear-gradient(135deg, var(--blood-oxy), var(--heart-muscle));
+      color: white;
+      box-shadow: 0 4px 14px rgba(184, 84, 80, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .tab-panel { animation: panel-in 0.35s var(--ease-soft); }
+    .tab-panel.hidden { display: none; }
+    @keyframes panel-in {
+      from { opacity: 0; transform: scale(0.98) translateY(4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--card-shadow);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .card-strong { background: var(--card-strong); }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      min-height: 44px;
+      border: 2px solid transparent;
+      background: rgba(255,255,255,0.7);
+      color: var(--ink-soft);
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.2s var(--ease-soft);
+      box-shadow: 0 2px 6px rgba(46,64,87,0.05);
+    }
+    .chip:hover { transform: translateY(-1px); }
+    .chip.active {
+      background: white;
+      color: var(--ink);
+      border-color: var(--heart-muscle-soft);
+      box-shadow: 0 4px 12px rgba(184, 84, 80, 0.2);
+    }
+    .chip.active .dot { background: var(--heart-muscle); }
+    .chip .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--ink-faint);
+      transition: background 0.2s;
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-lg);
+      overflow: visible;
+    }
+    .stage svg.heart {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 10px 24px rgba(184, 84, 80, 0.18));
+    }
+
+    .heart-group {
+      transform-origin: 300px 320px;
+      animation: heart-beat 1.05s var(--ease-soft) infinite;
+    }
+    @keyframes heart-beat {
+      0%   { transform: scale(1.00); }
+      8%   { transform: scale(1.035); }
+      16%  { transform: scale(1.00); }
+      24%  { transform: scale(1.025); }
+      40%  { transform: scale(1.00); }
+      100% { transform: scale(1.00); }
+    }
+
+    .label-group { pointer-events: none; }
+    .label-group .label {
+      opacity: 0;
+      transition: opacity 0.3s var(--ease-soft);
+    }
+    .label-group.show .label { opacity: 1; }
+    .label text {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      fill: var(--ink);
+      paint-order: stroke;
+      stroke: rgba(255,255,255,0.92);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+    .label .leader {
+      stroke: var(--ink-faint);
+      stroke-width: 1.4;
+      fill: none;
+      stroke-dasharray: 3 3;
+    }
+
+    .hotspot {
+      fill: transparent;
+      stroke: transparent;
+      cursor: pointer;
+      transition: fill 0.2s;
+    }
+    .hotspot:hover { fill: rgba(255,255,255,0.25); }
+
+    .region-highlight {
+      fill: none;
+      stroke: var(--accent-warm);
+      stroke-width: 5;
+      stroke-linejoin: round;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .region-highlight.active {
+      opacity: 1;
+      animation: region-pulse 1.2s var(--ease-soft) infinite;
+    }
+    @keyframes region-pulse {
+      0%, 100% { stroke-opacity: 1; stroke-width: 5; }
+      50%      { stroke-opacity: 0.4; stroke-width: 8; }
+    }
+
+    .flow-path {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transition: opacity 0.3s var(--ease-soft);
+    }
+    .flow-path.lungen      { stroke: var(--blood-deoxy); }
+    .flow-path.lungen-back { stroke: var(--blood-oxy); }
+    .flow-path.koerper     { stroke: var(--blood-oxy); }
+    .flow-path.koerper-back{ stroke: var(--blood-deoxy); }
+
+    .drop { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
+
+    .stage-controls {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+    }
+    .speed {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 999px;
+      box-shadow: var(--card-shadow);
+    }
+    .speed label { font-size: 14px; color: var(--ink-soft); font-weight: 700; }
+    .speed input[type="range"] {
+      width: 140px;
+      accent-color: var(--heart-muscle);
+    }
+    .tour-btn {
+      padding: 10px 22px;
+      border: none;
+      background: linear-gradient(135deg, var(--blood-oxy), var(--heart-muscle));
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 17px;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(184,84,80,0.32);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s var(--ease-soft);
+    }
+    .tour-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(184,84,80,0.4); }
+    .tour-btn:active { transform: translateY(0); }
+
+    .info-popup {
+      position: absolute;
+      max-width: 320px;
+      background: var(--card-strong);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: var(--radius-md);
+      box-shadow: var(--card-shadow-lg);
+      padding: 14px 16px;
+      z-index: 30;
+      animation: pop 0.3s var(--ease-pop);
+    }
+    .info-popup .title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--heart-muscle-deep);
+      font-size: 18px;
+      margin: 0 0 6px;
+    }
+    .info-popup p { margin: 0; font-size: 16px; line-height: 1.5; }
+    .info-popup .close {
+      position: absolute;
+      top: 4px; right: 6px;
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      color: var(--ink-soft);
+      min-height: 32px;
+      padding: 0 8px;
+    }
+
+    @keyframes pop {
+      0%   { transform: scale(0.85); opacity: 0; }
+      60%  { transform: scale(1.04); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    .tour-bubble {
+      position: absolute;
+      max-width: 280px;
+      background: linear-gradient(135deg, #ffffff, #fff6f6);
+      border: 2px solid var(--heart-muscle-soft);
+      border-radius: var(--radius-md);
+      box-shadow: var(--card-shadow-lg);
+      padding: 12px 16px;
+      z-index: 35;
+      animation: pop 0.35s var(--ease-pop);
+    }
+    .tour-bubble .step {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--heart-muscle);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .tour-bubble p { margin: 0 0 10px; font-size: 16px; line-height: 1.45; }
+    .tour-bubble .controls { display: flex; justify-content: space-between; gap: 8px; }
+    .tour-bubble button {
+      flex: 1;
+      min-height: 40px;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 14px;
+      padding: 8px 14px;
+    }
+    .tour-bubble button.prev { background: rgba(0,0,0,0.06); color: var(--ink-soft); }
+    .tour-bubble button.next { background: var(--heart-muscle); color: white; }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .mode-card {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.7);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.25s var(--ease-soft);
+      box-shadow: var(--card-shadow);
+    }
+    .mode-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-lg); }
+    .mode-card.active {
+      border-color: var(--heart-muscle-soft);
+      background: white;
+      transform: translateY(-3px);
+      box-shadow: 0 14px 32px rgba(184, 84, 80, 0.22);
+    }
+    .mode-card .emoji { font-size: 36px; display: block; margin-bottom: 6px; }
+    .mode-card .name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 17px;
+      margin: 0 0 4px;
+    }
+    .mode-card .hint { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
+    .label-game { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 820px) { .label-game { grid-template-columns: 1.4fr 1fr; } }
+
+    .game-stage {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+    }
+    .game-stage svg { width: 100%; height: 100%; display: block; }
+
+    .drop-slot {
+      fill: rgba(255, 255, 255, 0.55);
+      stroke: var(--ink-faint);
+      stroke-width: 2;
+      stroke-dasharray: 6 4;
+      cursor: default;
+      transition: all 0.2s var(--ease-soft);
+    }
+    .drop-slot.hover-target {
+      fill: rgba(246, 178, 107, 0.35);
+      stroke: var(--accent-warm);
+      stroke-width: 3;
+      stroke-dasharray: none;
+    }
+    .drop-slot.filled-correct {
+      fill: var(--success-soft);
+      stroke: var(--success);
+      stroke-dasharray: none;
+    }
+    .drop-slot.shake { animation: slot-shake 0.4s; }
+    @keyframes slot-shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+    .slot-label {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      fill: var(--success);
+      paint-order: stroke;
+      stroke: rgba(255,255,255,0.95);
+      stroke-width: 3.5px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .slot-label.show { opacity: 1; }
+
+    .label-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-content: flex-start;
+      align-items: flex-start;
+    }
+    .label-card {
+      padding: 10px 16px;
+      min-height: 48px;
+      background: white;
+      border: 2px solid var(--heart-muscle-soft);
+      color: var(--ink);
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 16px;
+      box-shadow: var(--card-shadow);
+      touch-action: none;
+      user-select: none;
+      transition: transform 0.2s var(--ease-soft), opacity 0.3s;
+      position: relative;
+      cursor: grab;
+    }
+    .label-card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-lg); }
+    .label-card.dragging {
+      transform: scale(1.07);
+      box-shadow: 0 16px 36px rgba(46,64,87,0.22);
+      cursor: grabbing;
+      z-index: 50;
+    }
+    .label-card.placed { opacity: 0; pointer-events: none; }
+    .label-card.returning { transition: transform 0.3s var(--ease-pop); }
+    .label-card.wrong { animation: card-shake 0.4s; border-color: var(--error); background: var(--error-soft); }
+    @keyframes card-shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-3px); }
+    }
+
+    .sorter-wrap { display: flex; flex-direction: column; gap: 14px; }
+
+    .sorter-zones {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 8px 4px 14px;
+      gap: 8px;
+      scroll-snap-type: x mandatory;
+    }
+    .sort-slot {
+      flex: 0 0 130px;
+      min-height: 110px;
+      background: rgba(255,255,255,0.55);
+      border: 2px dashed var(--ink-faint);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      scroll-snap-align: start;
+      position: relative;
+      transition: all 0.2s var(--ease-soft);
+    }
+    .sort-slot .num {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      color: var(--ink-faint);
+      font-size: 14px;
+    }
+    .sort-slot.hover-target {
+      background: rgba(246, 178, 107, 0.35);
+      border-color: var(--accent-warm);
+      border-style: solid;
+    }
+    .sort-slot.filled .num { color: var(--success); }
+    .sort-slot.correct-final {
+      background: var(--success-soft);
+      border-color: var(--success);
+      border-style: solid;
+    }
+    .sort-slot.wrong-final {
+      background: var(--error-soft);
+      border-color: var(--error);
+      border-style: solid;
+      animation: slot-shake 0.4s;
+    }
+    .sort-arrow {
+      flex: 0 0 18px;
+      align-self: center;
+      color: var(--ink-faint);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .sorter-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .sort-card {
+      padding: 12px 16px;
+      min-height: 48px;
+      background: white;
+      border: 2px solid var(--blood-deoxy-soft);
+      color: var(--ink);
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 15px;
+      box-shadow: var(--card-shadow);
+      touch-action: none;
+      user-select: none;
+      position: relative;
+      cursor: grab;
+      transition: transform 0.2s var(--ease-soft);
+    }
+    .sort-card.oxy   { border-color: var(--blood-oxy-soft); }
+    .sort-card.deoxy { border-color: var(--blood-deoxy-soft); }
+    .sort-card.dragging {
+      transform: scale(1.07);
+      box-shadow: 0 16px 36px rgba(46,64,87,0.22);
+      cursor: grabbing;
+      z-index: 50;
+    }
+
+    .sort-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .sort-toolbar .seg {
+      display: inline-flex;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 999px;
+      padding: 4px;
+      box-shadow: var(--card-shadow);
+    }
+    .sort-toolbar .seg button {
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      padding: 8px 14px;
+      min-height: 40px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 14px;
+      transition: all 0.2s var(--ease-soft);
+    }
+    .sort-toolbar .seg button.active {
+      background: white;
+      color: var(--ink);
+      box-shadow: 0 2px 8px rgba(46,64,87,0.15);
+    }
+    .sort-toolbar .seg button[disabled] { opacity: 0.45; }
+
+    .primary-btn {
+      padding: 12px 22px;
+      min-height: 48px;
+      border: none;
+      background: linear-gradient(135deg, var(--blood-oxy), var(--heart-muscle));
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 16px;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(184,84,80,0.32);
+      transition: all 0.25s var(--ease-soft);
+    }
+    .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(184,84,80,0.4); }
+    .primary-btn:active { transform: translateY(0); }
+    .primary-btn[disabled] {
+      background: var(--ink-faint);
+      box-shadow: none;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .ghost-btn {
+      padding: 10px 18px;
+      min-height: 44px;
+      background: rgba(255,255,255,0.7);
+      border: 2px solid var(--ink-faint);
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 999px;
+      transition: all 0.2s var(--ease-soft);
+    }
+    .ghost-btn:hover { background: white; transform: translateY(-1px); }
+
+    .flash-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .flash-card {
+      width: min(100%, 420px);
+      aspect-ratio: 4 / 3;
+      perspective: 1200px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .flash-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s var(--ease-soft);
+      transform-style: preserve-3d;
+    }
+    .flash-card.flipped .flash-inner { transform: rotateY(180deg); }
+    .flash-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: var(--card-shadow-lg);
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+    .flash-front { background: linear-gradient(135deg, #fff5f5, #ffeaea); }
+    .flash-back {
+      background: linear-gradient(135deg, #eef6ff, #e2efff);
+      transform: rotateY(180deg);
+    }
+    .flash-face .term {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(22px, 4vw, 30px);
+      color: var(--heart-muscle-deep);
+      margin: 0 0 8px;
+    }
+    .flash-face .func {
+      font-size: 17px;
+      color: var(--ink);
+      margin: 0;
+      line-height: 1.45;
+    }
+    .flash-face .badge {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+    .flash-face .hint {
+      position: absolute;
+      bottom: 14px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .flash-face .box-pill {
+      position: absolute;
+      top: 12px; right: 14px;
+      font-size: 12px;
+      padding: 3px 10px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 999px;
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+
+    .flash-actions {
+      display: flex;
+      gap: 12px;
+      width: min(100%, 420px);
+    }
+    .flash-actions button {
+      flex: 1;
+      min-height: 56px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 17px;
+      transition: all 0.25s var(--ease-soft);
+      box-shadow: 0 6px 18px rgba(46,64,87,0.12);
+    }
+    .flash-actions .again {
+      background: linear-gradient(135deg, #ffd9d9, #ffc1c1);
+      color: var(--heart-muscle-deep);
+    }
+    .flash-actions .sitzt {
+      background: linear-gradient(135deg, #c8ecd2, #a8dfba);
+      color: #1f6b3a;
+    }
+    .flash-actions button:hover { transform: translateY(-2px); }
+    .flash-actions button:active { transform: translateY(0); }
+    .flash-actions button[disabled] { opacity: 0.5; pointer-events: none; }
+
+    .flash-progress {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .flash-progress .bar {
+      width: 200px;
+      height: 6px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .flash-progress .bar > div {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blood-oxy), var(--heart-muscle));
+      width: 0%;
+      transition: width 0.4s var(--ease-soft);
+    }
+
+    .tap-popup {
+      position: fixed;
+      background: var(--card-strong);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      box-shadow: var(--card-shadow-lg);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 240px;
+      animation: pop 0.25s var(--ease-pop);
+    }
+    .tap-popup button {
+      padding: 10px 14px;
+      min-height: 44px;
+      background: white;
+      border: 1.5px solid var(--blood-deoxy-soft);
+      color: var(--ink);
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 14px;
+      text-align: left;
+    }
+    .tap-popup button:hover { background: var(--blood-deoxy-soft); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .stat-tile {
+      background: rgba(255,255,255,0.8);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(46,64,87,0.05);
+    }
+    .stat-tile .key {
+      font-size: 13px;
+      color: var(--ink-soft);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .stat-tile .val {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--heart-muscle-deep);
+    }
+    .stat-tile .sub { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+    .progress-list { margin-top: 12px; }
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .progress-row .topic {
+      flex: 0 0 130px;
+      font-size: 14px;
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .progress-row .bar {
+      flex: 1;
+      height: 10px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-row .bar > div {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blood-oxy), var(--heart-muscle));
+      width: 0%;
+      transition: width 0.5s var(--ease-soft);
+    }
+    .progress-row .pct {
+      flex: 0 0 60px;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      width: 10px; height: 14px;
+      border-radius: 2px;
+      opacity: 0;
+      z-index: 200;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(28px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: var(--card-shadow-lg);
+      z-index: 300;
+      animation: toast-in 0.3s var(--ease-pop), toast-out 0.3s var(--ease-soft) 2.5s forwards;
+    }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes toast-out {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .completion {
+      text-align: center;
+      padding: 30px 16px;
+      animation: fade-in 0.5s;
+    }
+    .completion .big {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--heart-muscle-deep);
+      margin: 0 0 6px;
+    }
+    .completion .sub { color: var(--ink-soft); margin: 0 0 18px; }
+    .session-counter {
+      text-align: center;
+      font-size: 14px;
+      color: var(--ink-soft);
+      margin-bottom: 12px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .heart-group { animation: none !important; }
+      .flow-path   { animation: none !important; }
+      .region-highlight.active { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <h1>
+        <span class="sub">Biologie · Klasse 6</span>
+        Herz &amp; Kreislauf
+      </h1>
+      <p class="tagline">Entdecke das Herz von innen — und übe, bis alles sitzt.</p>
+    </header>
+
+    <nav class="tab-nav" role="tablist" aria-label="Modus wählen">
+      <button id="tab-entdecken" class="active" role="tab" aria-selected="true">
+        <span aria-hidden="true">🔍</span>
+        Entdecken
+      </button>
+      <button id="tab-ueben" role="tab" aria-selected="false">
+        <span aria-hidden="true">✏️</span>
+        Üben
+      </button>
+    </nav>
+
+    <section id="panel-entdecken" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="chip-row" id="layer-chips" aria-label="Ansicht wählen">
+          <button class="chip active" data-layer="anatomie"><span class="dot"></span>Anatomie zeigen</button>
+          <button class="chip" data-layer="lungen"><span class="dot"></span>Lungenkreislauf</button>
+          <button class="chip" data-layer="koerper"><span class="dot"></span>Körperkreislauf</button>
+          <button class="chip" data-layer="beide"><span class="dot"></span>Beide Kreisläufe</button>
+        </div>
+
+        <div class="stage" id="stage-entdecken"></div>
+
+        <div class="stage-controls">
+          <div class="speed">
+            <label for="speed-slider">🫀 Tempo</label>
+            <input id="speed-slider" type="range" min="0.4" max="2.5" step="0.1" value="1.0">
+            <span id="speed-label" style="font-size:14px;font-weight:700;color:var(--ink);min-width:48px;text-align:right;">normal</span>
+          </div>
+          <button id="tour-btn" class="tour-btn">
+            <span aria-hidden="true">💬</span>
+            Erklär's mir!
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-ueben" class="tab-panel hidden" role="tabpanel">
+      <div class="card">
+        <h2 style="display:flex;align-items:center;gap:8px;">
+          <span aria-hidden="true">🎯</span> Welche Themen möchtest du üben?
+        </h2>
+        <div class="chip-row" id="topic-chips" aria-label="Themen wählen"></div>
+      </div>
+
+      <div class="card">
+        <h2 style="display:flex;align-items:center;gap:8px;">
+          <span aria-hidden="true">📚</span> Wähle deinen Übungsmodus
+        </h2>
+        <div class="mode-grid" id="mode-grid">
+          <button class="mode-card active" data-mode="beschriften">
+            <span class="emoji">🏷️</span>
+            <div class="name">Beschriften</div>
+            <p class="hint">Begriffe an die richtige Stelle ziehen</p>
+          </button>
+          <button class="mode-card" data-mode="sortierer">
+            <span class="emoji">🩸</span>
+            <div class="name">Blutfluss</div>
+            <p class="hint">Stationen in die richtige Reihenfolge</p>
+          </button>
+          <button class="mode-card" data-mode="flashcards">
+            <span class="emoji">🎴</span>
+            <div class="name">Karteikarten</div>
+            <p class="hint">Begriffe und Funktionen mit Leitner-System</p>
+          </button>
+        </div>
+      </div>
+
+      <div class="card" id="mode-container" style="min-height:300px;"></div>
+
+      <div class="card">
+        <h2 style="display:flex;align-items:center;gap:8px;">
+          <span aria-hidden="true">📊</span> Dein Fortschritt
+        </h2>
+        <div id="stats-grid" class="stats-grid"></div>
+        <div id="progress-list" class="progress-list"></div>
+        <div class="toolbar">
+          <button class="ghost-btn" id="btn-export">⬇ Fortschritt exportieren</button>
+          <button class="ghost-btn" id="btn-import">⬆ Fortschritt importieren</button>
+          <button class="ghost-btn" id="btn-reset" style="border-color: var(--error); color: var(--error);">↺ Alles zurücksetzen</button>
+        </div>
+      </div>
+    </section>
+
+    <footer style="text-align:center;color:var(--ink-soft);font-size:13px;margin-top:8px;">
+      💗 Mach öfter mal eine Pause — auch dein Herz schlägt 60–100 Mal pro Minute.
+    </footer>
+  </div>
+
+  <script>
+  /* =================================================================
+   * DATA
+   * ================================================================= */
+
+  const REGIONS = [
+    { key: 'aorta',            name: 'Aorta',             info: 'Die Aorta ist die größte Schlagader im Körper. Sie führt das sauerstoffreiche Blut von der linken Kammer in den ganzen Körper.', slot: { x: 470, y: 110, r: 32 }, topic: 'gefaesse' },
+    { key: 'pulmonalarterie',  name: 'Lungenarterie',     info: 'Die Lungenarterie bringt das verbrauchte (sauerstoffarme) Blut aus der rechten Kammer zur Lunge.',                              slot: { x: 140, y: 115, r: 32 }, topic: 'gefaesse' },
+    { key: 'pulmonalvenen',    name: 'Lungenvenen',       info: 'Die Lungenvenen führen das frisch mit Sauerstoff getankte Blut von der Lunge zurück in den linken Vorhof.',                     slot: { x: 478, y: 200, r: 28 }, topic: 'gefaesse' },
+    { key: 'hohlvene-sup',     name: 'Obere Hohlvene',    info: 'Die obere Hohlvene sammelt das sauerstoffarme Blut aus Kopf und Armen und leitet es in den rechten Vorhof.',                    slot: { x: 155, y: 95,  r: 28 }, topic: 'gefaesse' },
+    { key: 'hohlvene-inf',     name: 'Untere Hohlvene',   info: 'Die untere Hohlvene sammelt das sauerstoffarme Blut aus dem unteren Körper und führt es in den rechten Vorhof.',                slot: { x: 178, y: 525, r: 28 }, topic: 'gefaesse' },
+    { key: 'rechter-vorhof',   name: 'Rechter Vorhof',    info: 'Der rechte Vorhof nimmt das sauerstoffarme Blut aus dem Körper auf und schickt es weiter in die rechte Kammer.',                slot: { x: 232, y: 232, r: 34 }, topic: 'anatomie' },
+    { key: 'rechte-kammer',    name: 'Rechte Kammer',     info: 'Die rechte Kammer pumpt das sauerstoffarme Blut in die Lunge.',                                                                  slot: { x: 235, y: 380, r: 40 }, topic: 'anatomie' },
+    { key: 'linker-vorhof',    name: 'Linker Vorhof',     info: 'Der linke Vorhof nimmt das sauerstoffreiche Blut aus der Lunge auf und schickt es weiter in die linke Kammer.',                  slot: { x: 386, y: 232, r: 34 }, topic: 'anatomie' },
+    { key: 'linke-kammer',     name: 'Linke Kammer',      info: 'Die linke Kammer ist der stärkste Muskel des Herzens. Sie pumpt das sauerstoffreiche Blut in den ganzen Körper.',                slot: { x: 383, y: 380, r: 42 }, topic: 'anatomie' },
+    { key: 'septum',           name: 'Herzscheidewand',   info: 'Die Herzscheidewand (Septum) trennt die linke und rechte Herzhälfte. So vermischen sich sauerstoffreiches und sauerstoffarmes Blut nicht.', slot: { x: 309, y: 380, r: 16 }, topic: 'anatomie' },
+    { key: 'trikuspidal',      name: 'Trikuspidalklappe', info: 'Sitzt zwischen rechtem Vorhof und rechter Kammer. Sie verhindert, dass das Blut zurück in den Vorhof fließt, wenn die Kammer pumpt.', slot: { x: 232, y: 290, r: 22 }, topic: 'klappen' },
+    { key: 'mitral',           name: 'Mitralklappe',      info: 'Sitzt zwischen linkem Vorhof und linker Kammer (= Bikuspidalklappe). Sie verhindert, dass das Blut zurück in den Vorhof fließt.', slot: { x: 386, y: 290, r: 22 }, topic: 'klappen' },
+    { key: 'pulmonalklappe',   name: 'Pulmonalklappe',    info: 'Sitzt am Ausgang der rechten Kammer. Sie öffnet sich, wenn das Blut in die Lunge gepumpt wird, und schließt danach.',            slot: { x: 232, y: 178, r: 20 }, topic: 'klappen' },
+    { key: 'aortenklappe',     name: 'Aortenklappe',      info: 'Sitzt am Ausgang der linken Kammer. Sie öffnet sich, wenn das Blut in den Körper gepumpt wird, und schließt danach.',            slot: { x: 386, y: 178, r: 20 }, topic: 'klappen' }
+  ];
+
+  const TOPICS = [
+    { key: 'anatomie',  name: 'Anatomie',         emoji: '🫀' },
+    { key: 'klappen',   name: 'Klappen',          emoji: '🚪' },
+    { key: 'gefaesse',  name: 'Gefäße',           emoji: '🩸' },
+    { key: 'lungen',    name: 'Lungenkreislauf',  emoji: '💨' },
+    { key: 'koerper',   name: 'Körperkreislauf',  emoji: '💪' }
+  ];
+
+  const STATIONS_LUNGEN = [
+    { id: 'rk', label: 'Rechte Kammer',          type: 'deoxy' },
+    { id: 'pk', label: 'Pulmonalklappe',         type: 'deoxy' },
+    { id: 'pa', label: 'Lungenarterie',          type: 'deoxy' },
+    { id: 'lu', label: 'Lunge (Gasaustausch)',   type: 'mix' },
+    { id: 'pv', label: 'Lungenvenen',            type: 'oxy' },
+    { id: 'lv', label: 'Linker Vorhof',          type: 'oxy' }
+  ];
+  const STATIONS_KOERPER = [
+    { id: 'lk',  label: 'Linke Kammer',      type: 'oxy' },
+    { id: 'ak',  label: 'Aortenklappe',      type: 'oxy' },
+    { id: 'ao',  label: 'Aorta',             type: 'oxy' },
+    { id: 'koe', label: 'Körper (Gewebe)',   type: 'mix' },
+    { id: 'hv',  label: 'Hohlvenen',         type: 'deoxy' },
+    { id: 'rv',  label: 'Rechter Vorhof',    type: 'deoxy' }
+  ];
+  const STATIONS_BEIDE = STATIONS_LUNGEN.concat(
+    [{ id: 'mi', label: 'Mitralklappe', type: 'oxy' }]
+  ).concat(STATIONS_KOERPER).concat(
+    [{ id: 'tr', label: 'Trikuspidalklappe', type: 'deoxy' }]
+  );
+
+  const FLASHCARDS = [
+    { id: 'fc-aorta',     topic: 'gefaesse', term: 'Aorta',                func: 'Größte Schlagader. Bringt sauerstoffreiches Blut aus der linken Kammer in den Körper.' },
+    { id: 'fc-pa',        topic: 'gefaesse', term: 'Lungenarterie',        func: 'Bringt sauerstoffarmes Blut aus der rechten Kammer zur Lunge.' },
+    { id: 'fc-pv',        topic: 'gefaesse', term: 'Lungenvenen',          func: 'Bringen sauerstoffreiches Blut aus der Lunge zum linken Vorhof.' },
+    { id: 'fc-vcs',       topic: 'gefaesse', term: 'Obere Hohlvene',       func: 'Sammelt sauerstoffarmes Blut aus Kopf und Armen, mündet in den rechten Vorhof.' },
+    { id: 'fc-vci',       topic: 'gefaesse', term: 'Untere Hohlvene',      func: 'Sammelt sauerstoffarmes Blut aus dem unteren Körper, mündet in den rechten Vorhof.' },
+    { id: 'fc-rv',        topic: 'anatomie', term: 'Rechter Vorhof',       func: 'Nimmt das sauerstoffarme Blut aus dem Körper auf.' },
+    { id: 'fc-rk',        topic: 'anatomie', term: 'Rechte Kammer',        func: 'Pumpt das sauerstoffarme Blut zur Lunge.' },
+    { id: 'fc-lv',        topic: 'anatomie', term: 'Linker Vorhof',        func: 'Nimmt das sauerstoffreiche Blut aus der Lunge auf.' },
+    { id: 'fc-lk',        topic: 'anatomie', term: 'Linke Kammer',         func: 'Pumpt das sauerstoffreiche Blut in den ganzen Körper. Stärkster Muskel des Herzens.' },
+    { id: 'fc-septum',    topic: 'anatomie', term: 'Herzscheidewand',      func: 'Trennt linke und rechte Herzhälfte — kein Vermischen der beiden Blutarten.' },
+    { id: 'fc-tri',       topic: 'klappen',  term: 'Trikuspidalklappe',    func: 'Zwischen rechtem Vorhof und rechter Kammer. Verhindert Rückfluss.' },
+    { id: 'fc-mit',       topic: 'klappen',  term: 'Mitralklappe',         func: 'Zwischen linkem Vorhof und linker Kammer (= Bikuspidalklappe). Verhindert Rückfluss.' },
+    { id: 'fc-pk',        topic: 'klappen',  term: 'Pulmonalklappe',       func: 'Am Ausgang der rechten Kammer. Öffnet sich beim Pumpen zur Lunge.' },
+    { id: 'fc-ak',        topic: 'klappen',  term: 'Aortenklappe',         func: 'Am Ausgang der linken Kammer. Öffnet sich beim Pumpen in den Körper.' },
+    { id: 'fc-klein',     topic: 'lungen',   term: 'Lungenkreislauf',      func: 'Auch „kleiner Kreislauf". Rechte Kammer → Lunge → Linker Vorhof. Hier tankt das Blut Sauerstoff.' },
+    { id: 'fc-gross',     topic: 'koerper',  term: 'Körperkreislauf',      func: 'Auch „großer Kreislauf". Linke Kammer → Körper → Rechter Vorhof. Hier gibt das Blut Sauerstoff ab.' },
+    { id: 'fc-oxy',       topic: 'koerper',  term: 'Sauerstoffreich (rot)', func: 'Blut, das gerade frischen Sauerstoff aus der Lunge bekommen hat.' },
+    { id: 'fc-deoxy',     topic: 'lungen',   term: 'Sauerstoffarm (blau)',  func: 'Blut, das seinen Sauerstoff im Körper abgegeben hat und auf dem Weg zur Lunge ist.' },
+    { id: 'fc-doppel',    topic: 'anatomie', term: 'Doppelpumpe',          func: 'Das Herz hat zwei Pumpen in einem: rechte Hälfte zur Lunge, linke Hälfte in den Körper.' },
+    { id: 'fc-gas',       topic: 'lungen',   term: 'Gasaustausch',         func: 'In der Lunge: CO₂ wird abgegeben, Sauerstoff wird ans Blut abgegeben.' }
+  ];
+
+  const TOUR_STEPS = [
+    { x: 232, y: 232, text: 'Wir starten hier: Das verbrauchte (blaue) Blut sammelt sich im rechten Vorhof. Es kommt aus dem ganzen Körper.', layer: 'beide' },
+    { x: 232, y: 290, text: 'Der Vorhof drückt das Blut durch die Trikuspidalklappe in die rechte Kammer.', layer: 'beide' },
+    { x: 235, y: 380, text: 'Die rechte Kammer pumpt das Blut nach oben — durch die Pulmonalklappe in die Lungenarterie.', layer: 'lungen' },
+    { x: 105, y: 320, text: 'In der Lunge gibt das Blut CO₂ ab und tankt frischen Sauerstoff. Blau wird zu Rot. 🌬️', layer: 'lungen' },
+    { x: 478, y: 200, text: 'Über die Lungenvenen kommt das rote Blut zurück — in den linken Vorhof.', layer: 'lungen' },
+    { x: 386, y: 290, text: 'Vom linken Vorhof geht es durch die Mitralklappe in die linke Kammer.', layer: 'beide' },
+    { x: 383, y: 380, text: 'Die linke Kammer ist die kräftigste Pumpe! Sie drückt das Blut durch die Aortenklappe in die Aorta.', layer: 'koerper' },
+    { x: 470, y: 110, text: 'Über die Aorta verteilt sich das frische Blut in den ganzen Körper. Dort gibt es Sauerstoff ab.', layer: 'koerper' },
+    { x: 178, y: 525, text: 'Über die Hohlvenen kommt das verbrauchte Blut zurück ins Herz — und der Kreislauf beginnt von vorn. 💗', layer: 'beide' }
+  ];
+
+  /* =================================================================
+   * STORAGE
+   * ================================================================= */
+
+  const APP_ID = 'herz-kreislauf-trainer';
+  const SETUP_KEY   = 'herzkreislauf-setup';
+  const LEITNER_KEY = 'herzkreislauf-leitner';
+  const STATS_KEY   = 'herzkreislauf-stats';
+
+  const DEFAULT_SETUP = { topics: ['anatomie', 'klappen', 'gefaesse', 'lungen', 'koerper'] };
+  const MAX_BOX = 5;
+  const BOX_WEIGHTS = [5, 3, 2, 1, 0.5];
+
+  let SETUP = (() => {
+    try {
+      const raw = localStorage.getItem(SETUP_KEY);
+      if (!raw) return JSON.parse(JSON.stringify(DEFAULT_SETUP));
+      const s = JSON.parse(raw);
+      return { topics: Array.isArray(s.topics) && s.topics.length ? s.topics : DEFAULT_SETUP.topics };
+    } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_SETUP)); }
+  })();
+
+  const SetupStore = {
+    save() { try { localStorage.setItem(SETUP_KEY, JSON.stringify(SETUP)); } catch (e) {} }
+  };
+
+  const LeitnerStore = {
+    data: {},
+    load() {
+      try { this.data = JSON.parse(localStorage.getItem(LEITNER_KEY)) || {}; }
+      catch (e) { this.data = {}; }
+    },
+    save() { try { localStorage.setItem(LEITNER_KEY, JSON.stringify(this.data)); } catch (e) {} },
+    getBox(cardId) {
+      const entry = this.data[cardId];
+      return entry && entry.box ? entry.box : 1;
+    },
+    promote(cardId) {
+      const cur = this.getBox(cardId);
+      this.data[cardId] = { box: Math.min(MAX_BOX, cur + 1), updated: Date.now() };
+      this.save();
+    },
+    demote(cardId) {
+      this.data[cardId] = { box: 1, updated: Date.now() };
+      this.save();
+    },
+    reset() { this.data = {}; this.save(); }
+  };
+  LeitnerStore.load();
+
+  const StatsStore = {
+    data: {},
+    load() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(STATS_KEY));
+        this.data = (raw && typeof raw === 'object') ? raw : {};
+      } catch (e) { this.data = {}; }
+      TOPICS.forEach(t => { if (!this.data[t.key]) this.data[t.key] = { total: 0, right: 0, wrong: 0 }; });
+    },
+    save() { try { localStorage.setItem(STATS_KEY, JSON.stringify(this.data)); } catch (e) {} },
+    record(topic, isCorrect) {
+      if (!this.data[topic]) this.data[topic] = { total: 0, right: 0, wrong: 0 };
+      this.data[topic].total += 1;
+      if (isCorrect) this.data[topic].right += 1; else this.data[topic].wrong += 1;
+      this.save();
+    },
+    reset() {
+      this.data = {};
+      TOPICS.forEach(t => { this.data[t.key] = { total: 0, right: 0, wrong: 0 }; });
+      this.save();
+    }
+  };
+  StatsStore.load();
+
+  /* =================================================================
+   * HELPERS
+   * ================================================================= */
+
+  function el(tag, attrs, ...children) {
+    const ns = (tag === 'svg' || tag === 'path' || tag === 'circle' || tag === 'rect' ||
+                tag === 'ellipse' || tag === 'g' || tag === 'text' || tag === 'defs' ||
+                tag === 'linearGradient' || tag === 'radialGradient' || tag === 'stop' ||
+                tag === 'polygon' || tag === 'line' || tag === 'filter' || tag === 'feGaussianBlur' ||
+                tag === 'feColorMatrix' || tag === 'feMerge' || tag === 'feMergeNode' ||
+                tag === 'feOffset' || tag === 'mpath' || tag === 'use' || tag === 'symbol' ||
+                tag === 'animateMotion' || tag === 'tspan');
+    const node = ns
+      ? document.createElementNS('http://www.w3.org/2000/svg', tag)
+      : document.createElement(tag);
+    if (attrs) {
+      for (const k in attrs) {
+        if (k === 'class') node.setAttribute('class', attrs[k]);
+        else if (k === 'style' && typeof attrs[k] === 'object') Object.assign(node.style, attrs[k]);
+        else if (k.startsWith('on') && typeof attrs[k] === 'function') node.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+        else if (attrs[k] !== null && attrs[k] !== undefined) node.setAttribute(k, attrs[k]);
+      }
+    }
+    children.flat().forEach(c => {
+      if (c === null || c === undefined || c === false) return;
+      if (typeof c === 'string' || typeof c === 'number') node.appendChild(document.createTextNode(String(c)));
+      else node.appendChild(c);
+    });
+    return node;
+  }
+
+  function clear(node) {
+    while (node && node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function toast(msg) {
+    const t = el('div', { class: 'toast' }, msg);
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2900);
+  }
+
+  function confettiBurst(x, y, opts) {
+    opts = opts || {};
+    const colors = opts.colors || ['#e85d5d', '#f6b26b', '#4caf6e', '#4a90c2', '#b85450', '#f4d35e'];
+    const count = opts.count || 18;
+    for (let i = 0; i < count; i++) {
+      const p = el('div', { class: 'confetti' });
+      p.style.background = colors[i % colors.length];
+      p.style.left = (x - 5) + 'px';
+      p.style.top  = (y - 7) + 'px';
+      document.body.appendChild(p);
+      const angle = (Math.PI * 2) * (i / count) + (Math.random() * 0.4 - 0.2);
+      const dist  = 70 + Math.random() * 110;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist + (Math.random() * 40 - 20);
+      const rot = (Math.random() * 720 - 360);
+      p.animate(
+        [
+          { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+          { transform: 'translate(' + dx + 'px, ' + (dy + 60) + 'px) rotate(' + rot + 'deg)', opacity: 0 }
+        ],
+        { duration: 700 + Math.random() * 300, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+      );
+      setTimeout(() => p.remove(), 1100);
+    }
+  }
+
+  /* =================================================================
+   * SVG HEART
+   * ================================================================= */
+
+  function buildHeartSVG(opts) {
+    opts = opts || {};
+    const interactive = opts.interactive !== false;
+    const showFlow = opts.showFlow !== false;
+    const showLabels = opts.showLabels !== false;
+    const idPrefix = opts.idPrefix || 'h1';
+
+    const svg = el('svg', {
+      class: 'heart',
+      viewBox: '0 0 600 600',
+      xmlns: 'http://www.w3.org/2000/svg',
+      'aria-label': 'Querschnitt durch das Herz'
+    });
+
+    const defs = el('defs');
+
+    defs.appendChild(el('linearGradient', { id: idPrefix+'-oxy', x1: '0', y1: '0', x2: '0', y2: '1' },
+      el('stop', { offset: '0%',  'stop-color': '#e07277' }),
+      el('stop', { offset: '100%','stop-color': '#a83b3b' })
+    ));
+    defs.appendChild(el('linearGradient', { id: idPrefix+'-deoxy', x1: '0', y1: '0', x2: '0', y2: '1' },
+      el('stop', { offset: '0%',  'stop-color': '#7aa6c8' }),
+      el('stop', { offset: '100%','stop-color': '#3d6f8e' })
+    ));
+    defs.appendChild(el('linearGradient', { id: idPrefix+'-muscle', x1: '0', y1: '0', x2: '0', y2: '1' },
+      el('stop', { offset: '0%',  'stop-color': '#c9706d' }),
+      el('stop', { offset: '100%','stop-color': '#8a3a37' })
+    ));
+    defs.appendChild(el('radialGradient', { id: idPrefix+'-shine', cx: '50%', cy: '30%', r: '60%' },
+      el('stop', { offset: '0%',  'stop-color': 'rgba(255,255,255,0.45)' }),
+      el('stop', { offset: '100%','stop-color': 'rgba(255,255,255,0)' })
+    ));
+    defs.appendChild(el('linearGradient', { id: idPrefix+'-lung', x1: '0', y1: '0', x2: '0', y2: '1' },
+      el('stop', { offset: '0%',  'stop-color': '#f5d4d4' }),
+      el('stop', { offset: '100%','stop-color': '#e2a8a8' })
+    ));
+    svg.appendChild(defs);
+
+    // ---------- SCENE (lung + body schematic) ----------
+    const scene = el('g', { class: 'scene-bg', 'aria-hidden': 'true' });
+    scene.appendChild(el('path', {
+      d: 'M 60 200 Q 30 290 60 380 Q 95 460 145 440 Q 165 432 168 410 L 168 240 Q 165 210 145 200 Q 100 188 60 200 Z',
+      fill: 'url(#'+idPrefix+'-lung)',
+      opacity: '0.55',
+      stroke: '#c98d8d',
+      'stroke-width': '1.5'
+    }));
+    scene.appendChild(el('text', {
+      x: 90, y: 320, 'text-anchor': 'middle',
+      'font-family': 'Nunito, Quicksand, sans-serif',
+      'font-weight': '700', 'font-size': '14',
+      fill: '#8a3a37', opacity: '0.55'
+    }, 'Lunge'));
+    scene.appendChild(el('path', {
+      d: 'M 470 100 Q 580 200 580 380 Q 575 480 510 540',
+      fill: 'none', stroke: '#b85450',
+      'stroke-width': '1.5', 'stroke-dasharray': '4 5',
+      opacity: '0.4'
+    }));
+    scene.appendChild(el('text', {
+      x: 555, y: 320, 'text-anchor': 'middle',
+      'font-family': 'Nunito, Quicksand, sans-serif',
+      'font-weight': '700', 'font-size': '14',
+      fill: '#8a3a37', opacity: '0.55'
+    }, 'Körper'));
+    [
+      { x: 540, y: 200, label: '🧠' },
+      { x: 545, y: 280, label: '💪' },
+      { x: 545, y: 380, label: '🦵' }
+    ].forEach(o => {
+      scene.appendChild(el('text', {
+        x: o.x, y: o.y, 'text-anchor': 'middle',
+        'font-size': '20', opacity: '0.85'
+      }, o.label));
+    });
+    svg.appendChild(scene);
+
+    // ---------- FLOW PATHS (for tropfen) ----------
+    const pathLungenAusgang  = 'M 235 380 C 235 290, 210 220, 200 130 C 195 100, 170 95, 130 120 Q 95 150, 90 230';
+    const pathLungenZurueck  = 'M 100 350 Q 150 380, 220 360 Q 300 340, 386 232';
+    const pathKoerperAusgang = 'M 383 380 C 383 280, 410 200, 430 130 Q 460 70, 510 100 Q 555 130, 555 220 Q 555 340, 545 400';
+    const pathKoerperZurueck = 'M 530 480 Q 400 540, 250 480 Q 180 450, 168 410 Q 165 290, 232 232';
+
+    const flowGroup = el('g', { class: 'flow-paths' });
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-lungen',      class: 'flow-path lungen',       d: pathLungenAusgang }));
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-lungen-back', class: 'flow-path lungen-back',  d: pathLungenZurueck }));
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper',     class: 'flow-path koerper',      d: pathKoerperAusgang }));
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper-back',class: 'flow-path koerper-back', d: pathKoerperZurueck }));
+    if (showFlow) svg.appendChild(flowGroup);
+
+    // ---------- VESSELS ----------
+    const vessels = el('g', { class: 'vessels' });
+    vessels.appendChild(el('path', {
+      d: 'M 386 230 C 386 180 400 140 430 120 Q 470 90 500 120 Q 525 150 525 210 L 525 280',
+      fill: 'none', stroke: 'url(#'+idPrefix+'-oxy)',
+      'stroke-width': '26', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 388 230 C 388 185 400 148 428 128 Q 465 102 495 128',
+      fill: 'none', stroke: 'rgba(255,255,255,0.35)',
+      'stroke-width': '8', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 232 230 C 232 180 218 140 195 120 Q 165 95 135 115 Q 100 140 100 185 L 100 240',
+      fill: 'none', stroke: 'url(#'+idPrefix+'-deoxy)',
+      'stroke-width': '24', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 230 230 C 230 185 218 148 195 128 Q 168 105 142 125',
+      fill: 'none', stroke: 'rgba(255,255,255,0.3)',
+      'stroke-width': '7', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 500 175 Q 460 175 440 200',
+      fill: 'none', stroke: 'url(#'+idPrefix+'-oxy)',
+      'stroke-width': '16', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 500 220 Q 460 220 440 215',
+      fill: 'none', stroke: 'url(#'+idPrefix+'-oxy)',
+      'stroke-width': '14', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 155 70 Q 170 130 200 180 L 205 215',
+      fill: 'none', stroke: 'url(#'+idPrefix+'-deoxy)',
+      'stroke-width': '20', 'stroke-linecap': 'round'
+    }));
+    vessels.appendChild(el('path', {
+      d: 'M 178 555 Q 183 500 200 460 L 210 415',
+      fill: 'none', stroke: 'url(#'+idPrefix+'-deoxy)',
+      'stroke-width': '20', 'stroke-linecap': 'round'
+    }));
+    svg.appendChild(vessels);
+
+    // ---------- HEART MAIN ----------
+    const heart = el('g', { class: 'heart-group' });
+
+    heart.appendChild(el('path', {
+      d: 'M 300 540 C 200 480 140 410 145 320 C 148 240 195 180 250 175 C 285 172 305 195 305 215 C 305 195 325 172 360 175 C 425 180 472 250 472 330 C 472 415 405 480 300 540 Z',
+      fill: 'url(#'+idPrefix+'-muscle)',
+      stroke: '#7a2f2d', 'stroke-width': '3', 'stroke-linejoin': 'round'
+    }));
+    heart.appendChild(el('path', {
+      d: 'M 300 540 C 200 480 140 410 145 320 C 148 240 195 180 250 175 C 285 172 305 195 305 215 C 305 195 325 172 360 175 C 425 180 472 250 472 330 C 472 415 405 480 300 540 Z',
+      fill: 'url(#'+idPrefix+'-shine)'
+    }));
+
+    // Right atrium (anatomical) — deoxy
+    heart.appendChild(el('path', {
+      d: 'M 195 215 Q 188 250 200 275 L 270 275 L 270 210 Q 250 198 220 200 Q 200 202 195 215 Z',
+      fill: 'url(#'+idPrefix+'-deoxy)', opacity: '0.85',
+      stroke: '#2c5577', 'stroke-width': '1.5'
+    }));
+    // Right ventricle — deoxy
+    heart.appendChild(el('path', {
+      d: 'M 200 305 Q 175 365 200 430 Q 235 485 280 485 L 290 485 L 290 305 Z',
+      fill: 'url(#'+idPrefix+'-deoxy)', opacity: '0.9',
+      stroke: '#2c5577', 'stroke-width': '1.5'
+    }));
+    // Left atrium — oxy
+    heart.appendChild(el('path', {
+      d: 'M 348 210 Q 348 198 370 200 Q 405 198 425 220 Q 432 250 425 275 L 348 275 Z',
+      fill: 'url(#'+idPrefix+'-oxy)', opacity: '0.88',
+      stroke: '#7a2f2d', 'stroke-width': '1.5'
+    }));
+    // Left ventricle — oxy (largest)
+    heart.appendChild(el('path', {
+      d: 'M 328 305 L 328 485 L 340 485 Q 405 483 432 430 Q 455 365 432 300 Z',
+      fill: 'url(#'+idPrefix+'-oxy)', opacity: '0.92',
+      stroke: '#7a2f2d', 'stroke-width': '1.5'
+    }));
+    // Septum
+    heart.appendChild(el('path', {
+      d: 'M 290 290 L 290 485 Q 305 495 320 485 L 320 290 Z',
+      fill: '#a5524f', stroke: '#7a2f2d', 'stroke-width': '1.2'
+    }));
+
+    // VALVES
+    heart.appendChild(el('g', null,
+      el('ellipse', { cx: 232, cy: 290, rx: 38, ry: 7, fill: '#fbf7ee', stroke: '#c9bfa8', 'stroke-width': '1.5' }),
+      el('path', { d: 'M 200 290 L 220 304 M 232 290 L 232 306 M 264 290 L 244 304', stroke: '#c9bfa8', 'stroke-width': '1.5', fill: 'none' })
+    ));
+    heart.appendChild(el('g', null,
+      el('ellipse', { cx: 386, cy: 290, rx: 38, ry: 7, fill: '#fbf7ee', stroke: '#c9bfa8', 'stroke-width': '1.5' }),
+      el('path', { d: 'M 360 290 L 380 304 M 412 290 L 392 304', stroke: '#c9bfa8', 'stroke-width': '1.5', fill: 'none' })
+    ));
+    heart.appendChild(el('g', null,
+      el('ellipse', { cx: 232, cy: 178, rx: 18, ry: 5, fill: '#fbf7ee', stroke: '#c9bfa8', 'stroke-width': '1.5' }),
+      el('path', { d: 'M 220 178 L 226 171 M 232 178 L 232 171 M 244 178 L 238 171', stroke: '#c9bfa8', 'stroke-width': '1.3', fill: 'none' })
+    ));
+    heart.appendChild(el('g', null,
+      el('ellipse', { cx: 386, cy: 178, rx: 18, ry: 5, fill: '#fbf7ee', stroke: '#c9bfa8', 'stroke-width': '1.5' }),
+      el('path', { d: 'M 374 178 L 380 171 M 386 178 L 386 171 M 398 178 L 392 171', stroke: '#c9bfa8', 'stroke-width': '1.3', fill: 'none' })
+    ));
+
+    svg.appendChild(heart);
+
+    // ---------- HIGHLIGHT LAYER ----------
+    const highlightLayer = el('g', { class: 'highlight-layer' });
+    svg.appendChild(highlightLayer);
+
+    // ---------- DROPLETS ----------
+    if (showFlow) {
+      const droplets = el('g', { class: 'droplets' });
+      function makeDroplet(pathId, color, delaySec, dur) {
+        const d = el('circle', { r: 7, cx: 0, cy: 0, class: 'drop', fill: color, opacity: '0.95' });
+        const anim = el('animateMotion', {
+          dur: dur + 's', repeatCount: 'indefinite', begin: delaySec + 's', rotate: 'auto'
+        });
+        anim.appendChild(el('mpath', { href: '#' + pathId }));
+        d.appendChild(anim);
+        return d;
+      }
+      for (let i = 0; i < 3; i++) {
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-lungen',      '#4a90c2', i * 1.2,        3.6));
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-lungen-back', '#e85d5d', i * 1.2 + 0.4,  3.6));
+      }
+      for (let i = 0; i < 3; i++) {
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper',      '#e85d5d', i * 1.3,        3.9));
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper-back', '#4a90c2', i * 1.3 + 0.5,  3.9));
+      }
+      svg.appendChild(droplets);
+    }
+
+    // ---------- LABELS ----------
+    const labelGroup = el('g', { class: 'label-group' + (showLabels ? ' show' : '') });
+    function addLabel(name, ax, ay, lx, ly, anchor) {
+      const g = el('g', { class: 'label' });
+      g.appendChild(el('line', { class: 'leader', x1: ax, y1: ay, x2: lx, y2: ly }));
+      g.appendChild(el('text', { x: lx, y: ly, 'text-anchor': anchor || 'start' }, name));
+      labelGroup.appendChild(g);
+    }
+    addLabel('Aorta',            470, 130, 540, 95,  'end');
+    addLabel('Lungenarterie',    140, 130, 60,  95,  'start');
+    addLabel('Lungenvenen',      485, 200, 565, 175, 'end');
+    addLabel('Obere Hohlvene',   158, 90,  60,  65,  'start');
+    addLabel('Untere Hohlvene',  178, 550, 80,  580, 'start');
+    addLabel('Rechter Vorhof',   232, 242, 90,  255, 'start');
+    addLabel('Rechte Kammer',    235, 410, 70,  430, 'start');
+    addLabel('Linker Vorhof',    386, 240, 555, 255, 'end');
+    addLabel('Linke Kammer',     383, 410, 555, 430, 'end');
+    addLabel('Herzscheidewand',  305, 400, 200, 540, 'start');
+    addLabel('Trikuspidalklappe',232, 290, 65,  300, 'start');
+    addLabel('Mitralklappe',     386, 290, 558, 300, 'end');
+    addLabel('Pulmonalklappe',   232, 178, 50,  140, 'start');
+    addLabel('Aortenklappe',     386, 178, 555, 140, 'end');
+
+    svg.appendChild(labelGroup);
+
+    // ---------- HOTSPOTS ----------
+    if (interactive) {
+      const hotG = el('g', { class: 'hotspots' });
+      REGIONS.forEach(r => {
+        const c = el('circle', {
+          class: 'hotspot',
+          cx: r.slot.x, cy: r.slot.y, r: r.slot.r,
+          'data-region': r.key,
+          tabindex: '0',
+          'aria-label': r.name
+        });
+        c.style.pointerEvents = 'all';
+        hotG.appendChild(c);
+      });
+      svg.appendChild(hotG);
+    }
+
+    return svg;
+  }
+
+  /* =================================================================
+   * TAB MANAGER
+   * ================================================================= */
+
+  const tabEntdecken = document.getElementById('tab-entdecken');
+  const tabUeben     = document.getElementById('tab-ueben');
+  const panelE       = document.getElementById('panel-entdecken');
+  const panelU       = document.getElementById('panel-ueben');
+
+  function switchTab(name) {
+    if (name === 'entdecken') {
+      tabEntdecken.classList.add('active');    tabEntdecken.setAttribute('aria-selected', 'true');
+      tabUeben.classList.remove('active');     tabUeben.setAttribute('aria-selected', 'false');
+      panelE.classList.remove('hidden');
+      panelU.classList.add('hidden');
+    } else {
+      tabEntdecken.classList.remove('active'); tabEntdecken.setAttribute('aria-selected', 'false');
+      tabUeben.classList.add('active');        tabUeben.setAttribute('aria-selected', 'true');
+      panelE.classList.add('hidden');
+      panelU.classList.remove('hidden');
+      renderStats();
+      renderActiveMode();
+    }
+  }
+  tabEntdecken.addEventListener('click', () => switchTab('entdecken'));
+  tabUeben.addEventListener('click',     () => switchTab('ueben'));
+
+  /* =================================================================
+   * ENTDECKEN STAGE
+   * ================================================================= */
+
+  const stageE = document.getElementById('stage-entdecken');
+  const heartE = buildHeartSVG({ interactive: true, showFlow: true, showLabels: true, idPrefix: 'h1' });
+  stageE.appendChild(heartE);
+
+  let CURRENT_LAYER = 'anatomie';
+
+  function applyLayer(layer) {
+    CURRENT_LAYER = layer;
+    stageE.classList.remove('show-anatomie', 'show-lungen', 'show-koerper', 'show-beide');
+    stageE.classList.add('show-' + layer);
+
+    const labelG = heartE.querySelector('.label-group');
+    if (layer === 'anatomie' || layer === 'beide') labelG.classList.add('show');
+    else labelG.classList.remove('show');
+
+    const flowPaths = heartE.querySelectorAll('.flow-path');
+    flowPaths.forEach(fp => {
+      if (layer === 'anatomie') fp.style.opacity = '0';
+      else if (layer === 'beide') fp.style.opacity = '0.55';
+      else if (layer === 'lungen'  && (fp.classList.contains('lungen')  || fp.classList.contains('lungen-back')))  fp.style.opacity = '0.55';
+      else if (layer === 'koerper' && (fp.classList.contains('koerper') || fp.classList.contains('koerper-back'))) fp.style.opacity = '0.55';
+      else fp.style.opacity = '0';
+    });
+
+    const drops = heartE.querySelectorAll('.drop');
+    drops.forEach(d => {
+      const anim = d.querySelector('animateMotion');
+      const pathHref = anim ? anim.querySelector('mpath').getAttribute('href') : '';
+      let visible = false;
+      if (layer === 'beide') visible = true;
+      else if (layer === 'lungen'  && pathHref.indexOf('lungen')  >= 0) visible = true;
+      else if (layer === 'koerper' && pathHref.indexOf('koerper') >= 0) visible = true;
+      d.style.display = visible ? '' : 'none';
+    });
+
+    document.querySelectorAll('#layer-chips .chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.layer === layer);
+    });
+
+    if (layer === 'anatomie' || layer === 'beide') {
+      const labels = labelG.querySelectorAll('.label');
+      labels.forEach((l, i) => {
+        l.style.opacity = '0';
+        setTimeout(() => { l.style.opacity = '1'; }, 40 * i);
+      });
+    }
+  }
+  applyLayer('anatomie');
+
+  document.querySelectorAll('#layer-chips .chip').forEach(c => {
+    c.addEventListener('click', () => applyLayer(c.dataset.layer));
+  });
+
+  const speedSlider = document.getElementById('speed-slider');
+  const speedLabel  = document.getElementById('speed-label');
+  function applySpeed(val) {
+    const baseLungen = 3.6 / val;
+    const baseKoerp  = 3.9 / val;
+    const heartBase  = 1.05 / val;
+    heartE.querySelectorAll('animateMotion').forEach(a => {
+      const mpathHref = a.querySelector('mpath').getAttribute('href');
+      a.setAttribute('dur', (mpathHref.indexOf('lungen') >= 0 ? baseLungen : baseKoerp) + 's');
+    });
+    const heartGroup = heartE.querySelector('.heart-group');
+    if (heartGroup) heartGroup.style.animationDuration = heartBase + 's';
+    speedLabel.textContent =
+      val < 0.7 ? 'langsam' :
+      val < 1.4 ? 'normal' :
+      val < 2.0 ? 'schnell' : 'sehr schnell';
+  }
+  speedSlider.addEventListener('input', e => applySpeed(parseFloat(e.target.value)));
+  applySpeed(1.0);
+
+  let activePopup = null;
+  let activeHighlight = null;
+  function closePopup() {
+    if (activePopup)    { activePopup.remove();    activePopup = null; }
+    if (activeHighlight){ activeHighlight.classList.remove('active'); activeHighlight = null; }
+  }
+
+  function showRegionPopup(regionKey, x, y) {
+    closePopup();
+    const r = REGIONS.find(re => re.key === regionKey);
+    if (!r) return;
+    const stageRect = stageE.getBoundingClientRect();
+    const popup = el('div', { class: 'info-popup' });
+    popup.appendChild(el('button', { class: 'close', 'aria-label': 'Schließen', onclick: closePopup }, '×'));
+    popup.appendChild(el('div', { class: 'title' }, r.name));
+    popup.appendChild(el('p', null, r.info));
+    const stageX = (x - stageRect.left);
+    const stageY = (y - stageRect.top);
+    let leftPx = stageX + 20;
+    let topPx  = stageY + 20;
+    stageE.appendChild(popup);
+    const popRect = popup.getBoundingClientRect();
+    if (leftPx + popRect.width > stageRect.width)  leftPx = Math.max(8, stageX - popRect.width - 20);
+    if (topPx  + popRect.height > stageRect.height) topPx = Math.max(8, stageY - popRect.height - 20);
+    popup.style.left = leftPx + 'px';
+    popup.style.top  = topPx  + 'px';
+    activePopup = popup;
+    showRegionHighlight(regionKey);
+    setTimeout(() => {
+      const onDoc = (ev) => {
+        if (!popup.contains(ev.target) && !ev.target.closest('.hotspot')) {
+          closePopup();
+          document.removeEventListener('pointerdown', onDoc);
+        }
+      };
+      document.addEventListener('pointerdown', onDoc);
+    }, 50);
+  }
+
+  function showRegionHighlight(regionKey) {
+    const r = REGIONS.find(re => re.key === regionKey);
+    if (!r) return;
+    const layer = heartE.querySelector('.highlight-layer');
+    if (!layer) return;
+    clear(layer);
+    const hl = el('circle', {
+      class: 'region-highlight active',
+      cx: r.slot.x, cy: r.slot.y, r: r.slot.r + 6
+    });
+    layer.appendChild(hl);
+    activeHighlight = hl;
+  }
+
+  heartE.addEventListener('click', (e) => {
+    const hs = e.target.closest('.hotspot');
+    if (!hs) return;
+    const key = hs.getAttribute('data-region');
+    if (!key) return;
+    showRegionPopup(key, e.clientX, e.clientY);
+  });
+
+  let tourIdx = -1;
+  let tourBubble = null;
+  function endTour() {
+    if (tourBubble) { tourBubble.remove(); tourBubble = null; }
+    tourIdx = -1;
+    closePopup();
+  }
+  function getNearestRegion(x, y) {
+    let best = REGIONS[0], bestD = Infinity;
+    for (const r of REGIONS) {
+      const dx = r.slot.x - x, dy = r.slot.y - y;
+      const d = dx*dx + dy*dy;
+      if (d < bestD) { bestD = d; best = r; }
+    }
+    return best.key;
+  }
+  function showTourStep(i) {
+    if (i < 0 || i >= TOUR_STEPS.length) { endTour(); return; }
+    tourIdx = i;
+    const step = TOUR_STEPS[i];
+    applyLayer(step.layer || 'beide');
+    showRegionHighlight(getNearestRegion(step.x, step.y));
+
+    if (tourBubble) tourBubble.remove();
+    const stageRect = stageE.getBoundingClientRect();
+    const svgRect   = heartE.getBoundingClientRect();
+    const scaleX = svgRect.width  / 600;
+    const scaleY = svgRect.height / 600;
+    const absX = (svgRect.left - stageRect.left) + step.x * scaleX;
+    const absY = (svgRect.top  - stageRect.top)  + step.y * scaleY;
+
+    const bubble = el('div', { class: 'tour-bubble' });
+    bubble.appendChild(el('div', { class: 'step' }, 'Schritt ' + (i+1) + ' / ' + TOUR_STEPS.length));
+    bubble.appendChild(el('p', null, step.text));
+    const ctrls = el('div', { class: 'controls' });
+    const prevBtn = el('button', { class: 'prev', onclick: () => showTourStep(i - 1) }, '← Zurück');
+    if (i === 0) prevBtn.disabled = true;
+    ctrls.appendChild(prevBtn);
+    if (i === TOUR_STEPS.length - 1) {
+      ctrls.appendChild(el('button', { class: 'next', onclick: endTour }, 'Fertig 🎉'));
+    } else {
+      ctrls.appendChild(el('button', { class: 'next', onclick: () => showTourStep(i + 1) }, 'Weiter →'));
+    }
+    bubble.appendChild(ctrls);
+    const closeBtn = el('button', { class: 'skip', onclick: endTour, style: 'position:absolute;top:4px;right:8px;background:transparent;color:var(--ink-soft);min-height:28px;padding:0 8px;font-size:18px;border:none;flex:0;' }, '×');
+    bubble.appendChild(closeBtn);
+
+    stageE.appendChild(bubble);
+
+    const bRect = bubble.getBoundingClientRect();
+    let leftPx = absX + 30;
+    let topPx  = absY - bRect.height / 2;
+    if (leftPx + bRect.width > stageRect.width) leftPx = Math.max(8, absX - bRect.width - 30);
+    if (topPx < 8) topPx = 8;
+    if (topPx + bRect.height > stageRect.height) topPx = Math.max(8, stageRect.height - bRect.height - 8);
+    bubble.style.left = leftPx + 'px';
+    bubble.style.top  = topPx  + 'px';
+
+    tourBubble = bubble;
+  }
+  document.getElementById('tour-btn').addEventListener('click', () => {
+    if (tourBubble) { endTour(); return; }
+    showTourStep(0);
+  });
+
+  /* =================================================================
+   * ÜBEN — Topic chips + mode selector
+   * ================================================================= */
+
+  function renderTopicChips() {
+    const row = document.getElementById('topic-chips');
+    clear(row);
+    TOPICS.forEach(t => {
+      const isActive = SETUP.topics.indexOf(t.key) >= 0;
+      const chip = el('button', {
+        class: 'chip' + (isActive ? ' active' : ''),
+        'data-topic': t.key
+      },
+        el('span', { class: 'dot' }),
+        t.emoji + ' ' + t.name
+      );
+      chip.addEventListener('click', () => {
+        const idx = SETUP.topics.indexOf(t.key);
+        if (idx >= 0) {
+          if (SETUP.topics.length === 1) {
+            toast('Mindestens ein Thema muss aktiv sein.');
+            return;
+          }
+          SETUP.topics.splice(idx, 1);
+        } else {
+          SETUP.topics.push(t.key);
+        }
+        SetupStore.save();
+        renderTopicChips();
+        renderActiveMode();
+      });
+      row.appendChild(chip);
+    });
+  }
+  renderTopicChips();
+
+  let ACTIVE_MODE = 'beschriften';
+  document.querySelectorAll('#mode-grid .mode-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#mode-grid .mode-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      ACTIVE_MODE = card.dataset.mode;
+      renderActiveMode();
+    });
+  });
+
+  function renderActiveMode() {
+    closePopup();
+    if (ACTIVE_MODE === 'beschriften') renderBeschriften();
+    else if (ACTIVE_MODE === 'sortierer') renderSortierer();
+    else if (ACTIVE_MODE === 'flashcards') renderFlashcards();
+  }
+
+  function activeRegionsForLabelGame() {
+    const filtered = REGIONS.filter(r => SETUP.topics.indexOf(r.topic) >= 0);
+    if (filtered.length === 0) return [];
+    return shuffle(filtered).slice(0, Math.min(8, filtered.length));
+  }
+
+  /* =================================================================
+   * MODE 1: BESCHRIFTEN
+   * ================================================================= */
+
+  function renderBeschriften() {
+    const container = document.getElementById('mode-container');
+    clear(container);
+
+    const regions = activeRegionsForLabelGame();
+    if (regions.length === 0) {
+      container.appendChild(el('div', { class: 'completion' },
+        el('div', { class: 'big' }, 'Bitte mindestens ein Thema auswählen.'),
+        el('p',   { class: 'sub' }, 'Wähle oben Themen wie „Anatomie" oder „Klappen".')
+      ));
+      return;
+    }
+
+    const counter = el('div', { class: 'session-counter' }, 'Zuordnungen: 0 / ' + regions.length);
+    container.appendChild(counter);
+
+    const wrap = el('div', { class: 'label-game' });
+
+    const stageWrap = el('div', { class: 'game-stage' });
+    const svg = buildHeartSVG({ interactive: false, showFlow: false, showLabels: false, idPrefix: 'g1' });
+    stageWrap.appendChild(svg);
+
+    const poolWrap = el('div');
+    poolWrap.appendChild(el('h3', null, '🏷️ Ziehe die Begriffe an die richtige Stelle'));
+    poolWrap.appendChild(el('p', { style: 'color: var(--ink-soft); font-size: 14px; margin: 0 0 12px;' },
+      'Tipp: Auf dem iPad kannst du auch auf eine Karte tippen, dann erscheint eine Auswahl.'));
+    const pool = el('div', { class: 'label-cards' });
+    poolWrap.appendChild(pool);
+
+    const slotLayer  = el('g', { class: 'drop-slots' });
+    const labelLayer = el('g', { class: 'slot-labels' });
+    regions.forEach(r => {
+      slotLayer.appendChild(el('circle', {
+        class: 'drop-slot',
+        cx: r.slot.x, cy: r.slot.y, r: r.slot.r,
+        'data-region': r.key
+      }));
+      labelLayer.appendChild(el('text', {
+        class: 'slot-label',
+        x: r.slot.x, y: r.slot.y + 5,
+        'data-region': r.key,
+        'text-anchor': 'middle'
+      }, r.name));
+    });
+    svg.appendChild(slotLayer);
+    svg.appendChild(labelLayer);
+
+    const cards = shuffle(regions).map(r =>
+      el('div', { class: 'label-card', 'data-region': r.key }, r.name)
+    );
+    cards.forEach(c => pool.appendChild(c));
+
+    wrap.appendChild(stageWrap);
+    wrap.appendChild(poolWrap);
+    container.appendChild(wrap);
+
+    let placedCount = 0;
+    const slotEls = {};
+    slotLayer.querySelectorAll('.drop-slot').forEach(s => {
+      slotEls[s.getAttribute('data-region')] = s;
+    });
+
+    function onResult(correctKey, chosenKey, cardEl) {
+      const isCorrect = correctKey === chosenKey;
+      const region = REGIONS.find(r => r.key === correctKey);
+      StatsStore.record(region.topic, isCorrect);
+      if (isCorrect) {
+        const slot = slotEls[correctKey];
+        if (slot) {
+          slot.classList.add('filled-correct');
+          const labelText = labelLayer.querySelector('text[data-region="'+correctKey+'"]');
+          if (labelText) labelText.classList.add('show');
+          const rect = slot.getBoundingClientRect();
+          confettiBurst(rect.left + rect.width/2, rect.top + rect.height/2, { count: 14 });
+        }
+        cardEl.classList.add('placed');
+        placedCount++;
+        counter.textContent = 'Zuordnungen: ' + placedCount + ' / ' + regions.length;
+        if (placedCount === regions.length) {
+          setTimeout(() => {
+            container.appendChild(el('div', { class: 'completion' },
+              el('div', { class: 'big' }, '💗 Alles richtig zugeordnet!'),
+              el('p',   { class: 'sub' }, 'Toll gemacht. Neue Runde?'),
+              el('button', { class: 'primary-btn', onclick: () => renderBeschriften() }, 'Neue Runde')
+            ));
+            confettiBurst(window.innerWidth/2, window.innerHeight*0.4, { count: 40 });
+            renderStats();
+          }, 600);
+        } else {
+          renderStats();
+        }
+      } else {
+        cardEl.classList.add('wrong');
+        if (slotEls[chosenKey]) slotEls[chosenKey].classList.add('shake');
+        setTimeout(() => {
+          cardEl.classList.remove('wrong');
+          if (slotEls[chosenKey]) slotEls[chosenKey].classList.remove('shake');
+        }, 500);
+      }
+    }
+
+    cards.forEach(card => setupLabelDrag(card, slotEls, onResult, regions));
+  }
+
+  function setupLabelDrag(cardEl, slotEls, onResult, regions) {
+    let startX = 0, startY = 0, currentX = 0, currentY = 0;
+    let hasMoved = false;
+
+    function onPointerDown(e) {
+      if (cardEl.classList.contains('placed')) return;
+      e.preventDefault();
+      cardEl.setPointerCapture(e.pointerId);
+      startX = e.clientX; startY = e.clientY;
+      currentX = startX; currentY = startY;
+      hasMoved = false;
+      cardEl.classList.add('dragging');
+      cardEl.classList.remove('returning');
+    }
+    function onPointerMove(e) {
+      if (!cardEl.hasPointerCapture(e.pointerId)) return;
+      currentX = e.clientX; currentY = e.clientY;
+      const dx = currentX - startX, dy = currentY - startY;
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) hasMoved = true;
+      cardEl.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(1.07)';
+      Object.values(slotEls).forEach(s => s.classList.remove('hover-target'));
+      const t = document.elementFromPoint(currentX, currentY);
+      if (t && t.classList && t.classList.contains('drop-slot') && !t.classList.contains('filled-correct')) {
+        t.classList.add('hover-target');
+      }
+    }
+    function onPointerUp(e) {
+      if (cardEl.hasPointerCapture(e.pointerId)) cardEl.releasePointerCapture(e.pointerId);
+      cardEl.classList.remove('dragging');
+      Object.values(slotEls).forEach(s => s.classList.remove('hover-target'));
+
+      if (!hasMoved) {
+        cardEl.style.transform = '';
+        showLabelTapFallback(cardEl, regions, (chosenKey) => {
+          onResult(cardEl.getAttribute('data-region'), chosenKey, cardEl);
+        });
+        return;
+      }
+      const t = document.elementFromPoint(currentX, currentY);
+      let chosenKey = null;
+      if (t && t.classList && t.classList.contains('drop-slot')) {
+        chosenKey = t.getAttribute('data-region');
+      }
+      if (chosenKey) {
+        onResult(cardEl.getAttribute('data-region'), chosenKey, cardEl);
+      }
+      if (!cardEl.classList.contains('placed')) {
+        cardEl.classList.add('returning');
+        cardEl.style.transform = '';
+        setTimeout(() => cardEl.classList.remove('returning'), 320);
+      }
+    }
+    cardEl.addEventListener('pointerdown',  onPointerDown);
+    cardEl.addEventListener('pointermove',  onPointerMove);
+    cardEl.addEventListener('pointerup',    onPointerUp);
+    cardEl.addEventListener('pointercancel', onPointerUp);
+  }
+
+  let activeTapPopup = null;
+  function showLabelTapFallback(cardEl, regions, callback) {
+    if (activeTapPopup) { activeTapPopup.remove(); activeTapPopup = null; }
+    const popup = el('div', { class: 'tap-popup' });
+    const remaining = regions.filter(r => {
+      const slot = document.querySelector('.drop-slot[data-region="'+r.key+'"]');
+      return slot && !slot.classList.contains('filled-correct');
+    });
+    remaining.forEach(r => {
+      const b = el('button', null, r.name);
+      b.addEventListener('click', () => {
+        popup.remove();
+        activeTapPopup = null;
+        callback(r.key);
+      });
+      popup.appendChild(b);
+    });
+    const rect = cardEl.getBoundingClientRect();
+    document.body.appendChild(popup);
+    const pRect = popup.getBoundingClientRect();
+    let left = rect.left;
+    let top  = rect.bottom + 8;
+    if (left + pRect.width > window.innerWidth - 8) left = window.innerWidth - pRect.width - 8;
+    if (top + pRect.height > window.innerHeight - 8) top = rect.top - pRect.height - 8;
+    if (left < 8) left = 8;
+    popup.style.left = left + 'px';
+    popup.style.top  = top  + 'px';
+    activeTapPopup = popup;
+    setTimeout(() => {
+      const onDoc = (ev) => {
+        if (!popup.contains(ev.target)) {
+          popup.remove();
+          activeTapPopup = null;
+          document.removeEventListener('pointerdown', onDoc);
+        }
+      };
+      document.addEventListener('pointerdown', onDoc);
+    }, 50);
+  }
+
+  /* =================================================================
+   * MODE 2: BLUTFLUSS-SORTIERER
+   * ================================================================= */
+
+  let SORTER_CIRCUIT = 'lungen';
+
+  function getStationsForCircuit() {
+    if (SORTER_CIRCUIT === 'lungen')  return STATIONS_LUNGEN.slice();
+    if (SORTER_CIRCUIT === 'koerper') return STATIONS_KOERPER.slice();
+    return STATIONS_BEIDE.slice();
+  }
+
+  function renderSortierer() {
+    const container = document.getElementById('mode-container');
+    clear(container);
+
+    const wrap = el('div', { class: 'sorter-wrap' });
+
+    const toolbar = el('div', { class: 'sort-toolbar' });
+    const seg = el('div', { class: 'seg' });
+    const circuits = [
+      { k: 'lungen',  l: 'Lungenkreislauf', allowed: SETUP.topics.indexOf('lungen')  >= 0 },
+      { k: 'koerper', l: 'Körperkreislauf', allowed: SETUP.topics.indexOf('koerper') >= 0 },
+      { k: 'beide',   l: 'Beide kombiniert', allowed: SETUP.topics.indexOf('lungen') >= 0 || SETUP.topics.indexOf('koerper') >= 0 }
+    ];
+    const firstAllowed = circuits.find(c => c.allowed);
+    if (!firstAllowed) {
+      container.appendChild(el('div', { class: 'completion' },
+        el('div', { class: 'big' }, 'Aktiviere oben „Lungenkreislauf" oder „Körperkreislauf".'),
+        el('p',   { class: 'sub' }, 'Diese Themen sind für den Blutfluss-Sortierer nötig.')
+      ));
+      return;
+    }
+    if (!circuits.find(c => c.k === SORTER_CIRCUIT && c.allowed)) SORTER_CIRCUIT = firstAllowed.k;
+    circuits.forEach(c => {
+      const b = el('button', {
+        class: SORTER_CIRCUIT === c.k ? 'active' : ''
+      }, c.l);
+      if (!c.allowed) b.disabled = true;
+      b.addEventListener('click', () => {
+        if (!c.allowed) { toast('Aktiviere „' + c.l + '" oben in den Themen.'); return; }
+        SORTER_CIRCUIT = c.k;
+        renderSortierer();
+      });
+      seg.appendChild(b);
+    });
+    toolbar.appendChild(seg);
+
+    const checkBtn = el('button', { class: 'primary-btn' }, '✓ Prüfen');
+    const resetBtn = el('button', { class: 'ghost-btn' }, '↺ Neu mischen');
+    toolbar.appendChild(checkBtn);
+    toolbar.appendChild(resetBtn);
+    wrap.appendChild(toolbar);
+
+    wrap.appendChild(el('h3', { style: 'text-align:center;margin-top:4px;' },
+      SORTER_CIRCUIT === 'lungen'  ? '💨 Bring die Stationen des Lungenkreislaufs in die richtige Reihenfolge' :
+      SORTER_CIRCUIT === 'koerper' ? '💪 Bring die Stationen des Körperkreislaufs in die richtige Reihenfolge' :
+                                     '🔄 Bring beide Kreisläufe in die richtige Reihenfolge'
+    ));
+
+    const correctOrder = getStationsForCircuit();
+    const poolOrder = shuffle(correctOrder);
+
+    const zones = el('div', { class: 'sorter-zones' });
+    correctOrder.forEach((s, i) => {
+      const slot = el('div', { class: 'sort-slot', 'data-pos': String(i) },
+        el('div', { class: 'num' }, String(i + 1))
+      );
+      zones.appendChild(slot);
+      if (i < correctOrder.length - 1) {
+        zones.appendChild(el('div', { class: 'sort-arrow' }, '→'));
+      }
+    });
+    wrap.appendChild(zones);
+
+    wrap.appendChild(el('h3', { style: 'text-align:center;font-size:15px;color:var(--ink-soft);margin-top:14px;' }, 'Karten zum Ziehen:'));
+    const poolEl = el('div', { class: 'sorter-pool' });
+    poolOrder.forEach(st => {
+      const cls = 'sort-card ' + (st.type === 'oxy' ? 'oxy' : st.type === 'deoxy' ? 'deoxy' : '');
+      const card = el('div', { class: cls, 'data-station': st.id }, st.label);
+      poolEl.appendChild(card);
+    });
+    wrap.appendChild(poolEl);
+
+    container.appendChild(wrap);
+
+    const slotEls = zones.querySelectorAll('.sort-slot');
+    const slotMap = {};
+    slotEls.forEach(s => slotMap[s.getAttribute('data-pos')] = s);
+
+    poolEl.querySelectorAll('.sort-card').forEach(card => {
+      setupSortDrag(card, slotMap, poolEl);
+    });
+
+    checkBtn.addEventListener('click', () => {
+      let allCorrect = true;
+      let anyFilled = false;
+      slotEls.forEach((slot, i) => {
+        const card = slot.querySelector('.sort-card');
+        if (card) anyFilled = true;
+        const expected = correctOrder[i].id;
+        const got = card ? card.getAttribute('data-station') : null;
+        slot.classList.remove('correct-final', 'wrong-final');
+        if (got === expected) slot.classList.add('correct-final');
+        else { slot.classList.add('wrong-final'); allCorrect = false; }
+      });
+      if (!anyFilled) { toast('Ziehe zuerst Karten in die Felder.'); return; }
+      const topic = SORTER_CIRCUIT === 'koerper' ? 'koerper' : 'lungen';
+      StatsStore.record(topic, allCorrect);
+      renderStats();
+      if (allCorrect) {
+        confettiBurst(window.innerWidth/2, window.innerHeight*0.4, { count: 40 });
+        toast('Perfekt! 💗');
+        setTimeout(() => {
+          container.appendChild(el('div', { class: 'completion' },
+            el('div', { class: 'big' }, '🎉 Reihenfolge stimmt!'),
+            el('p',   { class: 'sub' }, 'Neue Runde?'),
+            el('button', { class: 'primary-btn', onclick: () => renderSortierer() }, 'Neue Runde')
+          ));
+        }, 400);
+      } else {
+        toast('Noch nicht ganz — die roten Felder stimmen nicht.');
+      }
+    });
+    resetBtn.addEventListener('click', () => renderSortierer());
+  }
+
+  function setupSortDrag(cardEl, slotMap, poolEl) {
+    let startX = 0, startY = 0, currentX = 0, currentY = 0;
+    let hasMoved = false;
+
+    function onPointerDown(e) {
+      e.preventDefault();
+      cardEl.setPointerCapture(e.pointerId);
+      const rect = cardEl.getBoundingClientRect();
+      cardEl.classList.add('dragging');
+      cardEl.style.position = 'fixed';
+      cardEl.style.left = rect.left + 'px';
+      cardEl.style.top  = rect.top  + 'px';
+      cardEl.style.width = rect.width + 'px';
+      cardEl.style.margin = '0';
+      cardEl.style.zIndex = '60';
+      document.body.appendChild(cardEl);
+      startX = e.clientX; startY = e.clientY;
+      currentX = startX; currentY = startY;
+      hasMoved = false;
+    }
+
+    function onPointerMove(e) {
+      if (!cardEl.hasPointerCapture(e.pointerId)) return;
+      currentX = e.clientX; currentY = e.clientY;
+      const dx = currentX - startX, dy = currentY - startY;
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) hasMoved = true;
+      cardEl.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(1.05)';
+      Object.values(slotMap).forEach(s => s.classList.remove('hover-target'));
+      const elBelow = document.elementFromPoint(currentX, currentY);
+      const slot = elBelow && elBelow.closest('.sort-slot');
+      if (slot) slot.classList.add('hover-target');
+    }
+
+    function onPointerUp(e) {
+      if (cardEl.hasPointerCapture(e.pointerId)) cardEl.releasePointerCapture(e.pointerId);
+      cardEl.classList.remove('dragging');
+      Object.values(slotMap).forEach(s => s.classList.remove('hover-target'));
+
+      const elBelow = document.elementFromPoint(currentX, currentY);
+      const slot = elBelow && elBelow.closest('.sort-slot');
+
+      cardEl.style.position = '';
+      cardEl.style.left = '';
+      cardEl.style.top  = '';
+      cardEl.style.width = '';
+      cardEl.style.margin = '';
+      cardEl.style.transform = '';
+      cardEl.style.zIndex = '';
+
+      if (slot) {
+        const existing = slot.querySelector('.sort-card');
+        if (existing && existing !== cardEl) {
+          poolEl.appendChild(existing);
+        }
+        slot.classList.remove('correct-final', 'wrong-final');
+        slot.appendChild(cardEl);
+      } else {
+        poolEl.appendChild(cardEl);
+      }
+      Object.values(slotMap).forEach(s => {
+        s.classList.toggle('filled', !!s.querySelector('.sort-card'));
+      });
+    }
+
+    cardEl.addEventListener('pointerdown',  onPointerDown);
+    cardEl.addEventListener('pointermove',  onPointerMove);
+    cardEl.addEventListener('pointerup',    onPointerUp);
+    cardEl.addEventListener('pointercancel', onPointerUp);
+  }
+
+  /* =================================================================
+   * MODE 3: FLASHCARDS
+   * ================================================================= */
+
+  let FLASH_DECK = [];
+  let FLASH_IDX = 0;
+  let FLASH_RIGHT = 0;
+  let FLASH_DONE  = 0;
+
+  function buildFlashDeck() {
+    const filtered = FLASHCARDS.filter(c => SETUP.topics.indexOf(c.topic) >= 0);
+    const weighted = [];
+    filtered.forEach(c => {
+      const box = LeitnerStore.getBox(c.id);
+      const w = BOX_WEIGHTS[Math.min(MAX_BOX, Math.max(1, box)) - 1];
+      const copies = Math.max(1, Math.round(w));
+      for (let i = 0; i < copies; i++) weighted.push(c);
+    });
+    const shuffled = shuffle(weighted);
+    const seen = new Set();
+    const deck = [];
+    for (const c of shuffled) {
+      if (seen.has(c.id)) continue;
+      seen.add(c.id);
+      deck.push(c);
+      if (deck.length >= 12) break;
+    }
+    return deck;
+  }
+
+  function renderFlashcards() {
+    const container = document.getElementById('mode-container');
+    clear(container);
+
+    FLASH_DECK = buildFlashDeck();
+    FLASH_IDX = 0;
+    FLASH_RIGHT = 0;
+    FLASH_DONE  = 0;
+
+    if (FLASH_DECK.length === 0) {
+      container.appendChild(el('div', { class: 'completion' },
+        el('div', { class: 'big' }, 'Keine Karteikarten für deine Themen.'),
+        el('p',   { class: 'sub' }, 'Aktiviere oben ein paar Themen.')
+      ));
+      return;
+    }
+
+    const wrap = el('div', { class: 'flash-wrap' });
+
+    const sessionInfo = el('div', { class: 'flash-progress' },
+      el('span', { id: 'flash-count' }, '1 / ' + FLASH_DECK.length),
+      el('div',  { class: 'bar' }, el('div', { id: 'flash-bar' }))
+    );
+
+    const card = el('div', { class: 'flash-card', id: 'flash-card' });
+    const inner = el('div', { class: 'flash-inner' });
+    const front = el('div', { class: 'flash-face flash-front' });
+    const back  = el('div', { class: 'flash-face flash-back' });
+    front.appendChild(el('div', { class: 'badge' }, 'BEGRIFF'));
+    front.appendChild(el('div', { class: 'box-pill', id: 'flash-box-front' }, 'Box 1'));
+    front.appendChild(el('div', { class: 'term', id: 'flash-term' }, '—'));
+    front.appendChild(el('div', { class: 'hint' }, 'Tippen, um zu drehen 🔄'));
+    back.appendChild(el('div', { class: 'badge' }, 'FUNKTION'));
+    back.appendChild(el('div', { class: 'box-pill', id: 'flash-box-back' }, 'Box 1'));
+    back.appendChild(el('div', { class: 'func', id: 'flash-func' }, '—'));
+    back.appendChild(el('div', { class: 'hint' }, 'Wie sicher saß sie?'));
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+
+    const actions = el('div', { class: 'flash-actions' });
+    const againBtn = el('button', { class: 'again', id: 'flash-again' }, '🔄 Nochmal');
+    const sitztBtn = el('button', { class: 'sitzt', id: 'flash-sitzt' }, '✓ Sitzt');
+    againBtn.disabled = true;
+    sitztBtn.disabled = true;
+    actions.appendChild(againBtn);
+    actions.appendChild(sitztBtn);
+
+    wrap.appendChild(sessionInfo);
+    wrap.appendChild(card);
+    wrap.appendChild(actions);
+    container.appendChild(wrap);
+
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+      if (card.classList.contains('flipped')) {
+        againBtn.disabled = false;
+        sitztBtn.disabled = false;
+      }
+    });
+
+    againBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const c = FLASH_DECK[FLASH_IDX];
+      LeitnerStore.demote(c.id);
+      StatsStore.record(c.topic, false);
+      FLASH_DONE++;
+      renderStats();
+      nextFlash();
+    });
+    sitztBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const c = FLASH_DECK[FLASH_IDX];
+      LeitnerStore.promote(c.id);
+      StatsStore.record(c.topic, true);
+      FLASH_RIGHT++;
+      FLASH_DONE++;
+      const rect = sitztBtn.getBoundingClientRect();
+      confettiBurst(rect.left + rect.width/2, rect.top, { count: 12, colors: ['#4caf6e', '#a8dfba', '#f4d35e'] });
+      renderStats();
+      nextFlash();
+    });
+
+    showFlash(0);
+  }
+
+  function showFlash(i) {
+    if (i >= FLASH_DECK.length) {
+      const container = document.getElementById('mode-container');
+      container.appendChild(el('div', { class: 'completion' },
+        el('div', { class: 'big' }, '🎉 Runde geschafft!'),
+        el('p',   { class: 'sub' }, FLASH_RIGHT + ' von ' + FLASH_DONE + ' saßen direkt.'),
+        el('button', { class: 'primary-btn', onclick: () => renderFlashcards() }, 'Neue Runde')
+      ));
+      confettiBurst(window.innerWidth/2, window.innerHeight*0.4, { count: 50 });
+      return;
+    }
+    FLASH_IDX = i;
+    const c = FLASH_DECK[i];
+    const box = LeitnerStore.getBox(c.id);
+    document.getElementById('flash-term').textContent = c.term;
+    document.getElementById('flash-func').textContent = c.func;
+    document.getElementById('flash-box-front').textContent = 'Box ' + box;
+    document.getElementById('flash-box-back').textContent  = 'Box ' + box;
+    document.getElementById('flash-count').textContent = (i+1) + ' / ' + FLASH_DECK.length;
+    document.getElementById('flash-bar').style.width = (i / FLASH_DECK.length * 100) + '%';
+    document.getElementById('flash-card').classList.remove('flipped');
+    document.getElementById('flash-again').disabled = true;
+    document.getElementById('flash-sitzt').disabled = true;
+  }
+
+  function nextFlash() {
+    showFlash(FLASH_IDX + 1);
+  }
+
+  /* =================================================================
+   * STATS
+   * ================================================================= */
+
+  function renderStats() {
+    const grid = document.getElementById('stats-grid');
+    if (!grid) return;
+    clear(grid);
+
+    let totalAll = 0, rightAll = 0;
+    TOPICS.forEach(t => {
+      const d = StatsStore.data[t.key] || { total: 0, right: 0, wrong: 0 };
+      totalAll += d.total;
+      rightAll += d.right;
+    });
+    const accAll = totalAll > 0 ? Math.round(rightAll / totalAll * 100) : 0;
+
+    [
+      { key: 'Gesamt',  val: totalAll,                                                        sub: 'Aufgaben' },
+      { key: 'Richtig', val: rightAll,                                                        sub: accAll + '%' },
+      { key: 'Karten',  val: Object.keys(LeitnerStore.data).length,                          sub: 'gelernt' },
+      { key: 'Box ≥ 4', val: Object.values(LeitnerStore.data).filter(d => d.box >= 4).length,sub: 'sitzt' }
+    ].forEach(s => {
+      grid.appendChild(el('div', { class: 'stat-tile' },
+        el('div', { class: 'key' }, s.key),
+        el('div', { class: 'val' }, String(s.val)),
+        el('div', { class: 'sub' }, s.sub)
+      ));
+    });
+
+    const list = document.getElementById('progress-list');
+    clear(list);
+    TOPICS.forEach(t => {
+      const d = StatsStore.data[t.key] || { total: 0, right: 0, wrong: 0 };
+      const pct = d.total > 0 ? Math.round(d.right / d.total * 100) : 0;
+      list.appendChild(el('div', { class: 'progress-row' },
+        el('div', { class: 'topic' }, t.emoji + ' ' + t.name),
+        el('div', { class: 'bar' }, el('div', { style: 'width:' + pct + '%' })),
+        el('div', { class: 'pct' }, d.total ? (pct + '%') : '–')
+      ));
+    });
+  }
+  renderStats();
+
+  /* =================================================================
+   * EXPORT / IMPORT / RESET
+   * ================================================================= */
+
+  function exportProgress() {
+    const payload = {
+      app: APP_ID,
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      setup: SETUP,
+      leitner: LeitnerStore.data,
+      stats: StatsStore.data
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'herz-kreislauf-fortschritt-' + date + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Fortschritt gespeichert ✓');
+  }
+
+  function importProgress() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json,.json';
+    input.style.display = 'none';
+    input.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!data || data.app !== APP_ID) {
+            alert('Diese Datei ist kein gültiges Herz-Kreislauf-Backup.');
+            return;
+          }
+          const when = data.exportedAt ? new Date(data.exportedAt).toLocaleDateString('de-DE') : 'unbekanntem Datum';
+          if (!confirm('Backup vom ' + when + ' einspielen?\n\nDer aktuelle Fortschritt auf diesem Gerät wird ersetzt.')) return;
+          if (data.setup && typeof data.setup === 'object') {
+            SETUP = {
+              topics: Array.isArray(data.setup.topics) && data.setup.topics.length ? data.setup.topics : DEFAULT_SETUP.topics
+            };
+            SetupStore.save();
+          }
+          if (data.leitner && typeof data.leitner === 'object') {
+            LeitnerStore.data = data.leitner;
+            LeitnerStore.save();
+          }
+          if (data.stats && typeof data.stats === 'object') {
+            StatsStore.data = {};
+            StatsStore.load();
+            StatsStore.data = Object.assign(StatsStore.data, data.stats);
+            StatsStore.save();
+          }
+          renderTopicChips();
+          renderStats();
+          renderActiveMode();
+          toast('Fortschritt wiederhergestellt ✓');
+        } catch (err) {
+          alert('Fehler beim Einlesen der Datei:\n' + err.message);
+        }
+      };
+      reader.onerror = () => alert('Datei konnte nicht gelesen werden.');
+      reader.readAsText(file);
+    };
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(() => input.remove(), 1000);
+  }
+
+  function resetAll() {
+    if (!confirm('Wirklich allen Fortschritt löschen?\n\nKarteikarten, Statistiken und Themenauswahl werden zurückgesetzt.')) return;
+    LeitnerStore.reset();
+    StatsStore.reset();
+    SETUP = JSON.parse(JSON.stringify(DEFAULT_SETUP));
+    SetupStore.save();
+    renderTopicChips();
+    renderStats();
+    renderActiveMode();
+    toast('Alles zurückgesetzt.');
+  }
+
+  document.getElementById('btn-export').addEventListener('click', exportProgress);
+  document.getElementById('btn-import').addEventListener('click', importProgress);
+  document.getElementById('btn-reset' ).addEventListener('click', resetAll);
+
+  renderActiveMode();
+  </script>
+</body>
+</html>
