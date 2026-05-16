@@ -600,11 +600,11 @@
       { key: 'ich',    label: 'ich',  num: 'sg' },
       { key: 'du',     label: 'du',   num: 'sg' },
       { key: 'er',     label: 'er',   num: 'sg' },
-      { key: 'sie_sg', label: 'sie',  num: 'sg' },
+      { key: 'sie_sg', label: 'sie (Einzahl)', num: 'sg' },
       { key: 'es',     label: 'es',   num: 'sg' },
       { key: 'wir',    label: 'wir',  num: 'pl' },
       { key: 'ihr',    label: 'ihr',  num: 'pl' },
-      { key: 'sie_pl', label: 'sie',  num: 'pl' }
+      { key: 'sie_pl', label: 'sie (Mehrzahl)', num: 'pl' }
     ];
 
     const PRONOUN_BY_KEY = Object.fromEntries(PRONOUNS.map(p => [p.key, p]));
@@ -1176,7 +1176,7 @@
       const pronRow = el('div', { class: 'setup-row' });
       PRONOUNS.forEach(p => {
         const isActive = SETUP.pronouns.includes(p.key);
-        const label = p.key === 'sie_pl' ? 'sie (Pl)' : p.key === 'sie_sg' ? 'sie' : p.label;
+        const label = p.label;
         const chip = el('button', {
           class: 'chip' + (isActive ? ' active' : ''),
           onclick: () => {
