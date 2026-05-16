@@ -264,11 +264,10 @@
 
     .flow-path {
       fill: none;
-      stroke-width: 6;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: 0;
-      transition: opacity 0.3s var(--ease-soft);
+      stroke: transparent;
+      stroke-width: 0;
+      pointer-events: none;
+      /* unsichtbar: dient nur als Bewegungspfad fuer die Tropfen */
     }
     .flow-path.lungen      { stroke: var(--blood-deoxy); }
     .flow-path.lungen-back { stroke: var(--blood-oxy); }
@@ -1387,13 +1386,17 @@
     svg.appendChild(scene);
 
     // ---------- FLOW PATHS (for tropfen) ----------
-    const pathLungenAusgang  = 'M 235 380 C 235 290, 210 220, 200 130 C 195 100, 170 95, 130 120 Q 95 150, 90 230';
-    const pathLungenZurueck  = 'M 100 350 Q 150 380, 220 360 Q 300 340, 386 232';
-    const pathKoerperAusgang     = 'M 383 380 C 383 280, 410 200, 430 130 Q 460 70, 510 100 Q 555 130, 555 220 Q 555 340, 545 410';
-    // Rückweg vom Körper über UNTERE Hohlvene in den rechten Vorhof
-    const pathKoerperZurueckInf  = 'M 545 440 Q 400 560, 220 555 L 178 555 Q 183 500, 200 460 Q 215 410, 232 245';
-    // Rückweg vom Körper über OBERE Hohlvene in den rechten Vorhof
-    const pathKoerperZurueckSup  = 'M 545 240 Q 380 100, 200 70 L 155 70 Q 170 130, 200 180 Q 215 215, 232 232';
+    // Tropfen folgen exakt den dick gezeichneten Gefaessen und Klappen.
+    // Lungenkreislauf-Ausgang (deoxy): rechte Kammer -> Pulmonalklappe -> Pulmonalarterie -> Lunge
+    const pathLungenAusgang     = 'M 235 380 L 232 240 C 232 200, 218 150, 200 130 C 175 100, 145 105, 130 120 Q 100 140, 100 185 L 100 240';
+    // Lungenkreislauf-Rueckfluss (oxy): Lungenvenen -> linker Vorhof
+    const pathLungenZurueck     = 'M 500 175 Q 460 175, 440 200 Q 415 220, 386 230';
+    // Koerperkreislauf-Ausgang (oxy): linke Kammer -> Aortenklappe -> Aorta -> Koerper
+    const pathKoerperAusgang    = 'M 383 380 L 386 240 C 386 190, 400 145, 430 125 Q 470 95, 500 122 Q 525 150, 525 210 L 525 290';
+    // Koerperkreislauf-Rueckfluss (deoxy): obere Hohlvene -> rechter Vorhof
+    const pathKoerperZurueckSup = 'M 155 70 Q 170 130, 200 180 L 215 215 L 232 232';
+    // Koerperkreislauf-Rueckfluss (deoxy): untere Hohlvene -> rechter Vorhof
+    const pathKoerperZurueckInf = 'M 178 555 Q 183 500, 200 460 L 215 420 L 232 245';
 
     const flowGroup = el('g', { class: 'flow-paths' });
     flowGroup.appendChild(el('path', { id: idPrefix+'-flow-lungen',      class: 'flow-path lungen',       d: pathLungenAusgang }));
