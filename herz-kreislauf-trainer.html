@@ -1389,14 +1389,18 @@
     // ---------- FLOW PATHS (for tropfen) ----------
     const pathLungenAusgang  = 'M 235 380 C 235 290, 210 220, 200 130 C 195 100, 170 95, 130 120 Q 95 150, 90 230';
     const pathLungenZurueck  = 'M 100 350 Q 150 380, 220 360 Q 300 340, 386 232';
-    const pathKoerperAusgang = 'M 383 380 C 383 280, 410 200, 430 130 Q 460 70, 510 100 Q 555 130, 555 220 Q 555 340, 545 400';
-    const pathKoerperZurueck = 'M 530 480 Q 400 540, 250 480 Q 180 450, 168 410 Q 165 290, 232 232';
+    const pathKoerperAusgang     = 'M 383 380 C 383 280, 410 200, 430 130 Q 460 70, 510 100 Q 555 130, 555 220 Q 555 340, 545 410';
+    // Rückweg vom Körper über UNTERE Hohlvene in den rechten Vorhof
+    const pathKoerperZurueckInf  = 'M 545 440 Q 400 560, 220 555 L 178 555 Q 183 500, 200 460 Q 215 410, 232 245';
+    // Rückweg vom Körper über OBERE Hohlvene in den rechten Vorhof
+    const pathKoerperZurueckSup  = 'M 545 240 Q 380 100, 200 70 L 155 70 Q 170 130, 200 180 Q 215 215, 232 232';
 
     const flowGroup = el('g', { class: 'flow-paths' });
     flowGroup.appendChild(el('path', { id: idPrefix+'-flow-lungen',      class: 'flow-path lungen',       d: pathLungenAusgang }));
     flowGroup.appendChild(el('path', { id: idPrefix+'-flow-lungen-back', class: 'flow-path lungen-back',  d: pathLungenZurueck }));
-    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper',     class: 'flow-path koerper',      d: pathKoerperAusgang }));
-    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper-back',class: 'flow-path koerper-back', d: pathKoerperZurueck }));
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper',          class: 'flow-path koerper',      d: pathKoerperAusgang }));
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper-back-inf', class: 'flow-path koerper-back', d: pathKoerperZurueckInf }));
+    flowGroup.appendChild(el('path', { id: idPrefix+'-flow-koerper-back-sup', class: 'flow-path koerper-back', d: pathKoerperZurueckSup }));
     if (showFlow) svg.appendChild(flowGroup);
 
     // ---------- VESSELS ----------
@@ -1527,8 +1531,12 @@
         droplets.appendChild(makeDroplet(idPrefix+'-flow-lungen-back', '#e85d5d', i * 1.2 + 0.4,  3.6));
       }
       for (let i = 0; i < 3; i++) {
-        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper',      '#e85d5d', i * 1.3,        3.9));
-        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper-back', '#4a90c2', i * 1.3 + 0.5,  3.9));
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper',          '#e85d5d', i * 1.3,        3.9));
+      }
+      // Rückfluss: untere + obere Hohlvene, je 2 Tropfen, versetzt — beide muenden in den rechten Vorhof
+      for (let i = 0; i < 2; i++) {
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper-back-inf', '#4a90c2', i * 1.9 + 0.3,  3.9));
+        droplets.appendChild(makeDroplet(idPrefix+'-flow-koerper-back-sup', '#4a90c2', i * 1.9 + 1.3,  3.9));
       }
       svg.appendChild(droplets);
     }
