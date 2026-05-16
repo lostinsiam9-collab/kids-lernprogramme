@@ -9,7 +9,7 @@
   <title>Herz &amp; Kreislauf · Entdecken und Üben</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito:wght@600;700;800&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-grad-start:    #fde9ec;
@@ -962,6 +962,212 @@
       margin-bottom: 12px;
     }
 
+    /* ============================================================
+       SCHULBUCH-LOOK — orientiert am Original-Arbeitsblatt
+       Graustufen, handschriftliche Beschriftung, ruhiger Look
+       ============================================================ */
+    .sb-wrap { display: flex; flex-direction: column; align-items: center; }
+    .sb-subtabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 5px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 999px;
+      margin-bottom: 18px;
+      box-shadow: var(--card-shadow);
+    }
+    .sb-subtabs button {
+      padding: 9px 18px;
+      min-height: 42px;
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 999px;
+      transition: all 0.2s var(--ease-soft);
+    }
+    .sb-subtabs button.active {
+      background: #5a5a5a;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    }
+    .sb-stage {
+      width: 100%;
+      max-width: 720px;
+      background: #fdfdf9;
+      border: 1px solid #cfcfc7;
+      border-radius: var(--radius-md);
+      padding: 24px 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+      position: relative;
+    }
+    .sb-stage svg { width: 100%; height: auto; display: block; }
+    .sb-toggle-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .sb-toggle-row button {
+      padding: 9px 18px;
+      min-height: 44px;
+      border: 1.5px solid #888;
+      background: #fff;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 999px;
+      transition: all 0.2s var(--ease-soft);
+    }
+    .sb-toggle-row button.on {
+      background: #5a5a5a;
+      color: white;
+      border-color: #5a5a5a;
+    }
+
+    /* Schulbuch-Herz (Abbildung 1) */
+    .sb-organ-fill {
+      fill: #b9b9b3;
+      stroke: #1a1a1a;
+      stroke-width: 3;
+      stroke-linejoin: round;
+    }
+    .sb-organ-shade {
+      fill: #9b9b94;
+      opacity: 0.7;
+    }
+    .sb-vessel-fill {
+      fill: #c8c8c2;
+      stroke: #1a1a1a;
+      stroke-width: 3;
+      stroke-linejoin: round;
+    }
+    .sb-hot {
+      fill: transparent;
+      stroke: transparent;
+      cursor: pointer;
+    }
+    .sb-hot:hover { fill: rgba(255, 220, 100, 0.25); }
+    .sb-label-text {
+      font-family: 'Caveat', 'Quicksand', cursive;
+      font-weight: 700;
+      font-size: 28px;
+      fill: #1a1a1a;
+    }
+    .sb-label-line {
+      stroke: #1a1a1a;
+      stroke-width: 1.6;
+      fill: none;
+    }
+    .sb-label {
+      opacity: 1;
+      transition: opacity 0.3s var(--ease-soft);
+    }
+    .sb-stage.labels-off .sb-label { opacity: 0; }
+
+    /* Schulbuch-Kreislauf (Abbildung 2) */
+    .sb-circ-vessel {
+      fill: #a5a59f;
+      stroke: #1a1a1a;
+      stroke-width: 2.5;
+      stroke-linejoin: round;
+    }
+    .sb-circ-heart {
+      fill: #888880;
+      stroke: #1a1a1a;
+      stroke-width: 3;
+      stroke-linejoin: round;
+    }
+    .sb-circ-capillary {
+      fill: none;
+      stroke: #1a1a1a;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+    .sb-circ-num {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: 30px;
+      fill: #1a1a1a;
+      text-anchor: middle;
+    }
+    .sb-circ-drop {
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+    }
+    .sb-station-popup {
+      position: absolute;
+      max-width: 280px;
+      background: #fffef0;
+      border: 2px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      z-index: 30;
+      font-size: 15px;
+      line-height: 1.4;
+      animation: pop 0.3s var(--ease-pop);
+    }
+    .sb-station-popup .num {
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: 22px;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+    .sb-station-popup .close {
+      position: absolute;
+      top: 2px; right: 6px;
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: #555;
+      cursor: pointer;
+      min-height: 24px;
+      padding: 0 6px;
+    }
+
+    /* Schulbuch-Filter im Üben-Tab */
+    .school-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.85);
+      border: 2px solid var(--ink-faint);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s var(--ease-soft);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+    }
+    .school-filter.on {
+      background: #5a5a5a;
+      color: white;
+      border-color: #5a5a5a;
+    }
+    .school-filter input { display: none; }
+    .school-filter .indicator {
+      width: 18px; height: 18px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: transparent;
+    }
+    .school-filter.on .indicator {
+      background: white;
+      color: #5a5a5a;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .heart-group { animation: none !important; }
       .flow-path   { animation: none !important; }
@@ -979,10 +1185,14 @@
       <p class="tagline">Entdecke das Herz von innen — und übe, bis alles sitzt.</p>
     </header>
 
-    <nav class="tab-nav" role="tablist" aria-label="Modus wählen">
+    <nav class="tab-nav" role="tablist" aria-label="Modus wählen" style="max-width: 540px;">
       <button id="tab-entdecken" class="active" role="tab" aria-selected="true">
         <span aria-hidden="true">🔍</span>
         Entdecken
+      </button>
+      <button id="tab-schulbuch" role="tab" aria-selected="false">
+        <span aria-hidden="true">📖</span>
+        Schulbuch
       </button>
       <button id="tab-ueben" role="tab" aria-selected="false">
         <span aria-hidden="true">✏️</span>
@@ -1015,12 +1225,37 @@
       </div>
     </section>
 
+    <section id="panel-schulbuch" class="tab-panel hidden" role="tabpanel">
+      <div class="card">
+        <div class="sb-wrap">
+          <div class="sb-subtabs" id="sb-subtabs" role="tablist">
+            <button class="active" data-sb="herz">Das Herz</button>
+            <button data-sb="kreislauf">Der Blutkreislauf</button>
+          </div>
+          <div class="sb-stage" id="sb-stage"></div>
+          <div class="sb-toggle-row" id="sb-controls"></div>
+        </div>
+        <p style="text-align:center; color:var(--ink-soft); font-size:13px; margin-top:12px; line-height:1.5;">
+          🎓 Diese Ansicht ist dem Schul-Arbeitsblatt nachempfunden. Tippe Beschriftungen an, um Erklärungen zu sehen.
+        </p>
+      </div>
+    </section>
+
     <section id="panel-ueben" class="tab-panel hidden" role="tabpanel">
       <div class="card">
-        <h2 style="display:flex;align-items:center;gap:8px;">
-          <span aria-hidden="true">🎯</span> Welche Themen möchtest du üben?
-        </h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom: 8px;">
+          <h2 style="display:flex;align-items:center;gap:8px; margin:0;">
+            <span aria-hidden="true">🎯</span> Welche Themen möchtest du üben?
+          </h2>
+          <button id="school-filter-toggle" class="school-filter" type="button" aria-pressed="false">
+            <span class="indicator">✓</span>
+            🎓 Nur Schulbuch-Begriffe
+          </button>
+        </div>
         <div class="chip-row" id="topic-chips" aria-label="Themen wählen"></div>
+        <p id="school-filter-hint" style="margin: 8px 0 0; color: var(--ink-soft); font-size: 13px; display: none;">
+          🎓 Schulbuch-Modus aktiv: Es werden nur die 6 Begriffe aus dem Arbeitsblatt geübt (Aorta, Lungenarterie, Lungenvenen, obere Hohlvene, rechte/linke Herzkammer).
+        </p>
       </div>
 
       <div class="card">
@@ -1154,6 +1389,27 @@
     { x: 178, y: 525, text: 'Über die Hohlvenen kommt das verbrauchte Blut zurück ins Herz — und der Kreislauf beginnt von vorn. 💗', layer: 'beide' }
   ];
 
+  // Schulbuch-Begriffe (Abbildung 1 — bewusst reduziert wie im Original-Arbeitsblatt)
+  const SCHULBUCH_HERZ = [
+    { key: 'sb-aorta',          name: 'Aorta',             info: 'Die größte Schlagader. Bringt das Blut von der linken Herzkammer in den Körper.' },
+    { key: 'sb-lungenvene',     name: 'Lungenvene',        info: 'Bringt das sauerstoffreiche Blut aus der Lunge zurück zum Herzen.' },
+    { key: 'sb-lungenarterie',  name: 'Lungenarterie',     info: 'Führt das sauerstoffarme Blut vom Herzen zur Lunge.' },
+    { key: 'sb-obere-hohlvene', name: 'obere Hohlvene',    info: 'Sammelt das sauerstoffarme Blut aus Kopf und Armen und bringt es zurück zum Herzen.' },
+    { key: 'sb-rechte-kammer',  name: 'rechte Herzkammer', info: 'Pumpt das sauerstoffarme Blut zur Lunge.' },
+    { key: 'sb-linke-kammer',   name: 'linke Herzkammer',  info: 'Pumpt das sauerstoffreiche Blut in den ganzen Körper. Stärkster Muskel des Herzens.' }
+  ];
+
+  // Schulbuch-Kreislauf (Abbildung 2) — Stationen 1-7 wie im Original-Schema
+  const SCHULBUCH_STATIONS = [
+    { num: 1, name: 'rechte Herzkammer', info: 'Hier startet der Lungenkreislauf. Das sauerstoffarme Blut wird zur Lunge gepumpt.' },
+    { num: 2, name: 'Lungenarterie',     info: 'Trägt das sauerstoffarme Blut zur Lunge.' },
+    { num: 3, name: 'Kapillarnetz',      info: 'Feines Netz aus Adern in Lunge, Gehirn und Körper — hier findet der Stoffaustausch statt.' },
+    { num: 4, name: 'linke Herzkammer',  info: 'Hier startet der Körperkreislauf. Das sauerstoffreiche Blut wird in den Körper gepumpt.' },
+    { num: 5, name: 'Aorta',             info: 'Die große Schlagader, die das sauerstoffreiche Blut in den Körper bringt.' },
+    { num: 6, name: 'Lungenvene',        info: 'Bringt das in der Lunge mit Sauerstoff angereicherte Blut zurück zum Herzen.' },
+    { num: 7, name: 'obere/untere Hohlvene', info: 'Die großen Sammelvenen führen das sauerstoffarme Blut aus dem Körper zurück zum Herzen.' }
+  ];
+
   /* =================================================================
    * STORAGE
    * ================================================================= */
@@ -1163,7 +1419,12 @@
   const LEITNER_KEY = 'herzkreislauf-leitner';
   const STATS_KEY   = 'herzkreislauf-stats';
 
-  const DEFAULT_SETUP = { topics: ['anatomie', 'klappen', 'gefaesse', 'lungen', 'koerper'] };
+  const DEFAULT_SETUP = { topics: ['anatomie', 'klappen', 'gefaesse', 'lungen', 'koerper'], schoolMode: false };
+
+  // Wenn Schulbuch-Modus aktiv: nur diese 6 Region-Keys werden im "Beschriften"-Modus geuebt
+  const SCHULBUCH_REGION_KEYS = ['aorta', 'pulmonalarterie', 'pulmonalvenen', 'hohlvene-sup', 'rechte-kammer', 'linke-kammer'];
+  // Im Schulbuch-Modus aktive Karteikarten
+  const SCHULBUCH_FLASHCARD_IDS = ['fc-aorta', 'fc-pa', 'fc-pv', 'fc-vcs', 'fc-rk', 'fc-lk', 'fc-klein', 'fc-gross', 'fc-doppel'];
   const MAX_BOX = 5;
   const BOX_WEIGHTS = [5, 3, 2, 1, 0.5];
 
@@ -1172,7 +1433,10 @@
       const raw = localStorage.getItem(SETUP_KEY);
       if (!raw) return JSON.parse(JSON.stringify(DEFAULT_SETUP));
       const s = JSON.parse(raw);
-      return { topics: Array.isArray(s.topics) && s.topics.length ? s.topics : DEFAULT_SETUP.topics };
+      return {
+        topics: Array.isArray(s.topics) && s.topics.length ? s.topics : DEFAULT_SETUP.topics,
+        schoolMode: !!s.schoolMode
+      };
     } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_SETUP)); }
   })();
 
@@ -1590,30 +1854,469 @@
   }
 
   /* =================================================================
+   * SCHULBUCH — Abbildung 1: Das Herz
+   * Aussenansicht, Graustufen, handschriftliche Beschriftung
+   * ================================================================= */
+
+  function buildSchulbuchHerzSVG() {
+    const svg = el('svg', {
+      viewBox: '0 0 900 720',
+      xmlns: 'http://www.w3.org/2000/svg',
+      'aria-label': 'Schulbuch-Zeichnung des Herzens'
+    });
+
+    // Schatten/Hintergrund-Layer (3D-Effekt)
+    const shade = el('g', { class: 'sb-shade-layer' });
+    shade.appendChild(el('path', {
+      class: 'sb-organ-shade',
+      d: 'M 260 700 C 165 620, 110 520, 130 380 C 145 295, 200 230, 260 220 Q 295 218, 305 235 L 305 250 C 285 260, 250 290, 240 330 C 230 380, 245 430, 260 470 Z'
+    }));
+    svg.appendChild(shade);
+
+    // Herz-Aussenansicht (Outline)
+    const heart = el('g', { class: 'sb-heart-outer' });
+    heart.appendChild(el('path', {
+      class: 'sb-organ-fill',
+      d: 'M 260 695 C 155 620, 100 510, 120 370 C 135 285, 195 220, 270 215 Q 320 213, 340 245 C 358 222, 395 215, 430 230 C 490 250, 535 320, 530 405 C 525 510, 460 600, 340 685 Q 300 712, 260 695 Z'
+    }));
+
+    // Aortenbogen (gross, oben links/mittig nach oben raus, schwingt nach links)
+    heart.appendChild(el('path', {
+      class: 'sb-vessel-fill',
+      d: 'M 280 220 C 250 130, 235 60, 260 30 L 305 30 C 320 60, 320 120, 318 195 Q 318 218, 305 222 Z'
+    }));
+    // Aortenbogen-Schatten innen
+    heart.appendChild(el('path', {
+      class: 'sb-organ-shade',
+      d: 'M 280 220 C 250 150, 245 90, 260 50 L 282 50 C 280 100, 290 160, 300 215 Z'
+    }));
+
+    // Lungenarterie (mittig, geht hoch und schwingt leicht nach rechts)
+    heart.appendChild(el('path', {
+      class: 'sb-vessel-fill',
+      d: 'M 335 230 C 360 165, 380 100, 420 75 L 460 105 C 425 145, 395 200, 380 240 Q 360 250, 335 240 Z'
+    }));
+
+    // Lungenvenen (kleine Stummel rechts vom Herz, gehen schraeg nach hinten)
+    heart.appendChild(el('path', {
+      class: 'sb-vessel-fill',
+      d: 'M 480 240 C 525 200, 555 175, 580 175 L 595 215 C 565 230, 525 260, 495 275 Q 478 270, 480 240 Z'
+    }));
+
+    // Obere Hohlvene (Stummel rechts, etwas tiefer als Lungenvene)
+    heart.appendChild(el('path', {
+      class: 'sb-vessel-fill',
+      d: 'M 500 320 C 540 305, 575 305, 595 320 L 595 360 C 565 365, 525 365, 495 360 Q 488 345, 500 320 Z'
+    }));
+
+    // Innere Aufteilung des Herzens (Septum-Linie als Outline, deutet die zwei Kammern an)
+    heart.appendChild(el('path', {
+      d: 'M 295 295 Q 280 450, 300 650',
+      fill: 'none',
+      stroke: '#1a1a1a',
+      'stroke-width': '2.5'
+    }));
+
+    // Innere doppelte Outline (gibt der Zeichnung den "innen-aussen"-Look)
+    heart.appendChild(el('path', {
+      d: 'M 280 670 C 195 600, 145 510, 160 380 C 170 305, 220 248, 280 245 M 348 247 C 395 245, 435 270, 485 320 C 510 380, 510 470, 470 555 C 430 615, 380 660, 340 680',
+      fill: 'none',
+      stroke: '#1a1a1a',
+      'stroke-width': '2'
+    }));
+
+    svg.appendChild(heart);
+
+    // Hotspots fuer Klick-Interaktion (transparent, ueber den Strukturen)
+    const hot = el('g', { class: 'sb-hotspots' });
+    const hots = [
+      { key: 'sb-aorta',          cx: 295, cy: 100,  r: 50 },
+      { key: 'sb-lungenarterie',  cx: 400, cy: 140,  r: 50 },
+      { key: 'sb-lungenvene',     cx: 545, cy: 215,  r: 48 },
+      { key: 'sb-obere-hohlvene', cx: 545, cy: 335,  r: 48 },
+      { key: 'sb-rechte-kammer',  cx: 240, cy: 520,  r: 60 },
+      { key: 'sb-linke-kammer',   cx: 400, cy: 520,  r: 60 }
+    ];
+    hots.forEach(h => {
+      const c = el('circle', {
+        class: 'sb-hot',
+        cx: h.cx, cy: h.cy, r: h.r,
+        'data-sb-key': h.key,
+        tabindex: '0',
+        'aria-label': SCHULBUCH_HERZ.find(s => s.key === h.key).name
+      });
+      c.style.pointerEvents = 'all';
+      hot.appendChild(c);
+    });
+    svg.appendChild(hot);
+
+    // Beschriftungen — handschriftlich rechts neben dem Herz, mit Leitlinie
+    const labelGroup = el('g', { class: 'sb-labels' });
+    const labels = [
+      { key: 'sb-aorta',          ax: 305, ay: 90,  lx: 460, ly: 95,  text: 'Aorta' },
+      { key: 'sb-lungenarterie',  ax: 440, ay: 145, lx: 510, ly: 150, text: 'Lungenarterie' },
+      { key: 'sb-lungenvene',     ax: 580, ay: 225, lx: 615, ly: 230, text: 'Lungenvene' },
+      { key: 'sb-obere-hohlvene', ax: 595, ay: 340, lx: 625, ly: 345, text: 'obere Hohlvene' },
+      { key: 'sb-rechte-kammer',  ax: 250, ay: 520, lx: 290, ly: 535, text: 'rechte Herzkammer' },
+      { key: 'sb-linke-kammer',   ax: 410, ay: 540, lx: 540, ly: 605, text: 'linke Herzkammer' }
+    ];
+    labels.forEach(l => {
+      const g = el('g', { class: 'sb-label', 'data-sb-key': l.key });
+      // Leitlinie als horizontaler Strich (wie auf dem Original)
+      const lineEndX = l.lx + l.text.length * 13 + 10;
+      g.appendChild(el('line', {
+        class: 'sb-label-line',
+        x1: l.ax + 30, y1: l.ay,
+        x2: lineEndX, y2: l.ay
+      }));
+      g.appendChild(el('text', {
+        class: 'sb-label-text',
+        x: l.lx + 5, y: l.ay - 6,
+        'text-anchor': 'start'
+      }, l.text));
+      labelGroup.appendChild(g);
+    });
+    svg.appendChild(labelGroup);
+
+    return svg;
+  }
+
+  /* =================================================================
+   * SCHULBUCH — Abbildung 2: Der Blutkreislauf
+   * 8-Form: Herz mittig, Kapillarnetze von Gehirn, Lunge, Koerper
+   * Animierte Tropfen wandern durch die ganze Schleife
+   * ================================================================= */
+
+  function buildSchulbuchKreislaufSVG() {
+    const svg = el('svg', {
+      viewBox: '0 0 560 880',
+      xmlns: 'http://www.w3.org/2000/svg',
+      'aria-label': 'Schulbuch-Schema des Blutkreislaufs'
+    });
+
+    // ---------- KAPILLARNETZ GEHIRN (oben) ----------
+    const brain = el('g', { 'data-sb-station': '3-gehirn' });
+    brain.appendChild(el('circle', {
+      class: 'sb-circ-heart',
+      cx: 280, cy: 100, r: 70
+    }));
+    // Kapillaren-Schwingen (3 horizontale Wellenlinien im Kreis)
+    for (let i = 0; i < 5; i++) {
+      const y = 75 + i * 12;
+      brain.appendChild(el('path', {
+        class: 'sb-circ-capillary',
+        d: 'M 225 ' + y + ' Q 240 ' + (y-3) + ', 255 ' + y + ' T 285 ' + y + ' T 315 ' + y + ' T 335 ' + y
+      }));
+    }
+    svg.appendChild(brain);
+
+    // ---------- KAPILLARNETZ LUNGE (mittig oberhalb des Herzens) ----------
+    const lung = el('g', { 'data-sb-station': '3-lunge' });
+    // Linker Lungenfluegel
+    lung.appendChild(el('ellipse', {
+      class: 'sb-circ-heart',
+      cx: 200, cy: 320, rx: 60, ry: 55
+    }));
+    // Rechter Lungenfluegel
+    lung.appendChild(el('ellipse', {
+      class: 'sb-circ-heart',
+      cx: 360, cy: 320, rx: 60, ry: 55
+    }));
+    for (let i = 0; i < 4; i++) {
+      const y = 305 + i * 12;
+      lung.appendChild(el('path', { class: 'sb-circ-capillary',
+        d: 'M 155 ' + y + ' Q 175 ' + (y-3) + ', 195 ' + y + ' T 235 ' + y
+      }));
+      lung.appendChild(el('path', { class: 'sb-circ-capillary',
+        d: 'M 315 ' + y + ' Q 335 ' + (y-3) + ', 355 ' + y + ' T 395 ' + y
+      }));
+    }
+    svg.appendChild(lung);
+
+    // ---------- HERZ (mitte-unten, sehr stilisiert: zwei Kammern als Tropfenform) ----------
+    const heart = el('g', { 'data-sb-station': 'herz' });
+    // Komplettes Herz als Spiegelei-Form mit Septum
+    heart.appendChild(el('path', {
+      class: 'sb-circ-heart',
+      d: 'M 215 460 L 215 600 Q 230 660, 280 670 Q 330 660, 345 600 L 345 460 Q 330 450, 280 450 Q 230 450, 215 460 Z'
+    }));
+    // Septum (vertikale Linie)
+    heart.appendChild(el('line', {
+      x1: 280, y1: 460, x2: 280, y2: 670,
+      stroke: '#1a1a1a', 'stroke-width': '3'
+    }));
+    svg.appendChild(heart);
+
+    // ---------- VERBINDUNGS-ROHRE (Gefäße als "Schläuche" der 8-Form) ----------
+    const tubes = el('g', { class: 'sb-tubes' });
+    // 1) rechte Kammer (= 250, 540) -> Lungenarterie -> rechter Lungenfluegel
+    tubes.appendChild(el('path', { class: 'sb-circ-vessel',
+      d: 'M 250 460 L 250 410 Q 240 380, 260 360 Q 290 340, 320 350 L 360 365'
+    }));
+    // 2) linker Lungenfluegel -> Lungenvene -> linke Vorhof / Herz
+    tubes.appendChild(el('path', { class: 'sb-circ-vessel',
+      d: 'M 220 365 L 240 370 Q 270 380, 290 400 Q 308 425, 310 460'
+    }));
+    // 3) linke Kammer (= 310, 540) -> Aorta nach unten -> Koerper unten
+    tubes.appendChild(el('path', { class: 'sb-circ-vessel',
+      d: 'M 310 670 L 310 720 Q 320 760, 340 770 L 420 770'
+    }));
+    // Aorta-Abzweig nach oben zum Gehirn (links rum)
+    tubes.appendChild(el('path', { class: 'sb-circ-vessel',
+      d: 'M 310 670 L 410 670 Q 460 670, 460 600 L 460 200 Q 460 130, 400 110 L 340 110'
+    }));
+    // 4) Hohlvene unten zurueck zum Herz
+    tubes.appendChild(el('path', { class: 'sb-circ-vessel',
+      d: 'M 140 770 L 240 770 Q 250 760, 250 720 L 250 670'
+    }));
+    // Hohlvene oben (vom Gehirn zurueck)
+    tubes.appendChild(el('path', { class: 'sb-circ-vessel',
+      d: 'M 220 110 L 160 110 Q 100 130, 100 200 L 100 600 Q 100 670, 160 670 L 245 670'
+    }));
+    svg.insertBefore(tubes, brain);
+
+    // ---------- VERBINDUNG KÖRPER-KAPILLARNETZ (unten) ----------
+    const body = el('g', { 'data-sb-station': '3-koerper' });
+    body.appendChild(el('circle', {
+      class: 'sb-circ-heart',
+      cx: 280, cy: 770, r: 60
+    }));
+    for (let i = 0; i < 4; i++) {
+      const y = 750 + i * 12;
+      body.appendChild(el('path', {
+        class: 'sb-circ-capillary',
+        d: 'M 230 ' + y + ' Q 245 ' + (y-3) + ', 260 ' + y + ' T 290 ' + y + ' T 320 ' + y + ' T 335 ' + y
+      }));
+    }
+    svg.appendChild(body);
+
+    // ---------- ANIMATIONS-PFADE (unsichtbar, fuer Tropfen) ----------
+    const flowGroup = el('g', { class: 'sb-flow-paths' });
+    // Komplette Schleife in einem Pfad: rechte Kammer -> Lunge -> linke Kammer -> Koerper-Verteilung
+    // Wir machen zwei Schleifen: Lungenkreislauf und Koerperkreislauf
+    // Lungenkreislauf: rechte Kammer -> Pulmonalarterie -> Lunge -> Pulmonalvene -> linke Kammer
+    flowGroup.appendChild(el('path', {
+      id: 'sb-flow-lungen',
+      d: 'M 250 530 L 250 410 Q 240 380, 260 360 Q 290 340, 320 350 L 360 365 Q 360 380, 320 380 Q 280 380, 240 370 Q 270 385, 295 415 Q 310 440, 310 530',
+      fill: 'none', stroke: 'transparent', 'stroke-width': '0'
+    }));
+    // Koerperkreislauf: linke Kammer -> Aorta -> Koerper -> Hohlvene -> rechte Kammer
+    // ueber Koerper (unten)
+    flowGroup.appendChild(el('path', {
+      id: 'sb-flow-koerper-unten',
+      d: 'M 310 600 L 310 720 Q 320 760, 340 770 L 420 770 Q 320 770, 240 770 Q 250 760, 250 720 L 250 600',
+      fill: 'none', stroke: 'transparent', 'stroke-width': '0'
+    }));
+    // ueber Gehirn (oben)
+    flowGroup.appendChild(el('path', {
+      id: 'sb-flow-koerper-oben',
+      d: 'M 310 600 Q 310 640, 380 640 Q 460 640, 460 540 L 460 200 Q 460 130, 400 110 L 340 110 Q 240 110, 220 110 Q 160 110, 100 200 L 100 600 Q 100 640, 180 640 L 250 600',
+      fill: 'none', stroke: 'transparent', 'stroke-width': '0'
+    }));
+    svg.appendChild(flowGroup);
+
+    // ---------- TROPFEN ----------
+    const droplets = el('g', { class: 'sb-droplets' });
+    function makeDrop(pathId, fill, delaySec, dur) {
+      const d = el('circle', { class: 'sb-circ-drop', r: 8, cx: 0, cy: 0, fill: fill });
+      const anim = el('animateMotion', {
+        dur: dur + 's', repeatCount: 'indefinite', begin: delaySec + 's'
+      });
+      anim.appendChild(el('mpath', { href: '#' + pathId }));
+      d.appendChild(anim);
+      return d;
+    }
+    // Lungenkreislauf: 2 dunkle Tropfen
+    for (let i = 0; i < 2; i++) droplets.appendChild(makeDrop('sb-flow-lungen', '#3a3a3a', i * 2.5, 5));
+    // Koerperkreislauf-unten: 2 dunkle Tropfen
+    for (let i = 0; i < 2; i++) droplets.appendChild(makeDrop('sb-flow-koerper-unten', '#3a3a3a', i * 3, 6));
+    // Koerperkreislauf-oben: 2 dunkle Tropfen
+    for (let i = 0; i < 2; i++) droplets.appendChild(makeDrop('sb-flow-koerper-oben', '#3a3a3a', i * 4.5, 9));
+    svg.appendChild(droplets);
+
+    // ---------- NUMMERN (Stationen wie im Original) ----------
+    const numbers = el('g', { class: 'sb-numbers' });
+    const nums = [
+      { num: 1, x: 250, y: 560 },   // rechte Kammer
+      { num: 2, x: 285, y: 345 },   // Lungenarterie
+      { num: 3, x: 280, y: 105 },   // Kapillarnetz Gehirn
+      { num: 4, x: 310, y: 560 },   // linke Kammer
+      { num: 5, x: 280, y: 320 },   // (zwischen den Lungen) — Lunge gesamt
+      { num: 6, x: 200, y: 320 },   // Lungenvenen-Bereich
+      { num: 7, x: 270, y: 460 }    // oben am Herz (Hohlvene)
+    ];
+    nums.forEach(n => {
+      const t = el('text', {
+        class: 'sb-circ-num',
+        x: n.x, y: n.y,
+        'data-sb-num': String(n.num)
+      }, String(n.num));
+      t.style.cursor = 'pointer';
+      numbers.appendChild(t);
+    });
+    svg.appendChild(numbers);
+
+    return svg;
+  }
+
+  /* =================================================================
+   * SCHULBUCH — Render-Logic + Interaktion
+   * ================================================================= */
+
+  let SB_SUBTAB = 'herz';
+  let sbPopupActive = null;
+  function sbClosePopup() {
+    if (sbPopupActive) { sbPopupActive.remove(); sbPopupActive = null; }
+  }
+
+  function renderSchulbuch() {
+    sbClosePopup();
+    const stage = document.getElementById('sb-stage');
+    const controls = document.getElementById('sb-controls');
+    clear(stage);
+    clear(controls);
+
+    // Subtab buttons sync
+    document.querySelectorAll('#sb-subtabs button').forEach(b => {
+      b.classList.toggle('active', b.dataset.sb === SB_SUBTAB);
+    });
+
+    if (SB_SUBTAB === 'herz') {
+      stage.classList.remove('labels-off');
+      const svg = buildSchulbuchHerzSVG();
+      stage.appendChild(svg);
+      // Toggle button: labels on/off
+      const toggle = el('button', { class: 'on' }, '👁 Beschriftungen verbergen');
+      let labelsOn = true;
+      toggle.addEventListener('click', () => {
+        labelsOn = !labelsOn;
+        stage.classList.toggle('labels-off', !labelsOn);
+        toggle.classList.toggle('on', labelsOn);
+        toggle.textContent = labelsOn ? '👁 Beschriftungen verbergen' : '👁 Beschriftungen zeigen';
+      });
+      controls.appendChild(toggle);
+
+      // Click handler for hotspots → info popup
+      svg.addEventListener('click', (e) => {
+        const hot = e.target.closest('.sb-hot');
+        if (!hot) return;
+        const key = hot.getAttribute('data-sb-key');
+        sbShowPopup(key, e.clientX, e.clientY);
+      });
+    } else {
+      // Kreislauf
+      const svg = buildSchulbuchKreislaufSVG();
+      stage.appendChild(svg);
+      controls.appendChild(el('div', {
+        style: 'color: var(--ink-soft); font-size: 14px; text-align: center;'
+      }, '💧 Die Tropfen wandern durch den Doppelkreislauf. Tippe eine Nummer (1–7), um die Station zu erklären.'));
+
+      svg.addEventListener('click', (e) => {
+        const n = e.target.closest('[data-sb-num]');
+        if (!n) return;
+        const num = parseInt(n.getAttribute('data-sb-num'), 10);
+        sbShowStationPopup(num, e.clientX, e.clientY);
+      });
+    }
+  }
+
+  function sbShowPopup(key, x, y) {
+    sbClosePopup();
+    const item = SCHULBUCH_HERZ.find(s => s.key === key);
+    if (!item) return;
+    const stage = document.getElementById('sb-stage');
+    const stageRect = stage.getBoundingClientRect();
+    const popup = el('div', { class: 'sb-station-popup' });
+    popup.appendChild(el('button', { class: 'close', 'aria-label': 'Schließen', onclick: sbClosePopup }, '×'));
+    popup.appendChild(el('div', { class: 'num' }, item.name));
+    popup.appendChild(el('div', null, item.info));
+    stage.appendChild(popup);
+    const sx = x - stageRect.left, sy = y - stageRect.top;
+    const r = popup.getBoundingClientRect();
+    let left = sx + 14, top = sy + 14;
+    if (left + r.width > stageRect.width) left = Math.max(8, sx - r.width - 14);
+    if (top + r.height > stageRect.height) top = Math.max(8, sy - r.height - 14);
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    sbPopupActive = popup;
+    setTimeout(() => {
+      const onDoc = (ev) => {
+        if (!popup.contains(ev.target) && !ev.target.closest('.sb-hot')) {
+          sbClosePopup();
+          document.removeEventListener('pointerdown', onDoc);
+        }
+      };
+      document.addEventListener('pointerdown', onDoc);
+    }, 50);
+  }
+
+  function sbShowStationPopup(num, x, y) {
+    sbClosePopup();
+    const item = SCHULBUCH_STATIONS.find(s => s.num === num);
+    if (!item) return;
+    const stage = document.getElementById('sb-stage');
+    const stageRect = stage.getBoundingClientRect();
+    const popup = el('div', { class: 'sb-station-popup' });
+    popup.appendChild(el('button', { class: 'close', 'aria-label': 'Schließen', onclick: sbClosePopup }, '×'));
+    popup.appendChild(el('div', { class: 'num' }, num + ' — ' + item.name));
+    popup.appendChild(el('div', null, item.info));
+    stage.appendChild(popup);
+    const sx = x - stageRect.left, sy = y - stageRect.top;
+    const r = popup.getBoundingClientRect();
+    let left = sx + 14, top = sy + 14;
+    if (left + r.width > stageRect.width) left = Math.max(8, sx - r.width - 14);
+    if (top + r.height > stageRect.height) top = Math.max(8, sy - r.height - 14);
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    sbPopupActive = popup;
+    setTimeout(() => {
+      const onDoc = (ev) => {
+        if (!popup.contains(ev.target) && !ev.target.closest('[data-sb-num]')) {
+          sbClosePopup();
+          document.removeEventListener('pointerdown', onDoc);
+        }
+      };
+      document.addEventListener('pointerdown', onDoc);
+    }, 50);
+  }
+
+  // Subtab switching
+  document.querySelectorAll('#sb-subtabs button').forEach(b => {
+    b.addEventListener('click', () => {
+      SB_SUBTAB = b.dataset.sb;
+      renderSchulbuch();
+    });
+  });
+
+  /* =================================================================
    * TAB MANAGER
    * ================================================================= */
 
   const tabEntdecken = document.getElementById('tab-entdecken');
+  const tabSchulbuch = document.getElementById('tab-schulbuch');
   const tabUeben     = document.getElementById('tab-ueben');
   const panelE       = document.getElementById('panel-entdecken');
+  const panelS       = document.getElementById('panel-schulbuch');
   const panelU       = document.getElementById('panel-ueben');
 
   function switchTab(name) {
-    if (name === 'entdecken') {
-      tabEntdecken.classList.add('active');    tabEntdecken.setAttribute('aria-selected', 'true');
-      tabUeben.classList.remove('active');     tabUeben.setAttribute('aria-selected', 'false');
-      panelE.classList.remove('hidden');
-      panelU.classList.add('hidden');
-    } else {
-      tabEntdecken.classList.remove('active'); tabEntdecken.setAttribute('aria-selected', 'false');
-      tabUeben.classList.add('active');        tabUeben.setAttribute('aria-selected', 'true');
-      panelE.classList.add('hidden');
-      panelU.classList.remove('hidden');
+    const tabs = { entdecken: tabEntdecken, schulbuch: tabSchulbuch, ueben: tabUeben };
+    const panels = { entdecken: panelE, schulbuch: panelS, ueben: panelU };
+    Object.keys(tabs).forEach(k => {
+      const isActive = k === name;
+      tabs[k].classList.toggle('active', isActive);
+      tabs[k].setAttribute('aria-selected', isActive ? 'true' : 'false');
+      panels[k].classList.toggle('hidden', !isActive);
+    });
+    if (name === 'ueben') {
       renderStats();
       renderActiveMode();
+    } else if (name === 'schulbuch') {
+      renderSchulbuch();
     }
   }
   tabEntdecken.addEventListener('click', () => switchTab('entdecken'));
+  tabSchulbuch.addEventListener('click', () => switchTab('schulbuch'));
   tabUeben.addEventListener('click',     () => switchTab('ueben'));
 
   /* =================================================================
@@ -1850,6 +2553,11 @@
         renderTopicChips();
         renderActiveMode();
       });
+      // Im Schulbuch-Modus sind Themen-Chips inaktiv (gefiltert wird nach Schulbuch-Begriffen)
+      if (SETUP.schoolMode) {
+        chip.style.opacity = '0.4';
+        chip.style.pointerEvents = 'none';
+      }
       row.appendChild(chip);
     });
   }
@@ -1873,7 +2581,12 @@
   }
 
   function activeRegionsForLabelGame() {
-    const filtered = REGIONS.filter(r => SETUP.topics.indexOf(r.topic) >= 0);
+    let filtered;
+    if (SETUP.schoolMode) {
+      filtered = REGIONS.filter(r => SCHULBUCH_REGION_KEYS.indexOf(r.key) >= 0);
+    } else {
+      filtered = REGIONS.filter(r => SETUP.topics.indexOf(r.topic) >= 0);
+    }
     if (filtered.length === 0) return [];
     return shuffle(filtered).slice(0, Math.min(8, filtered.length));
   }
@@ -2291,7 +3004,9 @@
   let FLASH_DONE  = 0;
 
   function buildFlashDeck() {
-    const filtered = FLASHCARDS.filter(c => SETUP.topics.indexOf(c.topic) >= 0);
+    const filtered = SETUP.schoolMode
+      ? FLASHCARDS.filter(c => SCHULBUCH_FLASHCARD_IDS.indexOf(c.id) >= 0)
+      : FLASHCARDS.filter(c => SETUP.topics.indexOf(c.topic) >= 0);
     const weighted = [];
     filtered.forEach(c => {
       const box = LeitnerStore.getBox(c.id);
@@ -2561,6 +3276,28 @@
   document.getElementById('btn-export').addEventListener('click', exportProgress);
   document.getElementById('btn-import').addEventListener('click', importProgress);
   document.getElementById('btn-reset' ).addEventListener('click', resetAll);
+
+  // Schulbuch-Filter Toggle im Üben-Tab
+  const schoolFilterBtn = document.getElementById('school-filter-toggle');
+  const schoolFilterHint = document.getElementById('school-filter-hint');
+  function applySchoolFilterUI() {
+    schoolFilterBtn.classList.toggle('on', SETUP.schoolMode);
+    schoolFilterBtn.setAttribute('aria-pressed', SETUP.schoolMode ? 'true' : 'false');
+    schoolFilterHint.style.display = SETUP.schoolMode ? 'block' : 'none';
+    // Auch Themen-Chips passend grau ausblenden, wenn Schul-Modus
+    document.querySelectorAll('#topic-chips .chip').forEach(c => {
+      c.style.opacity = SETUP.schoolMode ? '0.4' : '1';
+      c.style.pointerEvents = SETUP.schoolMode ? 'none' : 'auto';
+    });
+  }
+  schoolFilterBtn.addEventListener('click', () => {
+    SETUP.schoolMode = !SETUP.schoolMode;
+    SetupStore.save();
+    applySchoolFilterUI();
+    renderTopicChips();
+    renderActiveMode();
+  });
+  applySchoolFilterUI();
 
   renderActiveMode();
   </script>
